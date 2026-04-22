@@ -1136,18 +1136,18 @@ input,button,select,textarea{font-family:inherit;outline:none}
           </div>
           <div style="margin-top:8px;font-size:10px;color:#2E4A60;line-height:1.5">
             &#9432; Pair rover in phone Bluetooth settings first, then tap Scan.<br>
-            <span style="color:#A78BFA;font-weight:600">BLE receivers (works directly):</span> Emlid Reach RS2, u-blox, SXBlue, some CHC/Hi-Target models.<br>
-            <span style="color:#FFAA40;font-weight:600">Hi-Target V300 / Classic BT rovers:</span> Use <strong>Bluetooth GNSS</strong> app (Play Store) + Mock Location below.
+            <span style="color:#A78BFA;font-weight:600">Supports:</span> CHC, Hi-Target, South, Meridian, Stonex, Leica, Trimble, Tokonav, FOIF.<br>
+            <span style="color:#FFAA40;font-weight:600">For GPS BT Rovers:</span> Use <strong>Bluetooth GNSS</strong> app (Play Store) + Mock Location below.
           </div>
-          <!-- Mock Location guide for Classic BT rovers like V300 -->
+          <!-- Mock Location guide for Classic BT rovers -->
           <div id="mock-loc-guide" style="margin-top:10px;background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;border:1px solid rgba(255,170,64,0.2)">
-            <div style="font-size:11px;font-weight:700;color:#FFAA40;margin-bottom:6px">&#128274; For Hi-Target V300 (Bluetooth Classic)</div>
+            <div style="font-size:11px;font-weight:700;color:#FFAA40;margin-bottom:6px">&#128274; For GPS BT Rovers</div>
             <div style="font-size:10px;color:#5A8090;line-height:1.6">
               1. Install <strong style="color:#7AAECE">Bluetooth GNSS</strong> from Play Store<br>
-              2. Open it → Connect to your V300<br>
+              2. Open it → Connect to your rover<br>
               3. Enable <strong style="color:#7AAECE">Mock Location</strong> in that app<br>
               4. Android Settings → Developer Options → Select Mock Location App → Bluetooth GNSS<br>
-              5. Return here — GEONEXUS now reads V300 as phone GPS automatically ✓
+              5. Return here — GEONEXUS now reads rover as phone GPS automatically ✓
             </div>
           </div>
         </div>
@@ -3330,9 +3330,14 @@ function onNativeGPS(pos){
   ST.gnss.realGps=true;
 
   // ── Accuracy ───────────────────────────────────────────────────────────────
-  // Raw accuracy exactly as reported by device — no artificial caps or rounding
-  if(c.accuracy!=null&&c.accuracy>0)ST.gnss.ha=c.accuracy;
-  if(c.altitudeAccuracy!=null&&c.altitudeAccuracy>0)ST.gnss.va=c.altitudeAccuracy;
+  // Raw accuracy exactly as reported by device. If a mock-location provider
+  // (e.g. "Bluetooth GNSS" Android app) has sent a fresh NMEA GST sentence
+  // in the last 3s, that takes precedence — mock providers hardcode their
+  // .accuracy field (often 3.0m) regardless of real RTK σ.
+  if(!ST.gnss._gstFresh){
+    if(c.accuracy!=null&&c.accuracy>0)ST.gnss.ha=c.accuracy;
+    if(c.altitudeAccuracy!=null&&c.altitudeAccuracy>0)ST.gnss.va=c.altitudeAccuracy;
+  }
 
   // ── Altitude (ellipsoidal → orthometric via ~Tanzania geoid sep -36.2m) ────
   if(c.altitude!=null){
@@ -6312,9 +6317,10 @@ function toggleNTRIP(){
   if(status){status.textContent='Handshake with '+host+'\u2026';status.style.color='#FFAA40';}
   setTimeout(function(){
     _ntripActive=true;
-    // Improve simulated accuracy to RTK Fixed while "connected"
-    ST.gnss.ha=Math.min(ST.gnss.ha,0.018);
-    ST.gnss.fix='RTK Fixed';
+    // NOTE: accuracy stays whatever the real NMEA/GST stream reports.
+    // Once the rover actually applies RTCM corrections and its NMEA fix
+    // quality switches to 4 (RTK Fixed), GST sigma will drop to ~1cm
+    // automatically. No fake override here.
     if(btn){btn.textContent='Disconnect NTRIP';btn.className='btn btnr';}
     if(status){status.innerHTML='<span style="color:#3CD87A">&#9679; Connected</span> &middot; '+host+':'+(port||'2101')+' &middot; '+mount+(user?' ('+user+')':'');}
     if(typeof toast==='function')toast('NTRIP connected \u00B7 RTK Fixed');
@@ -7506,7 +7512,7 @@ async function btScanConnect(){
     }
     if(!found){
       btDisconnect();
-      alert('Connected to '+BT_DEVICE.name+' but no NMEA stream found.\n\nYour rover likely uses Bluetooth Classic (not BLE).\nWeb Bluetooth only supports BLE.\n\nFor Hi-Target V300 / Classic BT rovers:\n1. Install "Bluetooth GNSS" from Play Store\n2. Connect rover in that app\n3. Enable Mock Location\n4. GEONEXUS reads it automatically');
+      alert('Connected to '+BT_DEVICE.name+' but no NMEA stream found.\n\nYour rover likely uses Bluetooth Classic (not BLE).\nWeb Bluetooth only supports BLE.\n\nFor GPS BT Rovers:\n1. Install "Bluetooth GNSS" from Play Store\n2. Connect rover in that app\n3. Enable Mock Location\n4. GEONEXUS reads it automatically');
       return;
     }
     var devName=document.getElementById('bt-device-name');
@@ -7580,13 +7586,19 @@ function parseNMEA(line){
     ST.gnss.hell=alt;
     ST.gnss.hort=alt-geoidSep; // H = h - N (from NMEA)
     ST.gnss.geoidSep=geoidSep;
-    ST.gnss.ha=hdop*2.5; // approximate HA from HDOP (factor varies; 2.5 is conservative)
     ST.gnss.sats=sats;
     ST.gnss.fix=fixStr;
+    ST.gnss.fixQuality=fix;
+    ST.gnss.hdop=hdop;
     ST.gnss.realGps=true;
-    // RTK Fixed HA override — rovers report actual HA in GGA (or separately)
-    if(fix===4)ST.gnss.ha=0.010; // 1cm for RTK Fixed if HDOP gives wrong value
-    if(fix===5)ST.gnss.ha=0.050; // 5cm RTK Float
+    // ── REAL accuracy (no hardcoded values) ──────────────────────────────────
+    // Prefer GST sentence (true 1-sigma from receiver). If no GST received in
+    // the last 3s, fall back to HDOP × fix-type UERE. UERE values are the
+    // industry-standard 1-sigma User Equivalent Range Error per fix mode.
+    if(!ST.gnss._gstFresh){
+      var UERE={4:0.007, 5:0.040, 2:0.700, 1:3.000, 6:10.000}[fix]||3.000;
+      ST.gnss.ha = hdop>0 ? hdop*UERE : UERE;
+    }
     // Update map marker
     var ll=L.latLng(lat,lng);
     if(MAP){
@@ -7599,6 +7611,22 @@ function parseNMEA(line){
     var srcLabel=document.getElementById('gps-src-label');
     if(srcLabel)srcLabel.textContent='Rover ✓';
     updGNSSDisplay();
+  } else if(type==='GST'&&f.length>=9){
+    // $GNGST,time,rms,stdMaj,stdMin,orient,stdLat,stdLon,stdAlt*cs
+    // This is the TRUE accuracy straight from the rover's Kalman filter —
+    // 1-sigma standard deviation of the position solution. Use this over
+    // HDOP×UERE whenever it's available.
+    var stdLat=parseFloat(f[6]);
+    var stdLon=parseFloat(f[7]);
+    var stdAlt=parseFloat(f[8]);
+    if(!isNaN(stdLat)&&!isNaN(stdLon)&&stdLat>0&&stdLon>0){
+      ST.gnss.ha = Math.sqrt(stdLat*stdLat + stdLon*stdLon);
+      ST.gnss._gstFresh = true;
+      clearTimeout(ST.gnss._gstTimer);
+      ST.gnss._gstTimer = setTimeout(function(){ST.gnss._gstFresh=false;},3000);
+    }
+    if(!isNaN(stdAlt)&&stdAlt>0) ST.gnss.va = stdAlt;
+    updGNSSDisplay();
   } else if(type==='RMC'&&f.length>=9){
     // Speed and heading
     var spd=parseFloat(f[7]);
@@ -7606,11 +7634,19 @@ function parseNMEA(line){
     if(!isNaN(spd))ST.gnss.speed=spd*1.852; // knots to km/h
     if(!isNaN(hdg)&&hdg>=0)ST.gnss.heading=hdg;
   } else if(type==='GSA'&&f.length>=17){
-    // PDOP
+    // PDOP / VDOP — only used if GST hasn't given us real vertical σ
     var pdop=parseFloat(f[15]);
     var vdop=parseFloat(f[16]);
     if(!isNaN(pdop))ST.gnss.pdop=pdop;
-    if(!isNaN(vdop))ST.gnss.va=vdop*2; // approximate VA from VDOP
+    if(!isNaN(vdop)){
+      ST.gnss.vdop=vdop;
+      if(!ST.gnss._gstFresh){
+        // Fix-type-aware vertical UERE (vertical is typically 1.5-2× horizontal)
+        var fq=ST.gnss.fixQuality||1;
+        var vUERE={4:0.012, 5:0.060, 2:1.000, 1:4.500, 6:15.000}[fq]||4.500;
+        ST.gnss.va = vdop*vUERE;
+      }
+    }
   }
 }
 
@@ -7623,6 +7659,29 @@ function nmea2deg(val,dir){
   if(dir==='S'||dir==='W')r=-r;
   return r;
 }
+
+// ── NMEA BRIDGE ─────────────────────────────────────────────────────────────
+// When this HTML is wrapped in an Android WebView and the host app exposes
+// raw NMEA from a mock-location provider (e.g. Bluetooth GNSS app's
+// POSITION_UPDATE intent), route those sentences through parseNMEA so the
+// real GST sigma overrides the hardcoded mock accuracy (3.0m fallback).
+// Supported bridges — any one of:
+//   window.addEventListener('nmea', e => parseNMEA(e.detail))
+//   window.postMessage({type:'nmea', line:'$GNGST,...'}, '*')
+//   window.NMEA_PUSH = line => parseNMEA(line)   (host calls this)
+window.NMEA_PUSH = function(line){
+  if(typeof line==='string') line.split(/[\r\n]+/).forEach(parseNMEA);
+};
+window.addEventListener('nmea', function(e){
+  var d = e.detail;
+  if(typeof d==='string') window.NMEA_PUSH(d);
+  else if(d&&d.line) window.NMEA_PUSH(d.line);
+  else if(d&&d.nmea) window.NMEA_PUSH(d.nmea);
+});
+window.addEventListener('message', function(e){
+  var d = e.data;
+  if(d&&d.type==='nmea'&&typeof d.line==='string') window.NMEA_PUSH(d.line);
+});
 
 // Mobile viewport height fix — Android Chrome address bar + content:// protocol
 (function(){
