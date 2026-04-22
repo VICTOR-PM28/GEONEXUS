@@ -863,18 +863,17 @@ input,button,select,textarea{font-family:inherit;outline:none}
     <button id="so-sound-btn" onclick="toggleSOSound()" style="margin-left:auto;background:none;border:1px solid rgba(0,200,83,0.3);border-radius:8px;padding:2px 8px;cursor:pointer;font-size:13px;color:#3CD87A;flex-shrink:0" title="Toggle stakeout sound">&#128276;</button>
     <div id="so-btns" style="display:flex;gap:5px"></div>
   </div>
-  <!-- Map canvas (top half of the working area) — shows user position and
-       the line to the staked point, styled after Carlson/Trimble stake apps -->
-  <div id="so-map-wrap" style="position:absolute;top:80px;left:0;right:0;height:calc(50% - 40px);background:#050A14;border-bottom:2px solid rgba(27,114,232,0.4)">
+  <!-- Map canvas (takes ~65% of working area — gives polygons room to breathe) -->
+  <div id="so-map-wrap" style="position:absolute;top:80px;left:0;right:0;height:calc(65% - 100px);background:#050A14;border-bottom:2px solid rgba(27,114,232,0.4)">
     <div id="somap" style="position:absolute;inset:0;z-index:0"></div>
     <!-- Status pill top-left of map -->
     <div id="so-map-status" style="position:absolute;top:6px;left:6px;background:rgba(5,10,20,0.85);border:1px solid rgba(27,114,232,0.3);border-radius:6px;padding:4px 8px;font-size:10px;color:#80AACC;font-family:monospace;z-index:10;pointer-events:none">Awaiting GPS&hellip;</div>
     <!-- Recenter button -->
     <button onclick="soRecenter()" style="position:absolute;bottom:8px;right:8px;width:34px;height:34px;border-radius:50%;background:#0B1521;border:1.5px solid rgba(27,114,232,0.5);color:#5AA8E8;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10" title="Recenter"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
   </div>
-  <!-- Compass + distance readout (bottom half) -->
-  <div id="so-compass-wrap" style="position:absolute;top:calc(50% + 40px);bottom:120px;left:0;right:0;display:flex;align-items:center;justify-content:center">
-    <svg viewBox="0 0 300 300" style="width:min(220px,calc(100vw - 20px),calc(50vh - 180px));height:min(220px,calc(100vw - 20px),calc(50vh - 180px));overflow:visible">
+  <!-- Compass + distance readout — compact so polygons on the map stay prominent -->
+  <div id="so-compass-wrap" style="position:absolute;top:calc(65% - 20px);bottom:120px;left:0;right:0;display:flex;align-items:center;justify-content:center">
+    <svg viewBox="0 0 300 300" style="width:min(150px,calc(100vw - 40px),calc(35vh - 120px));height:min(150px,calc(100vw - 40px),calc(35vh - 120px));overflow:visible">
       <circle cx="150" cy="150" r="130" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
       <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
       <circle cx="150" cy="150" r="70" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
@@ -891,9 +890,9 @@ input,button,select,textarea{font-family:inherit;outline:none}
         <circle cx="150" cy="150" r="4" fill="#3A5070"/>
       </g>
     </svg>
-    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-55px);text-align:center;pointer-events:none">
-      <div id="so-dist" style="font-size:24px;font-weight:700;color:#F04020;font-family:monospace">--</div>
-      <div id="so-status" style="font-size:10px;color:#803020;letter-spacing:.06em">SELECT TARGET</div>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-40px);text-align:center;pointer-events:none">
+      <div id="so-dist" style="font-size:18px;font-weight:700;color:#F04020;font-family:monospace">--</div>
+      <div id="so-status" style="font-size:9px;color:#803020;letter-spacing:.05em">SELECT TARGET</div>
     </div>
   </div>
   <div style="position:absolute;bottom:0;left:0;right:0;height:120px;background:#07101C;border-top:1px solid rgba(255,255,255,0.08)">
@@ -5476,26 +5475,6 @@ function soEnsureMap(){
     MAP.eachLayer(function(l){if(l instanceof L.TileLayer&&l._url){tileUrl=l._url;if(l.options&&l.options.subdomains)subdomains=l.options.subdomains;}});
   }
   L.tileLayer(tileUrl,{subdomains:subdomains,maxZoom:22,maxNativeZoom:19}).addTo(SOMAP);
-  // Load project polygons + lines so they stay visible during stakeout
-  try{
-    if(ST.pid){
-      var feats=getFeats(ST.pid)||[];
-      var layers=(getProject&&getProject(ST.pid)&&getProject(ST.pid).layers)||[];
-      feats.forEach(function(f){
-        if(!f.ll)return;
-        var lyr=layers.find(function(x){return x.id===f.lid;});
-        if(lyr&&lyr.vis===false)return;
-        var col=(lyr&&lyr.color)||'#1B72E8';
-        var overlay=null;
-        if(f.type==='polygon'){
-          overlay=L.polygon(f.ll,{color:col,fillColor:col,fillOpacity:0.12,weight:2,interactive:false});
-        } else if(f.type==='line'){
-          overlay=L.polyline(f.ll,{color:col,weight:2.5,opacity:0.9,interactive:false});
-        }
-        if(overlay)overlay.addTo(SOMAP);
-      });
-    }
-  }catch(e){}
   SO_USER_MARKER=L.marker([0,0],{icon:soUserIcon('#1A88FF',0),zIndexOffset:1000});
   var tgtIcon=L.divIcon({className:'',html:'<div style="width:28px;height:32px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))"><svg viewBox="0 0 24 28" style="width:28px;height:32px;fill:#F04040;stroke:#fff;stroke-width:1.2"><path d="M12 1C7 1 3 5 3 10c0 7 9 17 9 17s9-10 9-17c0-5-4-9-9-9z"/><circle cx="12" cy="10" r="3" fill="#fff"/></svg></div>',iconSize:[28,32],iconAnchor:[14,32]});
   SO_TGT_MARKER=L.marker([0,0],{icon:tgtIcon,zIndexOffset:999});
@@ -5504,6 +5483,37 @@ function soEnsureMap(){
   setTimeout(function(){if(SOMAP)SOMAP.invalidateSize();},220);
 }
 function soRecenter(){SO_AUTOCENTER=true;soUpdateMap();}
+
+// Project polygons/lines overlay for stakeout map.
+// Called every time stakeout screen is opened, so newly drawn features
+// appear and deleted ones disappear without restarting the app.
+var SO_OVERLAYS=[];
+function soLoadOverlays(){
+  if(!SOMAP)return;
+  // Clear previous overlays
+  SO_OVERLAYS.forEach(function(o){try{SOMAP.removeLayer(o);}catch(e){}});
+  SO_OVERLAYS=[];
+  if(!ST.pid)return;
+  try{
+    var feats=getFeats(ST.pid)||[];
+    var layers=getLyrs(ST.pid)||[];
+    feats.forEach(function(f){
+      if(!f.ll)return;
+      var lyr=layers.find(function(x){return String(x.id)===String(f.lid);});
+      if(lyr&&lyr.vis===false)return;
+      var col=(lyr&&lyr.color)||'#1B72E8';
+      var overlay=null;
+      if(f.type==='polygon'){
+        overlay=L.polygon(f.ll,{color:col,fillColor:col,fillOpacity:0.15,weight:2.5,interactive:false});
+      } else if(f.type==='line'){
+        overlay=L.polyline(f.ll,{color:col,weight:2.5,opacity:0.9,interactive:false});
+      } else if(f.type==='point'){
+        overlay=L.circleMarker(f.ll,{radius:3,color:col,fillColor:col,fillOpacity:0.9,weight:1,interactive:false});
+      }
+      if(overlay){overlay.addTo(SOMAP);SO_OVERLAYS.push(overlay);}
+    });
+  }catch(e){console.warn('soLoadOverlays:',e);}
+}
 
 // ─── MARK CURRENT POSITION ────────────────────────────────────────────────────
 // Places a persistent orange crosshair at current GPS location.
@@ -6438,7 +6448,7 @@ function showScreen(name){
   ST.screen=name;
   document.querySelectorAll('.sc').forEach(el=>el.classList.remove('on'));
   var el=document.getElementById('sc-'+name);if(el)el.classList.add('on');
-  if(name==='stakeout'){renderSOBtns();soEnsureMap();SO_AUTOCENTER=true;if(ST.soTargets.length)setSOT(ST.soIdx);setTimeout(function(){if(SOMAP)SOMAP.invalidateSize();soUpdateMap();},150);}else stopSO();
+  if(name==='stakeout'){renderSOBtns();soEnsureMap();soLoadOverlays();SO_AUTOCENTER=true;if(ST.soTargets.length)setSOT(ST.soIdx);setTimeout(function(){if(SOMAP){SOMAP.invalidateSize();soLoadOverlays();}soUpdateMap();},150);}else stopSO();
   if(name!=='map')closeAllPanels();
   if(name==='home'){renderProjects();homeSetOpen=false;var p=document.getElementById('home-set-panel');if(p)p.style.transform='translateX(100%)';}
   if(name==='map'){requestAnimationFrame(()=>requestAnimationFrame(()=>{if(MAP)MAP.invalidateSize(true);else setTimeout(initMap,80);}));}
