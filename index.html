@@ -620,7 +620,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <div style="flex:1;background:#07111D;border-radius:6px;padding:6px;text-align:center"><div style="font-size:9px;color:#304860;margin-bottom:2px;letter-spacing:.06em">SATELLITES</div><div class="mono" id="gp-sats" style="font-size:16px;color:#80AACC">14</div></div>
         <div style="flex:1;background:#07111D;border-radius:6px;padding:6px;text-align:center"><div style="font-size:9px;color:#304860;margin-bottom:2px;letter-spacing:.06em">FIX TYPE</div><div id="gp-fix" style="font-size:10px;color:#40D870;font-weight:600;margin-top:4px">RTK Fixed</div></div>
-        <div style="flex:1;background:#07111D;border-radius:6px;padding:6px;text-align:center"><div style="font-size:9px;color:#304860;margin-bottom:2px;letter-spacing:.06em">PDOP</div><div class="mono" id="gp-pdop" style="font-size:16px;color:#80AACC">1.4</div></div>
+        <div style="flex:1;background:#07111D;border-radius:6px;padding:6px;text-align:center"><div style="font-size:9px;color:#304860;margin-bottom:2px;letter-spacing:.06em">PDOP</div><div class="mono" id="gp-pdop" style="font-size:16px;color:#80AACC">N/A</div></div>
       </div>
       <!-- Constellation bars -->
       <div style="background:#07111D;border-radius:7px;border:1px solid rgba(255,255,255,0.06);padding:8px;margin-bottom:10px">
@@ -3318,8 +3318,9 @@ function onNativeGPS(pos){
   ST.gnss.realGps=true;
 
   // ── Accuracy ───────────────────────────────────────────────────────────────
-  if(c.accuracy!=null)ST.gnss.ha=Math.min(c.accuracy,99);  // browser accuracy IS the HA radius in metres
-  if(c.altitudeAccuracy!=null&&c.altitudeAccuracy>0)ST.gnss.va=Math.min(c.altitudeAccuracy,99);
+  // Raw accuracy exactly as reported by device — no artificial caps or rounding
+  if(c.accuracy!=null&&c.accuracy>0)ST.gnss.ha=c.accuracy;
+  if(c.altitudeAccuracy!=null&&c.altitudeAccuracy>0)ST.gnss.va=c.altitudeAccuracy;
 
   // ── Altitude (ellipsoidal → orthometric via ~Tanzania geoid sep -36.2m) ────
   if(c.altitude!=null){
@@ -3333,7 +3334,8 @@ function onNativeGPS(pos){
 
   // ── Fix type by horizontal accuracy ───────────────────────────────────────
   var ha=ST.gnss.ha;
-  ST.gnss.fix=ha<0.05?'RTK Fixed':ha<0.3?'RTK Float':ha<2?'DGPS':ha<5?'SBAS':'GPS';
+  // Fix type inferred from real accuracy value
+  ST.gnss.fix=ha<0.05?'RTK Fixed':ha<0.15?'RTK Float':ha<1.0?'DGPS':ha<3.5?'SBAS':'GPS';
   // Compute real EGM2008 geoid separation and orthometric height
   if(ST.gnss.hell!==0){
     var N_egm=egm2008Geoid(ST.gnss.lat,ST.gnss.lng);
@@ -3412,6 +3414,7 @@ function renderConstellations(){
   var scale=totalActive>0?total/totalActive:1;
   Object.keys(ST.gnss.cSats).forEach(function(name){
     var sats=ST.gnss.cSats[name];
+    var satsLabel=(sats===-1)?'N/A':String(sats);
     var on=CONST_FLAGS[name]!==false;
     var color=CONST_COLORS[name]||'#4A7090';
     var pct=Math.min(100,Math.round(sats/18*100));
@@ -6441,7 +6444,7 @@ function updGNSSDisplay(){
   var u=function(id,v,c){var el=document.getElementById(id);if(!el)return;if(v!==undefined)el.textContent=v;if(c)el.style.color=c;};
   var live=ST.gpsActive&&ST.gnss.realGps;
   var ha=ST.gnss.ha;
-  var color=ha<1?'#3CD87A':ha<3?'#00C853':ha<5?'#FF9100':'#F44336';
+  var color=ha<0.5?'#3CD87A':ha<1.5?'#00C853':ha<4?'#FF9100':'#F44336';
   var bg=ha<3?'rgba(0,200,83,.1)':ha<5?'rgba(255,145,0,.1)':'rgba(244,67,54,.1)';
   // Toolbar chip
   var dotEl=document.getElementById('gnss-dot');if(dotEl)dotEl.style.background=color;
@@ -6456,8 +6459,9 @@ function updGNSSDisplay(){
     if(GPS_CAL.active)calBadge.textContent='✓ Calibrated: '+GPS_CAL.label;
   }
   u('gp-va',live?ST.gnss.va.toFixed(3)+'m':'--');
-  u('gp-sats',live?String(ST.gnss.sats):'--');
-  u('gp-pdop','N/A'); // browser API does not expose PDOP
+  // Satellites and PDOP: browser API does NOT expose these — show honestly
+  u('gp-sats','N/A');
+  u('gp-pdop','N/A');
   u('gp-lat',calLat().toFixed(7));
   u('gp-lng',calLng().toFixed(7));
   var utm=toUTMa(calLat(),calLng());
@@ -6477,14 +6481,13 @@ function updGNSSDisplay(){
   u('so-ha',ha.toFixed(3));
   u('so-sats',live?String(ST.gnss.sats):'--');
   var c2=document.getElementById('so-chip');
-  if(c2)c2.textContent=ST.gnss.fix+(live?' · '+ST.gnss.sats+'sv':'');
-  // Constellation: distribute real total across active groups (visual)
-  if(live&&ST.gnss.sats>0){
+  if(c2)c2.textContent=ST.gnss.fix+(live?' · SBAS':'');
+  // When on phone GPS, browser gives NO per-constellation data
+  // Show bars with equal length but label counts as N/A
+  if(live){
+    // Reset all to equal visual (browser cannot give per-constellation count)
     var activeK=Object.keys(ST.gnss.cSats).filter(function(k){return CONST_FLAGS[k];});
-    if(activeK.length){
-      var base=Math.floor(ST.gnss.sats/activeK.length),rem=ST.gnss.sats%activeK.length;
-      activeK.forEach(function(k,i){ST.gnss.cSats[k]=base+(i<rem?1:0);});
-    }
+    activeK.forEach(function(k){ST.gnss.cSats[k]=-1;}); // -1 = N/A flag
   }
   renderConstellations();
   if(ST.gpsActive)updPosPan();
@@ -7390,16 +7393,22 @@ var BT_DEVICE=null, BT_CHAR=null, BT_SRV=null;
 var _nmeaBuffer='';
 
 // NMEA Service UUIDs — covers most BT GNSS receivers
+// BLE service UUIDs for professional GNSS rovers
 var NMEA_SERVICES=[
-  '0000ffe0-0000-1000-8000-00805f9b34fb', // Generic BT Serial (HC-05, most rovers)
-  '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART (Emlid Reach, u-blox)
-  '0000fff0-0000-1000-8000-00805f9b34fb', // CHC / some Chinese receivers
-  '00001101-0000-1000-8000-00805f9b34fb', // SPP
+  '0000ffe0-0000-1000-8000-00805f9b34fb', // Generic BLE Serial (most rovers)
+  '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART Service (Emlid, u-blox)
+  '0000fff0-0000-1000-8000-00805f9b34fb', // Hi-Target / CHC family
+  '0000ab00-0000-1000-8000-00805f9b34fb', // Hi-Target V300 proprietary
+  '00001101-0000-1000-8000-00805f9b34fb', // SPP fallback
+  '0000aaaa-0000-1000-8000-00805f9b34fb', // Hi-Target alternate
 ];
+// BLE characteristic UUIDs — NMEA data notification channel
 var NMEA_CHARS=[
-  '0000ffe1-0000-1000-8000-00805f9b34fb', // HC-05
-  '6e400003-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART TX
-  '0000fff1-0000-1000-8000-00805f9b34fb', // CHC TX
+  '0000ffe1-0000-1000-8000-00805f9b34fb', // Generic / Hi-Target V300 TX
+  '6e400003-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART TX (Emlid Reach)
+  '0000fff1-0000-1000-8000-00805f9b34fb', // CHC Navigator TX
+  '0000ab01-0000-1000-8000-00805f9b34fb', // Hi-Target V300 data char
+  '0000aaaa-0000-1000-8000-00805f9b34fb', // Hi-Target alternate char
 ];
 
 function selectGPSSrc(src){
@@ -7447,6 +7456,7 @@ async function btScanConnect(){
   selectGPSSrc('bluetooth');
   try{
     BT_DEVICE=await navigator.bluetooth.requestDevice({
+      // Show all BLE devices so user can pick the V300 by name
       acceptAllDevices:true,
       optionalServices:NMEA_SERVICES
     });
