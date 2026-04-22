@@ -898,8 +898,8 @@ input,button,select,textarea{font-family:inherit;outline:none}
   </div>
   <div style="position:absolute;bottom:0;left:0;right:0;height:120px;background:#07101C;border-top:1px solid rgba(255,255,255,0.08)">
     <div style="display:grid;grid-template-columns:repeat(6,1fr);height:60px;border-bottom:1px solid rgba(255,255,255,0.05)">
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">&#916;X (m)</span><span class="mono" id="so-dx" style="font-size:13px;color:#F06030">--</span></div>
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">&#916;Y (m)</span><span class="mono" id="so-dy" style="font-size:13px;color:#F06030">--</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">&#916;E (m)</span><span class="mono" id="so-dx" style="font-size:13px;color:#F06030">--</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">&#916;N (m)</span><span class="mono" id="so-dy" style="font-size:13px;color:#F06030">--</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">&#916;Z (m)</span><span class="mono" id="so-dz" style="font-size:13px;color:#809090">--</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">HA (m)</span><span class="mono" id="so-ha" style="font-size:13px;color:#30C870">0.018</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">VA (m)</span><span class="mono" id="so-va" style="font-size:13px;color:#30C870">0.034</span></div>
@@ -1108,7 +1108,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
           <div>
-            <div style="font-size:13px;font-weight:700;color:#A78BFA">External GNSS (Bluetooth)</div>
+            <div style="font-size:13px;font-weight:700;color:#A78BFA">GNSS Rover</div>
             <div style="font-size:10px;color:#3A6080">CHC, Trimble, Leica, u-blox · RTK cm precision</div>
           </div>
           <div id="gpssrc-bt-tick" style="margin-left:auto;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;opacity:0.3">
@@ -5467,7 +5467,7 @@ function soEnsureMap(){
   if(!el||el.offsetWidth===0||el.offsetHeight===0){
     setTimeout(soEnsureMap,120);return;
   }
-  SOMAP=L.map('somap',{center:[-6.7800,39.2800],zoom:18,zoomControl:false,attributionControl:false,tap:true});
+  SOMAP=L.map('somap',{center:[-6.7800,39.2800],zoom:18,zoomControl:false,attributionControl:false,tap:true,maxZoom:22});
   // Use Carto Dark by default — high contrast behind the overlay markers.
   // If the main map has a different active basemap, reuse the same tile URL.
   var tileUrl='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
@@ -5475,7 +5475,27 @@ function soEnsureMap(){
   if(typeof MAP!=='undefined'&&MAP){
     MAP.eachLayer(function(l){if(l instanceof L.TileLayer&&l._url){tileUrl=l._url;if(l.options&&l.options.subdomains)subdomains=l.options.subdomains;}});
   }
-  L.tileLayer(tileUrl,{subdomains:subdomains,maxZoom:20}).addTo(SOMAP);
+  L.tileLayer(tileUrl,{subdomains:subdomains,maxZoom:22,maxNativeZoom:19}).addTo(SOMAP);
+  // Load project polygons + lines so they stay visible during stakeout
+  try{
+    if(ST.pid){
+      var feats=getFeats(ST.pid)||[];
+      var layers=(getProject&&getProject(ST.pid)&&getProject(ST.pid).layers)||[];
+      feats.forEach(function(f){
+        if(!f.ll)return;
+        var lyr=layers.find(function(x){return x.id===f.lid;});
+        if(lyr&&lyr.vis===false)return;
+        var col=(lyr&&lyr.color)||'#1B72E8';
+        var overlay=null;
+        if(f.type==='polygon'){
+          overlay=L.polygon(f.ll,{color:col,fillColor:col,fillOpacity:0.12,weight:2,interactive:false});
+        } else if(f.type==='line'){
+          overlay=L.polyline(f.ll,{color:col,weight:2.5,opacity:0.9,interactive:false});
+        }
+        if(overlay)overlay.addTo(SOMAP);
+      });
+    }
+  }catch(e){}
   SO_USER_MARKER=L.marker([0,0],{icon:soUserIcon('#1A88FF',0),zIndexOffset:1000});
   var tgtIcon=L.divIcon({className:'',html:'<div style="width:28px;height:32px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))"><svg viewBox="0 0 24 28" style="width:28px;height:32px;fill:#F04040;stroke:#fff;stroke-width:1.2"><path d="M12 1C7 1 3 5 3 10c0 7 9 17 9 17s9-10 9-17c0-5-4-9-9-9z"/><circle cx="12" cy="10" r="3" fill="#fff"/></svg></div>',iconSize:[28,32],iconAnchor:[14,32]});
   SO_TGT_MARKER=L.marker([0,0],{icon:tgtIcon,zIndexOffset:999});
@@ -5566,9 +5586,27 @@ function soUpdateMap(){
     if(!SOMAP.hasLayer(SO_LINE))SO_LINE.addTo(SOMAP);
     SO_LINE.setLatLngs([[gLat,gLng],[tgt.lat,tgt.lng]]);
     if(SO_LABEL){SOMAP.removeLayer(SO_LABEL);SO_LABEL=null;}
-    // Keep both user and target in view when auto-centring
+    // Keep both user and target in view when auto-centring.
+    // At very short distances the bounding box collapses and fitBounds falls
+    // back to maxZoom; pad the box so the stakeout line direction is always
+    // visible, even at 20 cm.
     if(SO_AUTOCENTER){
-      try{SOMAP.fitBounds(L.latLngBounds([gLat,gLng],[tgt.lat,tgt.lng]).pad(0.4),{animate:false,maxZoom:19});}catch(e){}
+      try{
+        var d=haversine(gLat,gLng,tgt.lat,tgt.lng);
+        // Minimum half-extent in metres so the line is always visible:
+        //   ≥ 2m  for sub-20 cm, scaling up to the actual distance
+        var minHalf = d<0.2 ? 2 : d<1 ? 3 : d<5 ? d*1.2 : d*0.6;
+        // 1 metre ≈ 1/111320 degrees lat; lng scaled by cos(lat)
+        var dLat = minHalf/111320;
+        var dLng = minHalf/(111320*Math.cos(gLat*Math.PI/180)||1);
+        var cLat=(gLat+tgt.lat)/2, cLng=(gLng+tgt.lng)/2;
+        var b = L.latLngBounds(
+          [cLat-dLat, cLng-dLng],
+          [cLat+dLat, cLng+dLng]
+        );
+        b.extend([gLat,gLng]); b.extend([tgt.lat,tgt.lng]);
+        SOMAP.fitBounds(b,{animate:false,maxZoom:22,padding:[30,30]});
+      }catch(e){}
     }
   } else if(hasGPS && SO_AUTOCENTER){
     SOMAP.setView([gLat,gLng],SOMAP.getZoom()||18,{animate:false});
