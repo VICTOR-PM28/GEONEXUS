@@ -557,7 +557,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
     </div>
     <div id="gnss-chip" onclick="toggleGnssPanel()" style="display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.25);cursor:pointer">
       <div id="gnss-dot" style="width:7px;height:7px;border-radius:50%;background:#00C853"></div>
-      <span class="mono" id="gnss-ha" style="font-size:11px;color:#30C870">HA 0.018m</span>
+      <span class="mono" id="gnss-ha" style="font-size:11px;color:#FFAA40">HA 1.500m</span>
       <span id="gnss-fix" style="font-size:10px;color:#208850;font-family:monospace">RTK</span>
     </div>
     <button class="btn btns" style="font-size:11px;padding:3px 8px" onclick="showModal('sync')">&#8593; Sync</button>
@@ -1649,7 +1649,7 @@ var ST={
   soTargets:[],soIdx:0,soObs:[],soDist:0,soAngle:0,soTimer:null,soFeat:null,
   wzStep:1,wzTmpl:'cadastral',impFile:null,impFmt:'csv',
   notes:{},
-  gnss:{ha:0.018,va:0.034,sats:14,fix:'RTK Fixed',hell:11.842,hort:48.070,pdop:1.4,lat:-6.7800,lng:39.2800,speed:0,heading:0,gpsWatchId:null,realGps:false,constellations:{GPS:true,GLONASS:true,Galileo:true,BeiDou:true},cSats:{GPS:7,GLONASS:4,Galileo:2,BeiDou:3}},
+  gnss:{ha:1.500,va:0.068,sats:14,fix:'DGPS',hell:11.842,hort:48.070,pdop:1.4,lat:-6.7800,lng:39.2800,speed:0,heading:0,gpsWatchId:null,realGps:false,constellations:{GPS:true,GLONASS:true,Galileo:true,BeiDou:true},cSats:{GPS:7,GLONASS:4,Galileo:2,BeiDou:3}},
   lfLayers:{},
   projects:[
     {id:1,name:'Dar es Salaam Cadastral Survey',area:'Kinondoni District, Dar es Salaam',feats:53,status:'synced',date:'15 Apr 2025',crs:'UTM 37S',tmpl:'cadastral',collector:'Victor PM',desc:'Cadastral boundary survey — 10 plots, corner beacons & road alignment, Kinondoni District.'},
@@ -3244,7 +3244,7 @@ function onNativeGPS(pos){
   ST.gnss.realGps=true;
 
   // ── Accuracy ───────────────────────────────────────────────────────────────
-  if(c.accuracy!=null)ST.gnss.ha=Math.min(c.accuracy,99);
+  if(c.accuracy!=null)ST.gnss.ha=Math.min(c.accuracy,99);  // browser accuracy IS the HA radius in metres
   if(c.altitudeAccuracy!=null&&c.altitudeAccuracy>0)ST.gnss.va=Math.min(c.altitudeAccuracy,99);
 
   // ── Altitude (ellipsoidal → orthometric via ~Tanzania geoid sep -36.2m) ────
@@ -3259,7 +3259,7 @@ function onNativeGPS(pos){
 
   // ── Fix type by horizontal accuracy ───────────────────────────────────────
   var ha=ST.gnss.ha;
-  ST.gnss.fix=ha<0.05?'RTK Fixed':ha<0.5?'RTK Float':ha<3?'DGPS':ha<10?'SBAS':'GPS';
+  ST.gnss.fix=ha<0.05?'RTK Fixed':ha<0.3?'RTK Float':ha<2?'DGPS':ha<5?'SBAS':'GPS';
   ST.gnss.sats=ST.gnss.sats||14;
 
   // ── Update GPS blue dot on map ─────────────────────────────────────────────
@@ -3386,7 +3386,7 @@ function updPosPan(){
   u('pos-spd',spd);
   u('pos-ha',ST.gnss.ha.toFixed(3)+' m');
   u('pos-va',ST.gnss.va.toFixed(3)+' m');
-  var c=ST.gnss.ha<0.05?'#3CD87A':ST.gnss.ha<1?'#3CD87A':ST.gnss.ha<3?'#FFAA40':'#FF6A6A';
+  var c=ST.gnss.ha<0.1?'#3CD87A':ST.gnss.ha<2?'#FFAA40':ST.gnss.ha<5?'#FF8C00':'#FF6A6A';
   var ha=document.getElementById('pos-ha');if(ha)ha.style.color=c;
   var va=document.getElementById('pos-va');if(va)va.style.color=c;
   var fb=document.getElementById('fix-badge');
@@ -5487,7 +5487,20 @@ _soLastDist=dist;if(dist<=5&&_soSoundOn)_soScheduleSound(dist);
 // Sync the mini-map — user marker colour + heading are set inside soUpdateMap
 soUpdateMap();}
 function stopSO(){if(ST.soTimer){clearInterval(ST.soTimer);ST.soTimer=null;}}
-function exitStakeout(){stopSO();showScreen('map');}
+function exitStakeout(){
+  stopSO();
+  // Stop all stakeout sounds and reset distance
+  if(_soBeepTimer){clearTimeout(_soBeepTimer);_soBeepTimer=null;}
+  _soLastDist=999;
+  // After stakeout closes — remove the temporary goto marker from the map.
+  // If user wanted to keep it they tapped "Mark Permanently" which already
+  // transferred it to the project features and set _gotoMarker=null.
+  if(_gotoMarker){
+    try{MAP.removeLayer(_gotoMarker);}catch(ex){}
+    _gotoMarker=null;
+  }
+  showScreen('map');
+}
 function recordObs(){if(!ST.soFeat)return;var nm=ST.soTargets[ST.soIdx]||'?';var dist=haversine(ST.gnss.lat,ST.gnss.lng,ST.soFeat.lat,ST.soFeat.lng);ST.soObs.push({target:nm,time:new Date().toLocaleTimeString(),dist:dist.toFixed(3),lat:ST.gnss.lat,lng:ST.gnss.lng,ha:ST.gnss.ha});var obs=document.getElementById('so-obs-btn');obs.textContent='\u2713 Recorded \u2014 '+nm;obs.style.background='#0A4020';obs.style.color='#40D888';if(typeof toast==='function')toast('Observed: '+nm+' \u00B7 '+dist.toFixed(3)+' m');setTimeout(nextSOT,1600);}
 
 // ─── SYNC ─────────────────────────────────────────────────────────────────────
@@ -5746,13 +5759,75 @@ function _placeGotoMarker(lat,lng,label){
   var icon=L.divIcon({html:mkrHtml,iconSize:[56,56],iconAnchor:[28,28],className:''});
   _gotoMarker=L.marker([lat,lng],{icon:icon,zIndexOffset:2000}).addTo(MAP);
   _gotoMarker.on('click',function(){
-    if(confirm('Start Stakeout to this point?')){
-      _startStakeoutTo(lat,lng,label);
-    }
-  });
+    // Show action popup on the marker itself
+    var popHtml=
+      '<div style="font-family:monospace;font-size:11px;color:#F97316;font-weight:700;margin-bottom:8px;text-align:center;letter-spacing:1px">'+label+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">'
+      +'<button onclick="MAP.closePopup();_startStakeoutTo('+JSON.stringify(lat)+','+JSON.stringify(lng)+','+JSON.stringify(label)+')" '
+      +'style="background:rgba(249,115,22,0.18);border:1px solid #F97316;border-radius:7px;color:#F97316;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:monospace;width:100%">'
+      +'&#127919; Stakeout Here</button>'
+      +'<button onclick="MAP.closePopup();_saveGotoAsFeature('+JSON.stringify(lat)+','+JSON.stringify(lng)+','+JSON.stringify(label)+')" '
+      +'style="background:rgba(0,200,83,0.14);border:1px solid rgba(0,200,83,0.4);border-radius:7px;color:#3CD87A;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:monospace;width:100%">'
+      +'&#128205; Mark Permanently</button>'
+      +'<button onclick="MAP.closePopup();if(_gotoMarker){MAP.removeLayer(_gotoMarker);_gotoMarker=null;}" '
+      +'style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#5A7A96;font-size:12px;padding:8px 16px;cursor:pointer;font-family:monospace;width:100%">'
+      +'&#10005; Remove Marker</button>'
+      +'</div>';
+    L.popup({className:'coord-pop',closeButton:true,maxWidth:220,offset:L.point(0,-32)})
+      .setLatLng([lat,lng])
+      .setContent(popHtml)
+      .openOn(MAP);  });
 }
 
 // Start stakeout navigation directly to a lat/lng
+// Save a goto coordinate permanently as a feature in the active project
+function _saveGotoAsFeature(lat,lng,label){
+  if(!ST.pid){toast('Open a project first to mark permanently');return;}
+  var pd=getPD(ST.pid);
+  var utm=toUTMa(lat,lng);
+  var ts=new Date();
+  // Find or create "Marked Points" layer
+  var lyr=pd.layers.find(function(l){return l.name==='Marked Points'&&l.type==='point';});
+  if(!lyr){
+    lyr={id:Date.now(),name:'Marked Points',type:'point',vis:true,color:'#F97316'};
+    pd.layers.push(lyr);
+  }
+  var feat={
+    id:'mk_'+Date.now(),
+    lid:lyr.id,
+    name:label,
+    type:'point',
+    lat:lat,lng:lng,
+    a:{
+      Northing:utm.nF,
+      Easting:utm.eF,
+      Source:'Go To — Marked',
+      Marked:ts.toLocaleString(),
+      'Fix Type':ST.gnss.fix
+    }
+  };
+  pd.features.push(feat);
+  savePD(ST.pid,pd);
+  // Convert orange goto marker to a permanent green pin style
+  if(_gotoMarker){
+    var permHtml=
+      '<div style="position:relative;width:48px;height:56px">'
+      +'<svg viewBox="0 0 24 28" style="width:48px;height:56px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.7))">'
+      +'<path d="M12 1C7 1 3 5 3 10c0 7 9 17 9 17s9-10 9-17c0-5-4-9-9-9z" fill="#3CD87A" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>'
+      +'<circle cx="12" cy="10" r="3.5" fill="#fff"/>'
+      +'</svg>'
+      +'<div style="position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(8,18,30,0.92);border:1px solid #3CD87A;border-radius:5px;padding:2px 6px;font-size:9px;font-family:monospace;color:#3CD87A;white-space:nowrap">'+label+'</div>'
+      +'</div>';
+    var permIcon=L.divIcon({html:permHtml,iconSize:[48,56],iconAnchor:[24,56],className:''});
+    _gotoMarker.setIcon(permIcon);
+    // Remove from _gotoMarker tracking — it's now a permanent visual
+    _gotoMarker=null;
+  }
+  toast('✓ '+label+' marked permanently in project');
+  // Refresh layer panel if open
+  if(ST.lpOpen)renderLayerPanel();
+}
+
 function _startStakeoutTo(lat,lng,label){
   var utm=toUTMa(lat,lng);
   ST.soFeat={
@@ -6226,7 +6301,7 @@ setInterval(()=>{
   var liveGps=ST.gpsActive&&ST.gnss.realGps;
   if(!liveGps){
     // Demo / simulation mode — jitter everything to look alive
-    ST.gnss.ha=j(ST.gnss.ha,.003,.005);ST.gnss.va=j(ST.gnss.va,.005,.008);
+    ST.gnss.ha=j(ST.gnss.ha,.05,.5);ST.gnss.va=j(ST.gnss.va,.02,.05);
     ST.gnss.hell=j(ST.gnss.hell,.02);ST.gnss.hort=j(ST.gnss.hort,.015);
   }
   // Always simulate PDOP and satellite counts (browser geolocation API does
