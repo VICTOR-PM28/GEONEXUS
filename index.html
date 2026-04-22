@@ -1135,8 +1135,20 @@ input,button,select,textarea{font-family:inherit;outline:none}
             </button>
           </div>
           <div style="margin-top:8px;font-size:10px;color:#2E4A60;line-height:1.5">
-            &#9432; Pair your rover in phone Bluetooth settings first, then tap Scan.<br>
-            Supports: CHC Navigator, CHC i80/i90, Trimble R, Leica GS, u-blox, SXBlue, Emlid Reach.
+            &#9432; Pair rover in phone Bluetooth settings first, then tap Scan.<br>
+            <span style="color:#A78BFA;font-weight:600">BLE receivers (works directly):</span> Emlid Reach RS2, u-blox, SXBlue, some CHC/Hi-Target models.<br>
+            <span style="color:#FFAA40;font-weight:600">Hi-Target V300 / Classic BT rovers:</span> Use <strong>Bluetooth GNSS</strong> app (Play Store) + Mock Location below.
+          </div>
+          <!-- Mock Location guide for Classic BT rovers like V300 -->
+          <div id="mock-loc-guide" style="margin-top:10px;background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;border:1px solid rgba(255,170,64,0.2)">
+            <div style="font-size:11px;font-weight:700;color:#FFAA40;margin-bottom:6px">&#128274; For Hi-Target V300 (Bluetooth Classic)</div>
+            <div style="font-size:10px;color:#5A8090;line-height:1.6">
+              1. Install <strong style="color:#7AAECE">Bluetooth GNSS</strong> from Play Store<br>
+              2. Open it → Connect to your V300<br>
+              3. Enable <strong style="color:#7AAECE">Mock Location</strong> in that app<br>
+              4. Android Settings → Developer Options → Select Mock Location App → Bluetooth GNSS<br>
+              5. Return here — GEONEXUS now reads V300 as phone GPS automatically ✓
+            </div>
           </div>
         </div>
       </div>
@@ -3390,7 +3402,7 @@ function onLocFound(e){
   if(!ST.gnss.realGps){
     ST.gnss.lat=e.latlng.lat;
     ST.gnss.lng=e.latlng.lng;
-    ST.gnss.ha=Math.min(e.accuracy/2,99);
+    ST.gnss.ha=e.accuracy; // raw accuracy, no cap
     ST.gnss.realGps=true;
     if(e.altitude!=null){ST.gnss.hell=e.altitude;ST.gnss.hort=e.altitude+36.2;}
     ST.gnss.fix=e.accuracy<0.05?'RTK Fixed':e.accuracy<0.5?'RTK Float':e.accuracy<5?'DGPS':e.accuracy<15?'SBAS':'GPS';
@@ -7493,8 +7505,9 @@ async function btScanConnect(){
       }catch(e){}
     }
     if(!found){
-      alert('Connected to '+BT_DEVICE.name+' but could not find NMEA data stream.\nEnsure rover outputs NMEA 0183 via Bluetooth.');
-      btDisconnect();return;
+      btDisconnect();
+      alert('Connected to '+BT_DEVICE.name+' but no NMEA stream found.\n\nYour rover likely uses Bluetooth Classic (not BLE).\nWeb Bluetooth only supports BLE.\n\nFor Hi-Target V300 / Classic BT rovers:\n1. Install "Bluetooth GNSS" from Play Store\n2. Connect rover in that app\n3. Enable Mock Location\n4. GEONEXUS reads it automatically');
+      return;
     }
     var devName=document.getElementById('bt-device-name');
     if(devName)devName.textContent=BT_DEVICE.name||'Unknown Device';
