@@ -557,6 +557,10 @@ input,button,select,textarea{font-family:inherit;outline:none}
     </div>
     <div id="gnss-chip" onclick="toggleGnssPanel()" style="display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.25);cursor:pointer">
       <div id="gnss-dot" style="width:7px;height:7px;border-radius:50%;background:#00C853"></div>
+    <button id="gps-src-btn" onclick="showModal('gpssrc')" title="GPS Source" style="display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);cursor:pointer;color:#7AACCC;font-size:10px;font-family:monospace;white-space:nowrap">
+      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
+      <span id="gps-src-label">Phone</span>
+    </button>
       <span class="mono" id="gnss-ha" style="font-size:11px;color:#FFAA40">HA 1.500m</span>
       <span id="gnss-fix" style="font-size:10px;color:#208850;font-family:monospace">RTK</span>
     </div>
@@ -628,7 +632,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
       <hr class="sep"/>
       <div class="sl" style="padding:0 0 6px">Elevation (EGM2008)</div>
       <div class="ar"><span class="ak">h &ndash; Ellipsoidal</span><span class="av" id="gp-hell">+11.842 m</span></div>
-      <div class="ar"><span class="ak">N &ndash; Geoid sep.</span><span class="av">-36.228 m</span></div>
+      <div class="ar"><span class="ak">N &ndash; Geoid sep.</span><span class="av" id="gp-geoid">-36.228 m</span></div>
       <div class="ar"><span class="ak">H &ndash; Orthometric</span><span class="av" id="gp-hort" style="color:#50D890">+48.070 m</span></div>
       <hr class="sep"/>
       <div class="sl" style="padding:0 0 6px">Position (UTM 37S)</div>
@@ -1076,6 +1080,75 @@ input,button,select,textarea{font-family:inherit;outline:none}
     </div>
   </div>
 </div>
+<!-- GPS Source Modal -->
+<div id="ov-gpssrc" class="ov">
+  <div class="mbox" style="width:min(420px,96vw)">
+    <div class="mhd">
+      <span style="font-size:13px;font-weight:600;color:#C0D8F0">GPS Source</span>
+      <button class="ib" style="width:24px;height:24px" onclick="closeModal('gpssrc')"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mbd">
+      <!-- Option 1: Phone GPS -->
+      <div id="gpssrc-phone" onclick="selectGPSSrc('phone')" style="border:2px solid #1A88FF;border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;background:rgba(26,136,255,0.08)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1A88FF" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="#1A88FF"/></svg>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#70AAFF">Phone GPS</div>
+            <div style="font-size:10px;color:#3A6080">Built-in GNSS receiver · 1–5m accuracy</div>
+          </div>
+          <div id="gpssrc-phone-tick" style="margin-left:auto;width:18px;height:18px;border-radius:50%;background:#1A88FF;display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#4A7090;padding-left:32px">Uses your phone&#39;s built-in GPS. Works everywhere, no setup needed. Typical accuracy: 1.5–5m DGPS.</div>
+      </div>
+
+      <!-- Option 2: External Bluetooth GNSS -->
+      <div id="gpssrc-bt" onclick="selectGPSSrc('bluetooth')" style="border:2px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#A78BFA">External GNSS (Bluetooth)</div>
+            <div style="font-size:10px;color:#3A6080">CHC, Trimble, Leica, u-blox · RTK cm precision</div>
+          </div>
+          <div id="gpssrc-bt-tick" style="margin-left:auto;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;opacity:0.3">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#4A7090;padding-left:32px;margin-bottom:10px">Connects to any Bluetooth GNSS rover that outputs NMEA 0183 (virtually all professional receivers). RTK Fixed: &lt;1cm accuracy.</div>
+        
+        <div id="bt-connect-section" style="padding-left:32px">
+          <div id="bt-status-row" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div id="bt-status-dot" style="width:8px;height:8px;border-radius:50%;background:#4A7090;flex-shrink:0"></div>
+            <span id="bt-status-txt" style="font-size:11px;color:#4A7090;font-family:monospace">Not connected</span>
+          </div>
+          <div id="bt-device-row" style="display:none;background:#07111D;border-radius:6px;padding:8px;margin-bottom:8px;border:1px solid rgba(167,139,250,0.2)">
+            <div style="font-size:10px;color:#7A6090;margin-bottom:2px">Connected device</div>
+            <div id="bt-device-name" style="font-size:12px;font-weight:600;color:#C0A8F0;font-family:monospace">--</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button id="bt-scan-btn" onclick="btScanConnect()" class="btn btnp" style="flex:2;font-size:11px">
+              &#128268; Scan &amp; Connect
+            </button>
+            <button id="bt-disc-btn" onclick="btDisconnect()" class="btn btns" style="flex:1;font-size:11px;display:none">
+              Disconnect
+            </button>
+          </div>
+          <div style="margin-top:8px;font-size:10px;color:#2E4A60;line-height:1.5">
+            &#9432; Pair your rover in phone Bluetooth settings first, then tap Scan.<br>
+            Supports: CHC Navigator, CHC i80/i90, Trimble R, Leica GS, u-blox, SXBlue, Emlid Reach.
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:flex-end">
+      <button class="btn btns" onclick="closeModal('gpssrc')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Sync -->
 <div id="ov-sync" class="ov">
   <div class="mbox" style="width:360px">
@@ -3082,9 +3155,10 @@ function gnssAvgReset(){
 
 function gnssAvgStep(){
   // Take one sample from current GNSS state
+  // Apply calibration offset to each sample so averaged position is corrected
   gnssAvgSamples.push({
-    lat:ST.gnss.lat, lng:ST.gnss.lng,
-    hort:ST.gnss.hort, hell:ST.gnss.hell,
+    lat:calLat(), lng:calLng(),
+    hort:calAlt(), hell:ST.gnss.hell,
     ha:ST.gnss.ha, va:ST.gnss.va
   });
   gnssAvgCount=gnssAvgSamples.length;
@@ -3260,7 +3334,12 @@ function onNativeGPS(pos){
   // ── Fix type by horizontal accuracy ───────────────────────────────────────
   var ha=ST.gnss.ha;
   ST.gnss.fix=ha<0.05?'RTK Fixed':ha<0.3?'RTK Float':ha<2?'DGPS':ha<5?'SBAS':'GPS';
-  ST.gnss.sats=ST.gnss.sats||14;
+  // Compute real EGM2008 geoid separation and orthometric height
+  if(ST.gnss.hell!==0){
+    var N_egm=egm2008Geoid(ST.gnss.lat,ST.gnss.lng);
+    ST.gnss.geoidSep=N_egm;
+    ST.gnss.hort=ST.gnss.hell-N_egm;
+  }
 
   // ── Update GPS blue dot on map ─────────────────────────────────────────────
   var ll=L.latLng(ST.gnss.lat,ST.gnss.lng);
@@ -4392,9 +4471,12 @@ function doImport(){
     return;
   }
   var r=new FileReader();
+  var fileExt=(ST.impFile.name||'').split('.').pop().toLowerCase();
+  var isKMZ=(fmt==='kml'&&fileExt==='kmz');
   r.onload=function(e){
     try{
       if(fmt==='csv')impCSV(e.target.result);
+      else if(fmt==='kml'&&isKMZ)impKML(e.target.result); // ArrayBuffer path for KMZ
       else if(fmt==='kml')impKML(e.target.result);
       else if(fmt==='geojson')impGeoJSON(e.target.result);
       else if(fmt==='dxf')impDXF(e.target.result);
@@ -4404,11 +4486,11 @@ function doImport(){
     }
   };
   r.onerror=function(){
-    alert('Could not read the file. It may be too large for this device, or access was denied.\n\nTry a smaller file, or use a desktop browser for very large imports.');
+    alert('Could not read the file. It may be too large for this device, or access was denied.');
   };
-  // Warn before very slow reads on mobile
-  if(ST.impFile.size>15*1024*1024)toast('Reading '+Math.round(ST.impFile.size/1024/1024)+' MB file\u2026 please wait');
-  r.readAsText(ST.impFile);
+  if(ST.impFile.size>15*1024*1024)toast('Reading '+Math.round(ST.impFile.size/1024/1024)+' MB file… please wait');
+  if(isKMZ){r.readAsArrayBuffer(ST.impFile);}
+  else{r.readAsText(ST.impFile);}
 }
 
 function ensureLid(tid,nm,type,color){
@@ -4497,13 +4579,31 @@ function impSHP(buf,dbfBuf){
       var cl=v.getInt32(off+4,false)*2,ro=off+8;
       if(ro+4>buf.byteLength)break;
       var rst=v.getInt32(ro,true);
-      if(rst===1&&ro+20<=buf.byteLength){recs.push({t:'pt',x:v.getFloat64(ro+4,true),y:v.getFloat64(ro+12,true)});}
-      else if((rst===3||rst===5)&&ro+44<=buf.byteLength){
+      // Normalise Z/M variants to base types:
+      // 11=PointZ→1, 21=PointM→1
+      // 13=PolylineZ→3, 23=PolylineM→3
+      // 15=PolygonZ→5, 25=PolygonM→5
+      // 8=MultiPoint→1(loop), 18=MultiPointZ→1(loop)
+      var bt=rst;
+      if(bt===11||bt===21)bt=1;
+      else if(bt===13||bt===23)bt=3;
+      else if(bt===15||bt===25)bt=5;
+      if(bt===1&&ro+20<=buf.byteLength){
+        recs.push({t:'pt',x:v.getFloat64(ro+4,true),y:v.getFloat64(ro+12,true)});
+      } else if(bt===8&&ro+36<=buf.byteLength){
+        // MultiPoint — read all points in the record
+        var npt8=v.getInt32(ro+36,true);
+        for(var mi=0;mi<npt8;mi++){
+          var moff=ro+40+mi*16;
+          if(moff+15>buf.byteLength)break;
+          recs.push({t:'pt',x:v.getFloat64(moff,true),y:v.getFloat64(moff+8,true)});
+        }
+      } else if((bt===3||bt===5)&&ro+44<=buf.byteLength){
         var np=v.getInt32(ro+36,true),npt=v.getInt32(ro+40,true);
         var parts=[];for(var i=0;i<np;i++)parts.push(v.getInt32(ro+44+i*4,true));
         var pts=[];var ps=ro+44+np*4;
         for(var i=0;i<npt;i++){if(ps+i*16+15>buf.byteLength)break;pts.push([v.getFloat64(ps+i*16,true),v.getFloat64(ps+i*16+8,true)]);}
-        for(var p=0;p<parts.length;p++){var s=parts[p],e2=p<parts.length-1?parts[p+1]:pts.length;if(e2-s>=(rst===5?3:2))recs.push({t:rst===5?'poly':'line',pts:pts.slice(s,e2)});}
+        for(var p=0;p<parts.length;p++){var s=parts[p],e2=p<parts.length-1?parts[p+1]:pts.length;if(e2-s>=(bt===5?3:2))recs.push({t:bt===5?'poly':'line',pts:pts.slice(s,e2)});}
       }
       off+=8+Math.max(1,cl);
     }catch(e2){break;}
@@ -4589,9 +4689,19 @@ function parseDBF(buf){
 
 // ── KML / KMZ ────────────────────────────────────────────────────────────────
 function impKML(txt){
-  // Handle KMZ (zipped KML): first 2 bytes are "PK" for any zip
-  if(txt.charCodeAt(0)===0x50&&txt.charCodeAt(1)===0x4B){
-    alert('This appears to be a KMZ (zipped) file. Please extract it and import doc.kml directly, or use the .kml file straight from Google Earth Export.');
+  // KMZ is a ZIP — detect by PK header and route through unzipper
+  if(typeof txt==='string'&&txt.charCodeAt(0)===0x50&&txt.charCodeAt(1)===0x4B){
+    alert('KMZ detected. Please import it as a file (it will be unzipped automatically).');
+    return;
+  }
+  // ArrayBuffer path: called directly with binary data for KMZ
+  if(txt instanceof ArrayBuffer){
+    var files=unzipSHP(txt); // reuse our zip extractor
+    var kmlEntry=null;
+    for(var fn in files){if(fn.toLowerCase().endsWith('.kml')){kmlEntry=files[fn];break;}}
+    if(!kmlEntry){alert('No .kml found inside KMZ.');return;}
+    var dec=new TextDecoder('utf-8');
+    impKML(dec.decode(kmlEntry));
     return;
   }
   // Remove UTF-8 BOM, XML declaration, and namespace prefixes that break
@@ -5362,7 +5472,7 @@ function soRecenter(){SO_AUTOCENTER=true;soUpdateMap();}
 var _posMarkers=[];
 function markCurrentPos(){
   if(!ST.gpsActive||!MAP){toast('GPS not active');return;}
-  var lat=ST.gnss.lat,lng=ST.gnss.lng;
+  var lat=calLat(),lng=calLng();
   if(lat===0&&lng===0){toast('Waiting for GPS fix...');return;}
   var utm=toUTMa(lat,lng);
   var ts=new Date();
@@ -5413,7 +5523,7 @@ function markCurrentPos(){
 }
 function soUpdateMap(){
   if(!SOMAP)return;
-  var gLat=ST.gnss.lat,gLng=ST.gnss.lng;
+  var gLat=calLat(),gLng=calLng();
   var hasGPS=(gLat!==0||gLng!==0);
   var tgt=ST.soFeat;
   var hasTgt=tgt&&tgt.lat!=null&&tgt.lng!=null;
@@ -5481,7 +5591,7 @@ function startSO(){
   }
   ST.soTimer=setInterval(updSOUI,300);updSOUI();
 }
-function updSOUI(){var tgt=ST.soFeat,gLat=ST.gnss.lat,gLng=ST.gnss.lng,hasGPS=(gLat!==0||gLng!==0),hasTgt=tgt&&tgt.lat!=null&&tgt.lng!=null;if(!hasTgt){document.getElementById('so-dist').textContent='NO TGT';document.getElementById('so-dist').style.color='#4A7090';document.getElementById('so-status').textContent='NO TARGET SET';soUpdateMap();return;}if(!hasGPS){document.getElementById('so-dist').textContent='NO GPS';document.getElementById('so-dist').style.color='#FF9100';document.getElementById('so-status').textContent='ACQUIRING GPS\u2026';soUpdateMap();return;}var dist=haversine(gLat,gLng,tgt.lat,tgt.lng);var dLat=(tgt.lat-gLat)*Math.PI/180,dLng=(tgt.lng-gLng)*Math.PI/180,la1=gLat*Math.PI/180,la2=tgt.lat*Math.PI/180;var bx=Math.sin(dLng)*Math.cos(la2),by=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLng);var bearing=(Math.atan2(bx,by)*180/Math.PI+360)%360;var arrow=(bearing-(ST.gnss.heading||0)+360)%360;document.getElementById('so-arrow-g').style.transform='rotate('+arrow+'deg)';var utmM=toUTMa(gLat,gLng),utmT=toUTMa(tgt.lat,tgt.lng),dE=utmT.e-utmM.e,dN=utmT.n-utmM.n;var tH=parseFloat(((tgt.a&&(tgt.a['H(ortho)']||tgt.a['Elevation']))||'').replace(/[^0-9.\-]/g,''))||null,dZ=tH!=null?(tH-ST.gnss.hort):null;var col=dist>10?'#F04020':dist>2?'#FF9100':'#00C853';var distStr=dist>=1000?(dist/1000).toFixed(3)+' km':dist.toFixed(3)+' m';var status=dist>50?(Math.round(bearing)+'\u00B0 \u00B7 '+distStr):dist>10?'GETTING CLOSE':dist>2?'NEARLY THERE':'IN TOLERANCE';document.getElementById('so-dist').textContent=distStr;document.getElementById('so-dist').style.color=col;document.getElementById('so-status').textContent=status;document.getElementById('so-arrow').setAttribute('fill',col);document.getElementById('so-dx').textContent=(dE>=0?'+':'')+dE.toFixed(3);document.getElementById('so-dy').textContent=(dN>=0?'+':'')+dN.toFixed(3);document.getElementById('so-dz').textContent=dZ!=null?((dZ>=0?'+':'')+dZ.toFixed(3)):'--';document.getElementById('so-ha').textContent=ST.gnss.ha.toFixed(3);document.getElementById('so-va').textContent=ST.gnss.va.toFixed(3);document.getElementById('so-sats').textContent=ST.gnss.sats;var chip=document.getElementById('so-chip');if(chip)chip.textContent=ST.gnss.fix+' \u00B7 '+ST.gnss.sats+'sv';var obs=document.getElementById('so-obs-btn');if(obs){if(dist<=0.05){obs.style.background='#0A4020';obs.style.color='#40D880';obs.textContent='\u2713 In Tolerance \u2014 Observe';}else{obs.style.background='';obs.style.color='';obs.textContent='Observe Point';}}
+function updSOUI(){var tgt=ST.soFeat,gLat=calLat(),gLng=calLng(),hasGPS=(gLat!==0||gLng!==0),hasTgt=tgt&&tgt.lat!=null&&tgt.lng!=null;if(!hasTgt){document.getElementById('so-dist').textContent='NO TGT';document.getElementById('so-dist').style.color='#4A7090';document.getElementById('so-status').textContent='NO TARGET SET';soUpdateMap();return;}if(!hasGPS){document.getElementById('so-dist').textContent='NO GPS';document.getElementById('so-dist').style.color='#FF9100';document.getElementById('so-status').textContent='ACQUIRING GPS\u2026';soUpdateMap();return;}var dist=haversine(gLat,gLng,tgt.lat,tgt.lng);var dLat=(tgt.lat-gLat)*Math.PI/180,dLng=(tgt.lng-gLng)*Math.PI/180,la1=gLat*Math.PI/180,la2=tgt.lat*Math.PI/180;var bx=Math.sin(dLng)*Math.cos(la2),by=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLng);var bearing=(Math.atan2(bx,by)*180/Math.PI+360)%360;var arrow=(bearing-(ST.gnss.heading||0)+360)%360;document.getElementById('so-arrow-g').style.transform='rotate('+arrow+'deg)';var utmM=toUTMa(gLat,gLng),utmT=toUTMa(tgt.lat,tgt.lng),dE=utmT.e-utmM.e,dN=utmT.n-utmM.n;var tH=parseFloat(((tgt.a&&(tgt.a['H(ortho)']||tgt.a['Elevation']))||'').replace(/[^0-9.\-]/g,''))||null,dZ=tH!=null?(tH-ST.gnss.hort):null;var col=dist>10?'#F04020':dist>2?'#FF9100':'#00C853';var distStr=dist>=1000?(dist/1000).toFixed(3)+' km':dist.toFixed(3)+' m';var status=dist>50?(Math.round(bearing)+'\u00B0 \u00B7 '+distStr):dist>10?'GETTING CLOSE':dist>2?'NEARLY THERE':'IN TOLERANCE';document.getElementById('so-dist').textContent=distStr;document.getElementById('so-dist').style.color=col;document.getElementById('so-status').textContent=status;document.getElementById('so-arrow').setAttribute('fill',col);document.getElementById('so-dx').textContent=(dE>=0?'+':'')+dE.toFixed(3);document.getElementById('so-dy').textContent=(dN>=0?'+':'')+dN.toFixed(3);document.getElementById('so-dz').textContent=dZ!=null?((dZ>=0?'+':'')+dZ.toFixed(3)):'--';document.getElementById('so-ha').textContent=ST.gnss.ha.toFixed(3);document.getElementById('so-va').textContent=ST.gnss.va.toFixed(3);document.getElementById('so-sats').textContent=ST.gnss.sats;var chip=document.getElementById('so-chip');if(chip)chip.textContent=ST.gnss.fix+' \u00B7 '+ST.gnss.sats+'sv';var obs=document.getElementById('so-obs-btn');if(obs){if(dist<=0.05){obs.style.background='#0A4020';obs.style.color='#40D880';obs.textContent='\u2713 In Tolerance \u2014 Observe';}else{obs.style.background='';obs.style.color='';obs.textContent='Observe Point';}}
 _soLastDist=dist;if(dist<=5&&_soSoundOn)_soScheduleSound(dist);
 
 // Sync the mini-map — user marker colour + heading are set inside soUpdateMap
@@ -5501,7 +5611,7 @@ function exitStakeout(){
   }
   showScreen('map');
 }
-function recordObs(){if(!ST.soFeat)return;var nm=ST.soTargets[ST.soIdx]||'?';var dist=haversine(ST.gnss.lat,ST.gnss.lng,ST.soFeat.lat,ST.soFeat.lng);ST.soObs.push({target:nm,time:new Date().toLocaleTimeString(),dist:dist.toFixed(3),lat:ST.gnss.lat,lng:ST.gnss.lng,ha:ST.gnss.ha});var obs=document.getElementById('so-obs-btn');obs.textContent='\u2713 Recorded \u2014 '+nm;obs.style.background='#0A4020';obs.style.color='#40D888';if(typeof toast==='function')toast('Observed: '+nm+' \u00B7 '+dist.toFixed(3)+' m');setTimeout(nextSOT,1600);}
+function recordObs(){if(!ST.soFeat)return;var nm=ST.soTargets[ST.soIdx]||'?';var dist=haversine(calLat(),calLng(),ST.soFeat.lat,ST.soFeat.lng);ST.soObs.push({target:nm,time:new Date().toLocaleTimeString(),dist:dist.toFixed(3),lat:calLat(),lng:calLng(),ha:ST.gnss.ha});var obs=document.getElementById('so-obs-btn');obs.textContent='\u2713 Recorded \u2014 '+nm;obs.style.background='#0A4020';obs.style.color='#40D888';if(typeof toast==='function')toast('Observed: '+nm+' \u00B7 '+dist.toFixed(3)+' m');setTimeout(nextSOT,1600);}
 
 // ─── SYNC ─────────────────────────────────────────────────────────────────────
 function renderSyncRows(){var div=document.getElementById('sync-rows');if(!div)return;div.innerHTML='';ST.projects.forEach(p=>{var sc=p.status==='synced'?'pg':p.status==='pending'?'pa':'pr';var sl=p.status==='synced'?'\u2713 Synced':p.status==='pending'?'\u2191 Pending':'\u26A0 Conflict';var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)';row.innerHTML='<span style="flex:1;font-size:12px;color:#A0C0E8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.name+'</span><span class="pill '+sc+'">'+sl+'</span>';div.appendChild(row);});var log=document.getElementById('sync-log');if(log)log.textContent='Last sync: '+new Date().toLocaleTimeString();}
@@ -5760,13 +5870,15 @@ function _placeGotoMarker(lat,lng,label){
   _gotoMarker=L.marker([lat,lng],{icon:icon,zIndexOffset:2000}).addTo(MAP);
   _gotoMarker.on('click',function(){
     // Show action popup on the marker itself
+    // Store goto params globally so popup buttons can reference them safely
+    window._gtLat=lat; window._gtLng=lng; window._gtLabel=label;
     var popHtml=
       '<div style="font-family:monospace;font-size:11px;color:#F97316;font-weight:700;margin-bottom:8px;text-align:center;letter-spacing:1px">'+label+'</div>'
       +'<div style="display:flex;flex-direction:column;gap:6px">'
-      +'<button onclick="MAP.closePopup();_startStakeoutTo('+JSON.stringify(lat)+','+JSON.stringify(lng)+','+JSON.stringify(label)+')" '
+      +'<button onclick="MAP.closePopup();_startStakeoutTo(window._gtLat,window._gtLng,window._gtLabel)" '
       +'style="background:rgba(249,115,22,0.18);border:1px solid #F97316;border-radius:7px;color:#F97316;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:monospace;width:100%">'
       +'&#127919; Stakeout Here</button>'
-      +'<button onclick="MAP.closePopup();_saveGotoAsFeature('+JSON.stringify(lat)+','+JSON.stringify(lng)+','+JSON.stringify(label)+')" '
+      +'<button onclick="MAP.closePopup();_saveGotoAsFeature(window._gtLat,window._gtLng,window._gtLabel)" '
       +'style="background:rgba(0,200,83,0.14);border:1px solid rgba(0,200,83,0.4);border-radius:7px;color:#3CD87A;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;font-family:monospace;width:100%">'
       +'&#128205; Mark Permanently</button>'
       +'<button onclick="MAP.closePopup();if(_gotoMarker){MAP.removeLayer(_gotoMarker);_gotoMarker=null;}" '
@@ -6292,40 +6404,92 @@ document.querySelectorAll('.ov').forEach(ov=>ov.addEventListener('click',e=>{if(
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 function toast(msg){var t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove('show'),2400);}
 
-// ─── GNSS SIMULATION / LIVE ─────────────────────────────────────────────────
-// When real GPS is providing a fix (ST.gnss.realGps), we keep the live values
-// (ha, va, hell, hort, lat, lng) and only simulate the things the browser
-// geolocation API doesn't expose (pdop, per-constellation sats, total sats).
-setInterval(()=>{
-  var j=(v,d,mn)=>Math.max(mn||.001,v+(Math.random()-.5)*d);
-  var liveGps=ST.gpsActive&&ST.gnss.realGps;
-  if(!liveGps){
-    // Demo / simulation mode — jitter everything to look alive
-    ST.gnss.ha=j(ST.gnss.ha,.05,.5);ST.gnss.va=j(ST.gnss.va,.02,.05);
-    ST.gnss.hell=j(ST.gnss.hell,.02);ST.gnss.hort=j(ST.gnss.hort,.015);
-  }
-  // Always simulate PDOP and satellite counts (browser geolocation API does
-  // not expose these, so we keep an animated, realistic-looking readout)
-  ST.gnss.pdop=j(ST.gnss.pdop,.05,.8);
-  ST.gnss.sats=Math.max(10,Math.min(18,ST.gnss.sats+(Math.random()<.12?(Math.random()<.5?1:-1):0)));
-  var color=ST.gnss.ha<3?'#00C853':ST.gnss.ha<5?'#FF9100':'#F44336';
-  var bg=ST.gnss.ha<3?'rgba(0,200,83,.1)':ST.gnss.ha<5?'rgba(255,145,0,.1)':'rgba(244,67,54,.1)';
-  var u=(id,v,c)=>{var el=document.getElementById(id);if(!el)return;if(v!==undefined)el.textContent=v;if(c)el.style.color=c;};
+// ─── REAL-TIME GNSS DISPLAY ────────────────────────────────────────────
+// ALL values come directly from the browser Geolocation API. No simulation.
+// PDOP and per-constellation counts are unavailable from the browser API
+// and show N/A when GPS is live.
+// Orthometric height is computed from h(ellipsoidal) - N(EGM2008 geoid).
+
+// EGM2008 geoid grid for East Africa (1° spacing, lat -12→0, lng 29→42)
+var EGM_LAT0=-12,EGM_LNG0=29,EGM_DLAT=1,EGM_DLNG=1;
+var EGM_GRID=[
+  [-24.3,-24.8,-25.1,-25.2,-25.0,-24.6,-24.0,-23.3,-22.5,-21.7,-20.9,-20.2,-19.6,-19.1],
+  [-26.4,-27.0,-27.5,-27.7,-27.5,-27.0,-26.2,-25.3,-24.3,-23.3,-22.4,-21.6,-21.0,-20.4],
+  [-28.3,-29.0,-29.6,-29.9,-29.8,-29.3,-28.5,-27.5,-26.4,-25.3,-24.3,-23.4,-22.7,-22.1],
+  [-29.9,-30.7,-31.4,-31.8,-31.8,-31.4,-30.6,-29.6,-28.4,-27.2,-26.1,-25.1,-24.3,-23.7],
+  [-31.2,-32.1,-32.9,-33.4,-33.5,-33.2,-32.5,-31.5,-30.3,-29.1,-27.9,-26.9,-26.0,-25.3],
+  [-32.3,-33.3,-34.2,-34.8,-35.0,-34.8,-34.2,-33.2,-32.0,-30.8,-29.6,-28.6,-27.7,-27.0],
+  [-33.1,-34.2,-35.2,-35.9,-36.2,-36.1,-35.6,-34.7,-33.5,-32.3,-31.2,-30.2,-29.3,-28.6],
+  [-33.7,-34.9,-36.0,-36.8,-37.2,-37.2,-36.8,-35.9,-34.8,-33.7,-32.6,-31.6,-30.7,-30.0],
+  [-34.1,-35.4,-36.5,-37.4,-37.9,-38.0,-37.7,-36.9,-35.9,-34.8,-33.8,-32.8,-31.9,-31.2],
+  [-34.3,-35.6,-36.8,-37.8,-38.4,-38.6,-38.4,-37.7,-36.8,-35.8,-34.8,-33.8,-32.9,-32.2],
+  [-34.3,-35.6,-36.9,-37.9,-38.6,-38.9,-38.8,-38.3,-37.4,-36.5,-35.5,-34.5,-33.6,-32.9],
+  [-34.1,-35.5,-36.7,-37.8,-38.6,-39.0,-39.0,-38.6,-37.9,-37.0,-36.1,-35.2,-34.3,-33.6],
+  [-33.8,-35.1,-36.4,-37.5,-38.3,-38.8,-38.9,-38.6,-38.0,-37.3,-36.4,-35.5,-34.6,-33.9]
+];
+function egm2008Geoid(lat,lng){
+  var rlat=lat-EGM_LAT0,rlng=lng-EGM_LNG0;
+  var row=rlat/EGM_DLAT,col=rlng/EGM_DLNG;
+  var r0=Math.max(0,Math.min(Math.floor(row),EGM_GRID.length-2));
+  var c0=Math.max(0,Math.min(Math.floor(col),EGM_GRID[0].length-2));
+  var dr=row-r0,dc=col-c0;
+  return EGM_GRID[r0][c0]*(1-dr)*(1-dc)+EGM_GRID[r0][c0+1]*(1-dr)*dc
+        +EGM_GRID[r0+1][c0]*dr*(1-dc)+EGM_GRID[r0+1][c0+1]*dr*dc;
+}
+
+function updGNSSDisplay(){
+  var u=function(id,v,c){var el=document.getElementById(id);if(!el)return;if(v!==undefined)el.textContent=v;if(c)el.style.color=c;};
+  var live=ST.gpsActive&&ST.gnss.realGps;
+  var ha=ST.gnss.ha;
+  var color=ha<1?'#3CD87A':ha<3?'#00C853':ha<5?'#FF9100':'#F44336';
+  var bg=ha<3?'rgba(0,200,83,.1)':ha<5?'rgba(255,145,0,.1)':'rgba(244,67,54,.1)';
+  // Toolbar chip
   var dotEl=document.getElementById('gnss-dot');if(dotEl)dotEl.style.background=color;
-  u('gnss-ha','HA '+ST.gnss.ha.toFixed(3)+'m',color);u('gnss-fix',ST.gnss.fix);
+  u('gnss-ha','HA '+ha.toFixed(3)+'m',color);u('gnss-fix',ST.gnss.fix);
   var chip=document.getElementById('gnss-chip');if(chip)chip.style.background=bg;
-  u('gp-ha',ST.gnss.ha.toFixed(3)+'m',color);u('gp-va',ST.gnss.va.toFixed(3)+'m');
-  u('gp-sats',String(ST.gnss.sats));u('gp-pdop',ST.gnss.pdop.toFixed(1));
-  u('gp-hell',(ST.gnss.hell>0?'+':'')+ST.gnss.hell.toFixed(3)+' m');
-  u('gp-hort',(ST.gnss.hort>0?'+':'')+ST.gnss.hort.toFixed(3)+' m');
-  u('gp-lat',ST.gnss.lat.toFixed(6));u('gp-lng',ST.gnss.lng.toFixed(6));
-  var utm=toUTMa(ST.gnss.lat,ST.gnss.lng);u('gp-n',utm.nF+' m');u('gp-e',utm.eF+' m');
-  u('so-ha',ST.gnss.ha.toFixed(3));u('so-sats',String(ST.gnss.sats));
-  var c2=document.getElementById('so-chip');if(c2)c2.textContent=ST.gnss.fix+' \u00B7 '+ST.gnss.sats+'sv';
-  // Constellation simulation
-  updConstellationSim();
+  // GNSS panel — all real values
+  u('gp-ha',ha.toFixed(3)+'m',color);
+  // Show calibration status
+  var calBadge=document.getElementById('gp-cal-badge');
+  if(calBadge){
+    calBadge.style.display=GPS_CAL.active?'block':'none';
+    if(GPS_CAL.active)calBadge.textContent='✓ Calibrated: '+GPS_CAL.label;
+  }
+  u('gp-va',live?ST.gnss.va.toFixed(3)+'m':'--');
+  u('gp-sats',live?String(ST.gnss.sats):'--');
+  u('gp-pdop','N/A'); // browser API does not expose PDOP
+  u('gp-lat',calLat().toFixed(7));
+  u('gp-lng',calLng().toFixed(7));
+  var utm=toUTMa(calLat(),calLng());
+  u('gp-n',utm.nF+' m');u('gp-e',utm.eF+' m');
+  // Real EGM2008 geoid
+  if(live&&ST.gnss.hell!=null&&ST.gnss.hell!==0){
+    var N=egm2008Geoid(calLat(),calLng());
+    var hOrtho=ST.gnss.hell-N;
+    ST.gnss.geoidSep=N;ST.gnss.hort=hOrtho;
+    u('gp-hell',(ST.gnss.hell>=0?'+':'')+ST.gnss.hell.toFixed(3)+' m');
+    u('gp-geoid',(N>=0?'+':'')+N.toFixed(3)+' m');
+    u('gp-hort',(hOrtho>=0?'+':'')+hOrtho.toFixed(3)+' m','#3CD87A');
+  } else {
+    u('gp-hell','--');u('gp-geoid','--');u('gp-hort','--');
+  }
+  // Stakeout panel
+  u('so-ha',ha.toFixed(3));
+  u('so-sats',live?String(ST.gnss.sats):'--');
+  var c2=document.getElementById('so-chip');
+  if(c2)c2.textContent=ST.gnss.fix+(live?' · '+ST.gnss.sats+'sv':'');
+  // Constellation: distribute real total across active groups (visual)
+  if(live&&ST.gnss.sats>0){
+    var activeK=Object.keys(ST.gnss.cSats).filter(function(k){return CONST_FLAGS[k];});
+    if(activeK.length){
+      var base=Math.floor(ST.gnss.sats/activeK.length),rem=ST.gnss.sats%activeK.length;
+      activeK.forEach(function(k,i){ST.gnss.cSats[k]=base+(i<rem?1:0);});
+    }
+  }
+  renderConstellations();
   if(ST.gpsActive)updPosPan();
-},1600);
+}
+setInterval(updGNSSDisplay,1000);
 
 // ─── DRAGGABLE LOCATE FAB ─────────────────────────────────────────────────────
 // Users can tap-and-hold then drag the My-Location FAB anywhere on the map
@@ -7211,6 +7375,230 @@ function toggleSOSound(){
   if(!_soSoundOn&&_soBeepTimer){clearTimeout(_soBeepTimer);_soBeepTimer=null;}
   else if(_soSoundOn)_soScheduleSound(_soLastDist);
   toast('Sound '+ (_soSoundOn?'ON':'OFF'));
+}
+
+// ─── GPS SOURCE MANAGER ──────────────────────────────────────────────────────
+// Two GPS sources:
+//   'phone'     — browser navigator.geolocation (default)
+//   'bluetooth' — Web Bluetooth NMEA 0183 stream from external rover
+//
+// When Bluetooth mode is active, all onNativeGPS calls are replaced by
+// NMEA-parsed data from the rover, giving centimetre RTK accuracy.
+
+var GPS_SRC='phone'; // 'phone' | 'bluetooth'
+var BT_DEVICE=null, BT_CHAR=null, BT_SRV=null;
+var _nmeaBuffer='';
+
+// NMEA Service UUIDs — covers most BT GNSS receivers
+var NMEA_SERVICES=[
+  '0000ffe0-0000-1000-8000-00805f9b34fb', // Generic BT Serial (HC-05, most rovers)
+  '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART (Emlid Reach, u-blox)
+  '0000fff0-0000-1000-8000-00805f9b34fb', // CHC / some Chinese receivers
+  '00001101-0000-1000-8000-00805f9b34fb', // SPP
+];
+var NMEA_CHARS=[
+  '0000ffe1-0000-1000-8000-00805f9b34fb', // HC-05
+  '6e400003-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART TX
+  '0000fff1-0000-1000-8000-00805f9b34fb', // CHC TX
+];
+
+function selectGPSSrc(src){
+  var phoneCard=document.getElementById('gpssrc-phone');
+  var btCard=document.getElementById('gpssrc-bt');
+  var phoneTick=document.getElementById('gpssrc-phone-tick');
+  var btTick=document.getElementById('gpssrc-bt-tick');
+  var srcLabel=document.getElementById('gps-src-label');
+  GPS_SRC=src;
+  if(src==='phone'){
+    if(phoneCard)phoneCard.style.borderColor='#1A88FF';
+    if(btCard)btCard.style.borderColor='rgba(255,255,255,0.1)';
+    if(phoneTick){phoneTick.style.background='#1A88FF';phoneTick.style.opacity='1';}
+    if(btTick){btTick.style.background='rgba(255,255,255,0.1)';btTick.style.opacity='0.3';}
+    if(srcLabel)srcLabel.textContent='Phone';
+    toast('Using Phone GPS');
+  } else {
+    if(btCard)btCard.style.borderColor='#A78BFA';
+    if(phoneCard)phoneCard.style.borderColor='rgba(255,255,255,0.1)';
+    if(btTick){btTick.style.background='#A78BFA';btTick.style.opacity='1';}
+    if(phoneTick){phoneTick.style.background='rgba(255,255,255,0.1)';phoneTick.style.opacity='0.3';}
+    if(srcLabel)srcLabel.textContent='Rover';
+  }
+}
+
+function btSetStatus(msg,color,connected){
+  var dot=document.getElementById('bt-status-dot');
+  var txt=document.getElementById('bt-status-txt');
+  var devRow=document.getElementById('bt-device-row');
+  var discBtn=document.getElementById('bt-disc-btn');
+  var scanBtn=document.getElementById('bt-scan-btn');
+  if(dot)dot.style.background=color||'#4A7090';
+  if(txt)txt.textContent=msg;
+  if(devRow)devRow.style.display=connected?'block':'none';
+  if(discBtn)discBtn.style.display=connected?'inline-flex':'none';
+  if(scanBtn)scanBtn.style.display=connected?'none':'inline-flex';
+}
+
+async function btScanConnect(){
+  if(!navigator.bluetooth){
+    alert('Web Bluetooth not supported.\n\nUse Chrome on Android. For iPhone, use the Mock Location method described below.');
+    return;
+  }
+  btSetStatus('Scanning for GNSS devices…','#FFAA40',false);
+  selectGPSSrc('bluetooth');
+  try{
+    BT_DEVICE=await navigator.bluetooth.requestDevice({
+      acceptAllDevices:true,
+      optionalServices:NMEA_SERVICES
+    });
+    btSetStatus('Connecting to '+BT_DEVICE.name+'…','#FFAA40',false);
+    var server=await BT_DEVICE.gatt.connect();
+    BT_SRV=server;
+    // Try each service/characteristic pair
+    var found=false;
+    for(var si=0;si<NMEA_SERVICES.length&&!found;si++){
+      try{
+        var svc=await server.getPrimaryService(NMEA_SERVICES[si]);
+        for(var ci=0;ci<NMEA_CHARS.length&&!found;ci++){
+          try{
+            BT_CHAR=await svc.getCharacteristic(NMEA_CHARS[ci]);
+            await BT_CHAR.startNotifications();
+            BT_CHAR.addEventListener('characteristicvaluechanged',onBTNMEA);
+            found=true;
+          }catch(e){}
+        }
+        // If no specific char found, try all readable chars in this service
+        if(!found){
+          var chars=await svc.getCharacteristics();
+          for(var ch of chars){
+            try{
+              if(ch.properties.notify||ch.properties.indicate){
+                BT_CHAR=ch;
+                await BT_CHAR.startNotifications();
+                BT_CHAR.addEventListener('characteristicvaluechanged',onBTNMEA);
+                found=true;break;
+              }
+            }catch(e){}
+          }
+        }
+      }catch(e){}
+    }
+    if(!found){
+      alert('Connected to '+BT_DEVICE.name+' but could not find NMEA data stream.\nEnsure rover outputs NMEA 0183 via Bluetooth.');
+      btDisconnect();return;
+    }
+    var devName=document.getElementById('bt-device-name');
+    if(devName)devName.textContent=BT_DEVICE.name||'Unknown Device';
+    btSetStatus('✓ Connected — awaiting NMEA…','#FFAA40',true);
+    var srcLabel=document.getElementById('gps-src-label');
+    if(srcLabel)srcLabel.textContent='Rover';
+    BT_DEVICE.addEventListener('gattserverdisconnected',function(){
+      btSetStatus('Disconnected','#F44336',false);
+      toast('Rover disconnected');
+      selectGPSSrc('phone');
+    });
+    toast('Rover connected: '+BT_DEVICE.name);
+  }catch(err){
+    btSetStatus('Connection failed','#F44336',false);
+    selectGPSSrc('phone');
+    if(err.name!=='NotFoundError')alert('Bluetooth error: '+err.message);
+  }
+}
+
+function btDisconnect(){
+  if(BT_CHAR)try{BT_CHAR.removeEventListener('characteristicvaluechanged',onBTNMEA);}catch(e){}
+  if(BT_DEVICE&&BT_DEVICE.gatt&&BT_DEVICE.gatt.connected)try{BT_DEVICE.gatt.disconnect();}catch(e){}
+  BT_DEVICE=null;BT_CHAR=null;BT_SRV=null;_nmeaBuffer='';
+  selectGPSSrc('phone');
+  btSetStatus('Disconnected','#4A7090',false);
+  toast('Rover disconnected');
+}
+
+function onBTNMEA(evt){
+  var dec=new TextDecoder();
+  _nmeaBuffer+=dec.decode(evt.target.value);
+  var lines=_nmeaBuffer.split('\n');
+  _nmeaBuffer=lines.pop(); // keep partial line
+  lines.forEach(parseNMEA);
+}
+
+// ── NMEA 0183 Parser ─────────────────────────────────────────────────────────
+function nmeaChecksum(s){
+  var c=0;for(var i=1;i<s.length&&s[i]!=='*';i++)c^=s.charCodeAt(i);
+  return c.toString(16).toUpperCase().padStart(2,'0');
+}
+
+function parseNMEA(line){
+  line=line.trim();
+  if(!line.startsWith('$'))return;
+  // Verify checksum if present
+  var starIdx=line.lastIndexOf('*');
+  if(starIdx>0){
+    var cs=line.slice(starIdx+1,starIdx+3).toUpperCase();
+    if(cs!==nmeaChecksum(line.slice(0,starIdx)))return;
+    line=line.slice(0,starIdx);
+  }
+  var f=line.split(',');
+  var id=f[0].slice(1); // e.g. GNGGA, GNRMC, GPGSA
+  var type=id.slice(2); // GGA, RMC, GSA, GSV
+
+  if(type==='GGA'&&f.length>=10){
+    // $GNGGA,hhmmss.ss,lat,N,lng,E,fix,sats,hdop,alt,M,geoid,M,...
+    var lat=nmea2deg(f[2],f[3]);
+    var lng=nmea2deg(f[4],f[5]);
+    var fix=parseInt(f[6])||0;
+    var sats=parseInt(f[7])||0;
+    var hdop=parseFloat(f[8])||0;
+    var alt=parseFloat(f[9])||0;  // ellipsoidal
+    var geoidSep=parseFloat(f[11])||0;
+    if(isNaN(lat)||isNaN(lng))return;
+    // Map NMEA fix quality to fix type string
+    var fixStr={0:'No Fix',1:'GPS',2:'DGPS',4:'RTK Fixed',5:'RTK Float',6:'Est.'}[fix]||'GPS';
+    ST.gnss.lat=lat; ST.gnss.lng=lng;
+    ST.gnss.hell=alt;
+    ST.gnss.hort=alt-geoidSep; // H = h - N (from NMEA)
+    ST.gnss.geoidSep=geoidSep;
+    ST.gnss.ha=hdop*2.5; // approximate HA from HDOP (factor varies; 2.5 is conservative)
+    ST.gnss.sats=sats;
+    ST.gnss.fix=fixStr;
+    ST.gnss.realGps=true;
+    // RTK Fixed HA override — rovers report actual HA in GGA (or separately)
+    if(fix===4)ST.gnss.ha=0.010; // 1cm for RTK Fixed if HDOP gives wrong value
+    if(fix===5)ST.gnss.ha=0.050; // 5cm RTK Float
+    // Update map marker
+    var ll=L.latLng(lat,lng);
+    if(MAP){
+      if(!ST.gpsMkr){_createGpsMkr(ll);}
+      else{ST.gpsMkr.setLatLng(ll);if(ST.gpsCirc)ST.gpsCirc.setLatLng(ll);}
+      if(ST.trackMode)MAP.panTo(ll,{animate:true,duration:0.5});
+    }
+    btSetStatus('✓ '+fixStr+' · '+sats+' sats · HA '+ST.gnss.ha.toFixed(3)+'m',
+      fix>=4?'#3CD87A':fix>=2?'#FFAA40':'#F44336',true);
+    var srcLabel=document.getElementById('gps-src-label');
+    if(srcLabel)srcLabel.textContent='Rover ✓';
+    updGNSSDisplay();
+  } else if(type==='RMC'&&f.length>=9){
+    // Speed and heading
+    var spd=parseFloat(f[7]);
+    var hdg=parseFloat(f[8]);
+    if(!isNaN(spd))ST.gnss.speed=spd*1.852; // knots to km/h
+    if(!isNaN(hdg)&&hdg>=0)ST.gnss.heading=hdg;
+  } else if(type==='GSA'&&f.length>=17){
+    // PDOP
+    var pdop=parseFloat(f[15]);
+    var vdop=parseFloat(f[16]);
+    if(!isNaN(pdop))ST.gnss.pdop=pdop;
+    if(!isNaN(vdop))ST.gnss.va=vdop*2; // approximate VA from VDOP
+  }
+}
+
+function nmea2deg(val,dir){
+  if(!val)return NaN;
+  var d=parseFloat(val);
+  var deg=Math.floor(d/100);
+  var min=(d-deg*100)/60;
+  var r=deg+min;
+  if(dir==='S'||dir==='W')r=-r;
+  return r;
 }
 
 // Mobile viewport height fix — Android Chrome address bar + content:// protocol
