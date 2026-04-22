@@ -180,15 +180,15 @@ input,button,select,textarea{font-family:inherit;outline:none}
 #pos-panel .pp-title{font-size:13px;font-weight:700;color:#1A88FF;letter-spacing:.12em}
 #pos-panel .pp-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid rgba(120,170,220,0.09);gap:8px;min-width:0}
 #pos-panel .pp-row:last-child{border-bottom:none}
-#pos-panel .pp-lbl{font-size:11px;font-weight:500;color:#5A7A96;letter-spacing:.02em;flex-shrink:0;white-space:nowrap}
-#pos-panel .pp-val{font-size:13px;color:#D8EEFF;font-family:monospace;font-weight:500;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+#pos-panel .pp-lbl{font-size:10px;font-weight:500;color:#5A7A96;letter-spacing:.02em;flex-shrink:0;white-space:nowrap}
+#pos-panel .pp-val{font-size:11px;color:#D8EEFF;font-family:monospace;font-weight:600;text-align:right;white-space:nowrap;min-width:0;letter-spacing:0.02em}
 #pos-panel .pp-val.ok{color:#3CD87A}
 /* Phone-sized screens: tighter padding, smaller fonts so long UTM coords fit without wrapping */
 @media (max-width:480px){
   #pos-panel{padding:9px 10px 10px}
   #pos-panel .pp-title{font-size:11px;letter-spacing:.08em}
   #pos-panel .pp-lbl{font-size:10px}
-  #pos-panel .pp-val{font-size:11px}
+  #pos-panel .pp-val{font-size:10.5px}
   #pos-panel .pp-row{padding:5px 0}
   #fix-badge{font-size:9px!important;padding:2px 7px!important}
   #track-btn{font-size:9px!important;padding:2px 8px!important}
@@ -783,39 +783,31 @@ input,button,select,textarea{font-family:inherit;outline:none}
   <!-- COORDINATE RIBBON (shows on map tap) -->
   <!-- POSITIONING PANEL -->
   <div id="pos-panel">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <span class="pp-title">POSITIONING</span>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div id="fix-badge" style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:12px;background:rgba(0,200,83,0.14);color:#3CD87A;border:1px solid rgba(0,200,83,0.35)">RTK Fixed</div>
-        <button id="track-btn" onclick="toggleTrack()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);border-radius:10px;cursor:pointer;color:#6A8090;font-size:11px;padding:3px 11px">Track</button>
-        <button onclick="closePosPan()" style="background:none;border:none;cursor:pointer;color:#5AA8E8;font-size:16px;line-height:1;padding:2px 4px">&#10005;</button>
-      </div>
+    <!-- Header row: title + fix badge + Track + Mark + close -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px">
+      <span class="pp-title" style="flex:1">POSITIONING</span>
+      <div id="fix-badge" style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(0,200,83,0.14);color:#3CD87A;border:1px solid rgba(0,200,83,0.35);white-space:nowrap">RTK Fixed</div>
+      <button id="track-btn" onclick="toggleTrack()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);border-radius:10px;cursor:pointer;color:#6A8090;font-size:10px;padding:2px 9px;white-space:nowrap">Track</button>
+      <button onclick="markCurrentPos()" title="Mark current position for stakeout" style="background:rgba(249,115,22,0.14);border:1px solid rgba(249,115,22,0.4);border-radius:10px;cursor:pointer;color:#F97316;font-size:10px;font-weight:700;padding:2px 9px;white-space:nowrap;display:flex;align-items:center;gap:3px">
+        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+        Mark
+      </button>
+      <button onclick="closePosPan()" style="background:none;border:none;cursor:pointer;color:#5AA8E8;font-size:15px;line-height:1;padding:1px 3px">&#10005;</button>
     </div>
-    <div class="pp-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0 22px">
-      <div class="pp-row">
-        <span class="pp-lbl">X (Easting)</span>
-        <span id="pos-x" class="pp-val">537,095.000</span>
-      </div>
-      <div class="pp-row">
-        <span class="pp-lbl">Speed</span>
-        <span id="pos-spd" class="pp-val">N/A</span>
-      </div>
-      <div class="pp-row">
-        <span class="pp-lbl">Y (Northing)</span>
-        <span id="pos-y" class="pp-val">9,287,503.000</span>
-      </div>
-      <div class="pp-row">
-        <span class="pp-lbl">H. Accuracy</span>
-        <span id="pos-ha" class="pp-val ok">0.018 m</span>
-      </div>
-      <div class="pp-row">
-        <span class="pp-lbl">Altitude</span>
-        <span id="pos-alt" class="pp-val">48.070 m</span>
-      </div>
-      <div class="pp-row">
-        <span class="pp-lbl">V. Accuracy</span>
-        <span id="pos-va" class="pp-val ok">0.034 m</span>
-      </div>
+    <!-- Coordinate grid: full-width single column so numbers don't truncate -->
+    <div style="display:grid;grid-template-columns:auto 1fr auto 1fr;gap:0 8px;align-items:baseline">
+      <span class="pp-lbl">X</span>
+      <span id="pos-x" class="pp-val" style="text-align:left">537,095.000</span>
+      <span class="pp-lbl">Speed</span>
+      <span id="pos-spd" class="pp-val" style="text-align:right">N/A</span>
+      <span class="pp-lbl">Y</span>
+      <span id="pos-y" class="pp-val" style="text-align:left;font-size:10px">9,287,503.000</span>
+      <span class="pp-lbl">H. Acc</span>
+      <span id="pos-ha" class="pp-val ok" style="text-align:right">0.018 m</span>
+      <span class="pp-lbl">Alt</span>
+      <span id="pos-alt" class="pp-val" style="text-align:left">48.070 m</span>
+      <span class="pp-lbl">V. Acc</span>
+      <span id="pos-va" class="pp-val ok" style="text-align:right">0.034 m</span>
     </div>
   </div>
   <!-- LOCATE FAB -->
@@ -867,6 +859,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
   </div>
   <div style="position:absolute;top:46px;left:0;right:0;height:34px;background:#07101C;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 10px;gap:6px;overflow-x:auto">
     <span style="font-size:10px;color:#2E5272;white-space:nowrap;flex-shrink:0">TARGETS:</span>
+    <button id="so-sound-btn" onclick="toggleSOSound()" style="margin-left:auto;background:none;border:1px solid rgba(0,200,83,0.3);border-radius:8px;padding:2px 8px;cursor:pointer;font-size:13px;color:#3CD87A;flex-shrink:0" title="Toggle stakeout sound">&#128276;</button>
     <div id="so-btns" style="display:flex;gap:5px"></div>
   </div>
   <!-- Map canvas (top half of the working area) — shows user position and
@@ -1280,7 +1273,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
       </div>
       <div id="gt-utm-form">
         <div style="font-size:11px;color:#3A6080;margin-bottom:4px">Zone</div>
-        <select class="inp" id="gt-zone" style="margin-bottom:10px;font-size:12px"><option>37S</option><option>36S</option></select>
+        <select class="inp" id="gt-zone" style="margin-bottom:10px;font-size:12px"><option>35S</option><option>36S</option><option selected>37S</option></select>
         <div style="display:flex;gap:8px">
           <div style="flex:1"><div style="font-size:11px;color:#3A6080;margin-bottom:4px">Northing (Y)</div><input class="inp" id="gt-n" placeholder="9287412"/></div>
           <div style="flex:1"><div style="font-size:11px;color:#3A6080;margin-bottom:4px">Easting (X)</div><input class="inp" id="gt-e" placeholder="537224"/></div>
@@ -1466,6 +1459,45 @@ input,button,select,textarea{font-family:inherit;outline:none}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0"><span style="font-size:11px;color:#6A8090">Default Collector</span>
             <input class="inp" id="ps-collector" style="width:160px;font-size:11px;height:26px" placeholder="Victor PM"/>
+          </div>
+        </div>
+
+        <!-- GPS CALIBRATION -->
+        <div style="font-size:11px;color:#3A6080;margin-bottom:6px;letter-spacing:.04em">GPS CALIBRATION</div>
+        <div style="background:#07111D;border-radius:7px;border:1px solid rgba(0,207,255,0.15);padding:10px;margin-bottom:12px">
+          <div style="font-size:10px;color:#4A8090;margin-bottom:8px;line-height:1.5">Stand on a <strong style="color:#70AACC">known control point</strong>, enter its precise coordinates, then tap <strong style="color:#00cfff">Apply Calibration</strong>. The system will calculate the offset and correct all GPS readings for this session.</div>
+          <div id="cal-active-badge" style="display:none;background:rgba(0,200,83,0.12);border:1px solid rgba(0,200,83,0.3);border-radius:6px;padding:5px 10px;margin-bottom:8px;font-size:10px;color:#3CD87A;font-family:monospace"></div>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <div style="flex:1">
+              <div style="font-size:10px;color:#4A7090;margin-bottom:3px">Northing (Y)</div>
+              <input class="inp" id="cal-n" placeholder="e.g. 9,069,960.453" style="font-size:11px;height:28px"/>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:10px;color:#4A7090;margin-bottom:3px">Easting (X)</div>
+              <input class="inp" id="cal-e" placeholder="e.g. 517,829.634" style="font-size:11px;height:28px"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <div style="flex:1">
+              <div style="font-size:10px;color:#4A7090;margin-bottom:3px">Zone</div>
+              <select class="inp" id="cal-zone" style="font-size:11px;height:28px">
+                <option value="35">35S</option>
+                <option value="36">36S</option>
+                <option value="37" selected>37S</option>
+              </select>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:10px;color:#4A7090;margin-bottom:3px">Altitude (optional)</div>
+              <input class="inp" id="cal-alt" placeholder="e.g. 1228.961" style="font-size:11px;height:28px"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btnp" style="flex:2;font-size:11px" onclick="applyCalibration()">
+              &#9881; Apply Calibration
+            </button>
+            <button class="btn btns" style="flex:1;font-size:11px" onclick="clearCalibration()">
+              &#10005; Clear
+            </button>
           </div>
         </div>
 
@@ -3136,7 +3168,7 @@ function toggleLocate(){
     if(!navigator.geolocation){toast('GPS not supported in this browser');return;}
     ST.gpsActive=true;_iosGpsRetry=0;
     fab.className='active';
-    document.getElementById('pos-panel').classList.add('on');setTimeout(_bmSyncBottom,50);
+    document.getElementById('pos-panel').classList.add('on');setTimeout(_bmSyncBottom,50);startPosPanTimer();
     toast('Acquiring GPS…');
     // iOS fix: call getCurrentPosition FIRST to trigger the system permission
     // dialog, then start watchPosition once permission is confirmed.
@@ -3173,7 +3205,7 @@ function toggleTrack(){
 function closePosPan(){
   ST.gpsActive=false;ST.trackMode=false;ST.gnss.realGps=false;_iosGpsRetry=0;
   document.getElementById('locate-fab').className='off';
-  document.getElementById('pos-panel').classList.remove('on');_bmSyncBottom();
+  document.getElementById('pos-panel').classList.remove('on');_bmSyncBottom();stopPosPanTimer();
   if(MAP){MAP.stopLocate();}
   if(ST.gnss.gpsWatchId!=null){navigator.geolocation.clearWatch(ST.gnss.gpsWatchId);ST.gnss.gpsWatchId=null;}
   if(ST.gpsMkr&&MAP){MAP.removeLayer(ST.gpsMkr);ST.gpsMkr=null;}
@@ -3282,20 +3314,37 @@ function updConstellationSim(){
   renderConstellations();
 }
 
+// Positioning panel update — called on every GPS fix (~1s)
+var _posTimer=null;
+function startPosPanTimer(){
+  if(_posTimer)return;
+  _posTimer=setInterval(function(){if(ST.gpsActive)updPosPan();},800);
+}
+function stopPosPanTimer(){if(_posTimer){clearInterval(_posTimer);_posTimer=null;}}
+
 function updPosPan(){
   if(!ST.gpsActive)return;
-  var utm=toUTMa(ST.gnss.lat,ST.gnss.lng);
-  var u=(id,v)=>{var el=document.getElementById(id);if(el)el.textContent=v;};
-  u('pos-x',utm.eF);u('pos-y',utm.nF);
+  var utm=toUTMa(calLat(),calLng());
+  var u=function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
+  // Full coordinate values — no truncation
+  u('pos-x',utm.eF);
+  u('pos-y',utm.nF);
   u('pos-alt',ST.gnss.hort.toFixed(3)+' m');
-  u('pos-spd','N/A');
+  // Speed
+  var spd=ST.gnss.speed>0.3?ST.gnss.speed.toFixed(1)+' km/h':'0.0 km/h';
+  u('pos-spd',spd);
   u('pos-ha',ST.gnss.ha.toFixed(3)+' m');
   u('pos-va',ST.gnss.va.toFixed(3)+' m');
-  var c=ST.gnss.ha<3?'#3CD87A':ST.gnss.ha<5?'#FFAA40':'#FF6A6A';
+  var c=ST.gnss.ha<0.05?'#3CD87A':ST.gnss.ha<1?'#3CD87A':ST.gnss.ha<3?'#FFAA40':'#FF6A6A';
   var ha=document.getElementById('pos-ha');if(ha)ha.style.color=c;
   var va=document.getElementById('pos-va');if(va)va.style.color=c;
   var fb=document.getElementById('fix-badge');
-  if(fb){fb.textContent=ST.gnss.fix;fb.style.color=ST.gnss.fix.includes('RTK')?'#3CD87A':ST.gnss.fix==='DGPS'?'#FFAA40':'#60AAFF';}
+  if(fb){
+    fb.textContent=ST.gnss.fix;
+    fb.style.color=ST.gnss.fix.includes('RTK')?'#3CD87A':ST.gnss.fix==='DGPS'?'#FFAA40':'#60AAFF';
+    fb.style.borderColor=ST.gnss.fix.includes('RTK')?'rgba(0,200,83,0.35)':ST.gnss.fix==='DGPS'?'rgba(255,170,64,0.35)':'rgba(96,170,255,0.35)';
+    fb.style.background=ST.gnss.fix.includes('RTK')?'rgba(0,200,83,0.14)':ST.gnss.fix==='DGPS'?'rgba(255,170,64,0.14)':'rgba(96,170,255,0.14)';
+  }
 }
 
 // Show coordinate ribbon at a GPS latlng (at the blue dot location)
@@ -5254,6 +5303,63 @@ function soEnsureMap(){
   setTimeout(function(){if(SOMAP)SOMAP.invalidateSize();},220);
 }
 function soRecenter(){SO_AUTOCENTER=true;soUpdateMap();}
+
+// ─── MARK CURRENT POSITION ────────────────────────────────────────────────────
+// Places a persistent orange crosshair at current GPS location.
+// The marker is saved as a point feature in the active project so the
+// user can stakeout back to it later.
+var _posMarkers=[];
+function markCurrentPos(){
+  if(!ST.gpsActive||!MAP){toast('GPS not active');return;}
+  var lat=ST.gnss.lat,lng=ST.gnss.lng;
+  if(lat===0&&lng===0){toast('Waiting for GPS fix...');return;}
+  var utm=toUTMa(lat,lng);
+  var ts=new Date();
+  var name='MK-'+ts.getHours().toString().padStart(2,'0')+ts.getMinutes().toString().padStart(2,'0')+ts.getSeconds().toString().padStart(2,'0');
+
+  // Visual marker on map
+  var mkrHtml=
+    '<div style="position:relative;width:48px;height:48px">'
+    +'<svg style="position:absolute;inset:0;width:48px;height:48px" viewBox="0 0 48 48">'
+    +'<circle cx="24" cy="24" r="18" fill="rgba(249,115,22,0.12)" stroke="#F97316" stroke-width="2"/>'
+    +'<line x1="24" y1="2" x2="24" y2="10" stroke="#F97316" stroke-width="2.2" stroke-linecap="round"/>'
+    +'<line x1="24" y1="38" x2="24" y2="46" stroke="#F97316" stroke-width="2.2" stroke-linecap="round"/>'
+    +'<line x1="2" y1="24" x2="10" y2="24" stroke="#F97316" stroke-width="2.2" stroke-linecap="round"/>'
+    +'<line x1="38" y1="24" x2="46" y2="24" stroke="#F97316" stroke-width="2.2" stroke-linecap="round"/>'
+    +'<circle cx="24" cy="24" r="3" fill="#F97316"/>'
+    +'<circle cx="24" cy="24" r="1.2" fill="#fff"/>'
+    +'</svg>'
+    +'<div style="position:absolute;top:50px;left:50%;transform:translateX(-50%);background:rgba(8,18,30,0.92);border:1px solid #F97316;border-radius:4px;padding:2px 5px;font-size:9px;font-family:monospace;color:#F97316;white-space:nowrap">'+name+'</div>'
+    +'</div>';
+  var icon=L.divIcon({html:mkrHtml,iconSize:[48,48],iconAnchor:[24,24],className:''});
+  var mkr=L.marker([lat,lng],{icon:icon,zIndexOffset:1500}).addTo(MAP);
+  mkr.on('click',function(){
+    if(confirm('Stakeout to '+name+'?')){
+      // Set as stakeout target
+      ST.soFeat={id:'mk_'+Date.now(),name:name,type:'point',lat:lat,lng:lng,
+        a:{Northing:utm.nF,Easting:utm.eF,'H(ortho)':ST.gnss.hort.toFixed(3)+' m',
+           'Fix Type':ST.gnss.fix,Marked:ts.toLocaleTimeString()}};
+      ST.soTargets=[name];ST.soIdx=0;
+      showScreen('stakeout');
+      setTimeout(function(){soEnsureMap();startSO();renderSOBtns();
+        document.getElementById('so-tgt').textContent=name;},300);
+    }
+  });
+  _posMarkers.push(mkr);
+
+  // Also save as feature in active project if one is open
+  if(ST.pid){
+    var pd=getPD(ST.pid);
+    // Find or create a "Marked Points" layer
+    var lyr=pd.layers.find(function(l){return l.name==='Marked Points'&&l.type==='point';});
+    if(!lyr){lyr={id:Date.now(),name:'Marked Points',type:'point',vis:true,color:'#F97316'};pd.layers.push(lyr);}
+    pd.features.push({id:'mk_'+Date.now(),lid:lyr.id,name:name,type:'point',lat:lat,lng:lng,
+      a:{Northing:utm.nF,Easting:utm.eF,'H(ortho)':ST.gnss.hort.toFixed(3)+' m',
+         'Fix Type':ST.gnss.fix,HA:ST.gnss.ha.toFixed(3)+' m',Marked:ts.toLocaleString()}});
+    savePD(ST.pid,pd);
+  }
+  toast(name+' marked — tap marker to stakeout');
+}
 function soUpdateMap(){
   if(!SOMAP)return;
   var gLat=ST.gnss.lat,gLng=ST.gnss.lng;
@@ -5318,6 +5424,8 @@ function startSO(){
   ST.soTimer=setInterval(updSOUI,500);updSOUI();
 }
 function updSOUI(){var tgt=ST.soFeat,gLat=ST.gnss.lat,gLng=ST.gnss.lng,hasGPS=(gLat!==0||gLng!==0),hasTgt=tgt&&tgt.lat!=null&&tgt.lng!=null;if(!hasTgt){document.getElementById('so-dist').textContent='NO TGT';document.getElementById('so-dist').style.color='#4A7090';document.getElementById('so-status').textContent='NO TARGET SET';soUpdateMap();return;}if(!hasGPS){document.getElementById('so-dist').textContent='NO GPS';document.getElementById('so-dist').style.color='#FF9100';document.getElementById('so-status').textContent='ACQUIRING GPS\u2026';soUpdateMap();return;}var dist=haversine(gLat,gLng,tgt.lat,tgt.lng);var dLat=(tgt.lat-gLat)*Math.PI/180,dLng=(tgt.lng-gLng)*Math.PI/180,la1=gLat*Math.PI/180,la2=tgt.lat*Math.PI/180;var bx=Math.sin(dLng)*Math.cos(la2),by=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLng);var bearing=(Math.atan2(bx,by)*180/Math.PI+360)%360;var arrow=(bearing-(ST.gnss.heading||0)+360)%360;document.getElementById('so-arrow-g').style.transform='rotate('+arrow+'deg)';var utmM=toUTMa(gLat,gLng),utmT=toUTMa(tgt.lat,tgt.lng),dE=utmT.e-utmM.e,dN=utmT.n-utmM.n;var tH=parseFloat(((tgt.a&&(tgt.a['H(ortho)']||tgt.a['Elevation']))||'').replace(/[^0-9.\-]/g,''))||null,dZ=tH!=null?(tH-ST.gnss.hort):null;var col=dist>10?'#F04020':dist>2?'#FF9100':'#00C853';var distStr=dist>=1000?(dist/1000).toFixed(3)+' km':dist.toFixed(3)+' m';var status=dist>50?(Math.round(bearing)+'\u00B0 \u00B7 '+distStr):dist>10?'GETTING CLOSE':dist>2?'NEARLY THERE':'IN TOLERANCE';document.getElementById('so-dist').textContent=distStr;document.getElementById('so-dist').style.color=col;document.getElementById('so-status').textContent=status;document.getElementById('so-arrow').setAttribute('fill',col);document.getElementById('so-dx').textContent=(dE>=0?'+':'')+dE.toFixed(3);document.getElementById('so-dy').textContent=(dN>=0?'+':'')+dN.toFixed(3);document.getElementById('so-dz').textContent=dZ!=null?((dZ>=0?'+':'')+dZ.toFixed(3)):'--';document.getElementById('so-ha').textContent=ST.gnss.ha.toFixed(3);document.getElementById('so-va').textContent=ST.gnss.va.toFixed(3);document.getElementById('so-sats').textContent=ST.gnss.sats;var chip=document.getElementById('so-chip');if(chip)chip.textContent=ST.gnss.fix+' \u00B7 '+ST.gnss.sats+'sv';var obs=document.getElementById('so-obs-btn');if(obs){if(dist<=0.05){obs.style.background='#0A4020';obs.style.color='#40D880';obs.textContent='\u2713 In Tolerance \u2014 Observe';}else{obs.style.background='';obs.style.color='';obs.textContent='Observe Point';}}
+_soLastDist=dist;if(dist<=5&&_soSoundOn)_soScheduleSound(dist);
+
 // Sync the mini-map — user marker colour + heading are set inside soUpdateMap
 soUpdateMap();}
 function stopSO(){if(ST.soTimer){clearInterval(ST.soTimer);ST.soTimer=null;}}
@@ -5466,7 +5574,7 @@ function openProject(id){
   document.getElementById('map-title').textContent=p.name;
   ST.soTargets=getFeats(id).filter(f=>f.type==='point').map(f=>f.name);
   if(!ST.soTargets.length)ST.soTargets=['BM-001','BM-002','BM-003','CP-01','CP-02'];
-  showScreen('map');
+  showScreen('map');loadProjectCalibration(id);
   // Init map and render after DOM is shown
   var _pid=id;
   function _afterMapShow(){
@@ -5533,40 +5641,49 @@ function doSearch(q){
 // ─── GO TO COORD ──────────────────────────────────────────────────────────────
 var gtMode='utm';
 function gtTab(t){gtMode=t;document.getElementById('gt-utm-form').style.display=t==='utm'?'block':'none';document.getElementById('gt-ll-form').style.display=t==='ll'?'block':'none';document.getElementById('gt-utm').className='btn '+(t==='utm'?'btnp':'btns');document.getElementById('gt-ll').className='btn '+(t==='ll'?'btnp':'btns');}
+// Active goto marker — persists on map until tapped to clear
+var _gotoMarker=null;
 function doGoto(){
-  var lat,lng;
+  var lat,lng,label='';
   if(gtMode==='utm'){
-    var n=parseFloat(document.getElementById('gt-n').value),e=parseFloat(document.getElementById('gt-e').value);
-    if(isNaN(n)||isNaN(e)){alert('Enter valid N and E.');return;}
-    var ref=toUTM(ST.gnss.lat,ST.gnss.lng);
-    lat=ST.gnss.lat+(n-ref.n)/110574;lng=ST.gnss.lng+(e-ref.e)/(111320*Math.cos(lat*Math.PI/180));
+    var n=parseFloat(document.getElementById('gt-n').value);
+    var e=parseFloat(document.getElementById('gt-e').value);
+    if(isNaN(n)||isNaN(e)){alert('Enter valid Northing and Easting.');return;}
+    var zoneStr=document.getElementById('gt-zone').value||'37S';
+    var zoneNum=parseInt(zoneStr);
+    var res=fromUTM(e,n,{zone:zoneNum,hemisphere:'S',datum:'WGS84'});
+    lat=res.lat;lng=res.lng;
+    label='N:'+Math.round(n)+' E:'+Math.round(e);
   } else {
-    lat=parseFloat(document.getElementById('gt-lat').value);lng=parseFloat(document.getElementById('gt-lng').value);
+    lat=parseFloat(document.getElementById('gt-lat').value);
+    lng=parseFloat(document.getElementById('gt-lng').value);
     if(isNaN(lat)||isNaN(lng)){alert('Enter valid Lat/Lng.');return;}
+    label=lat.toFixed(5)+', '+lng.toFixed(5);
   }
-  if(MAP){
-    MAP.setView([lat,lng],17);
-    // Distinctive "goto target" icon \u2014 a yellow crosshair with a dashed
-    // outer ring, visually unambiguous next to the GPS observation dots and
-    // captured point markers (which are solid coloured circles/symbols).
-    // The pulse animation (defined in CSS) makes it unmistakable and
-    // self-dismisses after 6 seconds regardless.
-    var svg=
-      '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">'+
-      '<circle cx="18" cy="18" r="14" fill="none" stroke="#FBBF24" stroke-width="2" stroke-dasharray="3 3" opacity="0.9"/>'+
-      '<circle cx="18" cy="18" r="7" fill="rgba(251,191,36,0.18)" stroke="#FBBF24" stroke-width="2"/>'+
-      '<line x1="18" y1="1" x2="18" y2="8" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round"/>'+
-      '<line x1="18" y1="28" x2="18" y2="35" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round"/>'+
-      '<line x1="1" y1="18" x2="8" y2="18" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round"/>'+
-      '<line x1="28" y1="18" x2="35" y2="18" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round"/>'+
-      '<circle cx="18" cy="18" r="2" fill="#FBBF24"/>'+
-      '</svg>';
-    var html='<div class="gotopulse" style="width:36px;height:36px">'+svg+'</div>';
-    var icon=L.divIcon({html:html,iconSize:[36,36],iconAnchor:[18,18],className:''});
-    var m=L.marker([lat,lng],{icon:icon,interactive:false}).addTo(MAP);
-    setTimeout(function(){try{MAP.removeLayer(m);}catch(e){}},6000);
-  }
-  closeModal('goto');toast('Going to '+lat.toFixed(6)+', '+lng.toFixed(6));
+  if(!MAP)return;
+  if(_gotoMarker){try{MAP.removeLayer(_gotoMarker);}catch(ex){}_gotoMarker=null;}
+  var mkrHtml=
+    '<div style="position:relative;width:56px;height:56px;pointer-events:auto">'
+    +'<svg style="position:absolute;inset:0;width:56px;height:56px;animation:goto-pulse 1.4s ease-in-out infinite" viewBox="0 0 56 56">'
+    +'<circle cx="28" cy="28" r="24" fill="none" stroke="#F97316" stroke-width="1.8" stroke-dasharray="4 3" opacity="0.7"/>'
+    +'</svg>'
+    +'<svg style="position:absolute;inset:0;width:56px;height:56px" viewBox="0 0 56 56">'
+    +'<circle cx="28" cy="28" r="14" fill="rgba(249,115,22,0.15)" stroke="#F97316" stroke-width="2.2"/>'
+    +'<line x1="28" y1="2" x2="28" y2="11" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/>'
+    +'<line x1="28" y1="45" x2="28" y2="54" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/>'
+    +'<line x1="2" y1="28" x2="11" y2="28" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/>'
+    +'<line x1="45" y1="28" x2="54" y2="28" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/>'
+    +'<circle cx="28" cy="28" r="3.5" fill="#F97316"/>'
+    +'<circle cx="28" cy="28" r="1.5" fill="#fff"/>'
+    +'</svg>'
+    +'<div style="position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(8,18,30,0.92);border:1px solid #F97316;border-radius:5px;padding:2px 7px;font-size:10px;font-family:monospace;color:#F97316;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.6)">'+label+'</div>'
+    +'</div>';
+  var icon=L.divIcon({html:mkrHtml,iconSize:[56,56],iconAnchor:[28,28],className:''});
+  _gotoMarker=L.marker([lat,lng],{icon:icon,zIndexOffset:2000}).addTo(MAP);
+  _gotoMarker.on('click',function(){try{MAP.removeLayer(_gotoMarker);}catch(ex){}_gotoMarker=null;toast('Marker cleared');});
+  MAP.setView([lat,lng],18,{animate:true});
+  closeModal('goto');
+  toast('Going to '+label);
 }
 
 // ─── ROUTE TRACK ─────────────────────────────────────────────────────────────
@@ -6749,6 +6866,171 @@ function hookDrawSnap(){
   };
 }
 
+
+// ─── GPS CALIBRATION ENGINE ──────────────────────────────────────────────────
+// Stores a lat/lng offset that is added to every raw GPS reading.
+// When the user stands on a known control point and enters precise coords,
+// we calculate delta = (precise - gps) and apply it forever until cleared.
+var GPS_CAL={active:false,dLat:0,dLng:0,dAlt:0,label:''};
+
+function applyCalibration(){
+  var nStr=document.getElementById('cal-n').value.replace(/,/g,'').trim();
+  var eStr=document.getElementById('cal-e').value.replace(/,/g,'').trim();
+  var altStr=document.getElementById('cal-alt').value.replace(/,/g,'').trim();
+  var zone=parseInt(document.getElementById('cal-zone').value)||37;
+  var n=parseFloat(nStr), e=parseFloat(eStr);
+  if(isNaN(n)||isNaN(e)){alert('Enter valid Northing and Easting.');return;}
+  if(!ST.gpsActive||ST.gnss.lat===0){alert('GPS must be active. Turn on GPS first, then apply calibration while standing on the control point.');return;}
+
+  // Convert precise known point back to lat/lng
+  var precise=fromUTM(e,n,{zone:zone,hemisphere:'S',datum:'WGS84'});
+  // Current raw GPS
+  var rawLat=ST.gnss.lat, rawLng=ST.gnss.lng;
+  GPS_CAL.dLat=precise.lat-rawLat;
+  GPS_CAL.dLng=precise.lng-rawLng;
+  GPS_CAL.dAlt=altStr&&!isNaN(parseFloat(altStr))?(parseFloat(altStr)-ST.gnss.hort):0;
+  GPS_CAL.active=true;
+  var utm=toUTM(precise.lat,precise.lng,{zone:zone,datum:'WGS84'});
+  GPS_CAL.label='Cal: N '+Math.round(n)+' E '+Math.round(e)+' (Z'+zone+'S)';
+
+  // Save calibration with the project
+  if(ST.pid){
+    var p=ST.projects.find(function(x){return x.id==ST.pid;});
+    if(p)p.calibration={dLat:GPS_CAL.dLat,dLng:GPS_CAL.dLng,dAlt:GPS_CAL.dAlt,label:GPS_CAL.label};
+    saveData();
+  }
+
+  // Show active badge
+  var badge=document.getElementById('cal-active-badge');
+  if(badge){
+    badge.style.display='block';
+    badge.innerHTML='&#9989; CALIBRATION ACTIVE<br><span style="color:#7AAECE">'+GPS_CAL.label+'</span>'
+      +'<br><span style="color:#4A8090">ΔLat: '+(GPS_CAL.dLat*111320).toFixed(3)+'m  ΔLng: '+(GPS_CAL.dLng*111320*Math.cos(rawLat*Math.PI/180)).toFixed(3)+'m  ΔAlt: '+GPS_CAL.dAlt.toFixed(3)+'m</span>';
+  }
+
+  // Update cbar label
+  var calChip=document.getElementById('cal-chip');
+  if(!calChip){
+    var chip=document.createElement('span');
+    chip.id='cal-chip';
+    chip.style.cssText='position:absolute;bottom:22px;left:44px;right:44px;height:18px;text-align:center;font-size:9px;font-family:monospace;color:#00cfff;background:rgba(0,10,20,0.85);z-index:401;pointer-events:none;border-top:1px solid rgba(0,207,255,0.2);display:flex;align-items:center;justify-content:center;letter-spacing:1px';
+    chip.textContent='CAL ACTIVE';
+    var fm=document.getElementById('sc-map');if(fm)fm.appendChild(chip);
+  }else{calChip.textContent='CAL ACTIVE';}
+
+  toast('✓ Calibration applied — offset: Δ'+(GPS_CAL.dLat*111320).toFixed(2)+'m N, Δ'+(GPS_CAL.dLng*111320*Math.cos(rawLat*Math.PI/180)).toFixed(2)+'m E');
+  closeModal('projset');
+}
+
+function clearCalibration(){
+  GPS_CAL={active:false,dLat:0,dLng:0,dAlt:0,label:''};
+  if(ST.pid){
+    var p=ST.projects.find(function(x){return x.id==ST.pid;});
+    if(p)delete p.calibration;
+    saveData();
+  }
+  var badge=document.getElementById('cal-active-badge');
+  if(badge)badge.style.display='none';
+  var chip=document.getElementById('cal-chip');
+  if(chip)chip.remove();
+  toast('Calibration cleared');
+}
+
+// Patch gnss lat/lng to apply calibration offset wherever readings are used
+function calLat(){return ST.gnss.lat+(GPS_CAL.active?GPS_CAL.dLat:0);}
+function calLng(){return ST.gnss.lng+(GPS_CAL.active?GPS_CAL.dLng:0);}
+function calAlt(){return ST.gnss.hort+(GPS_CAL.active?GPS_CAL.dAlt:0);}
+
+// Restore calibration when project is opened
+function loadProjectCalibration(pid){
+  var p=ST.projects.find(function(x){return x.id==pid;});
+  if(p&&p.calibration){
+    GPS_CAL=Object.assign({active:true},p.calibration);
+    toast('Calibration restored: '+GPS_CAL.label);
+  } else {
+    clearCalibration();
+  }
+}
+
+// ─── STAKEOUT SOUND ENGINE ────────────────────────────────────────────────────
+// Uses Web Audio API to generate beeps — no audio files needed.
+// Sound pattern depends on distance to target:
+//   > 5m   : silent
+//   1–5m   : slow beep (1 per 2s)
+//   0.5–1m : fast beep (2 per s) — higher pitch
+//   < 0.5m : rapid triple beep + vibrate — "you are here"
+//   0m (tol): success chord
+
+var _soAudio=null;
+var _soBeepTimer=null;
+var _soLastDist=999;
+var _soSoundOn=true;
+
+function _getAudioCtx(){
+  if(!_soAudio){
+    try{_soAudio=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}
+  }
+  if(_soAudio.state==='suspended')_soAudio.resume();
+  return _soAudio;
+}
+
+function _beep(freq,dur,vol,type,delay){
+  var ctx=_getAudioCtx();if(!ctx)return;
+  delay=delay||0;vol=vol||0.4;type=type||'sine';
+  var osc=ctx.createOscillator();
+  var gain=ctx.createGain();
+  osc.connect(gain);gain.connect(ctx.destination);
+  osc.type=type;osc.frequency.value=freq;
+  gain.gain.setValueAtTime(0,ctx.currentTime+delay);
+  gain.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
+  osc.start(ctx.currentTime+delay);
+  osc.stop(ctx.currentTime+delay+dur+0.05);
+}
+
+function _soPlaySound(dist){
+  if(!_soSoundOn)return;
+  if(dist>5){return;} // silent beyond 5m
+  else if(dist<=0.05){
+    // IN TOLERANCE — success chord: C-E-G
+    _beep(523,0.15,0.5,'sine',0);
+    _beep(659,0.15,0.5,'sine',0.1);
+    _beep(784,0.3,0.5,'sine',0.2);
+    if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
+  } else if(dist<=0.5){
+    // < 0.5m — rapid triple pulse, high pitch
+    _beep(1200,0.08,0.45,'sine',0);
+    _beep(1200,0.08,0.45,'sine',0.12);
+    _beep(1200,0.08,0.45,'sine',0.24);
+    if(navigator.vibrate)navigator.vibrate([80,40,80,40,80]);
+  } else if(dist<=1){
+    // 0.5–1m — double beep, mid-high pitch
+    _beep(900,0.1,0.4,'sine',0);
+    _beep(900,0.1,0.4,'sine',0.18);
+    if(navigator.vibrate)navigator.vibrate([60,60,60]);
+  } else {
+    // 1–5m — single low beep
+    _beep(600,0.12,0.35,'sine',0);
+    if(navigator.vibrate)navigator.vibrate(50);
+  }
+}
+
+function _soScheduleSound(dist){
+  if(_soBeepTimer){clearTimeout(_soBeepTimer);_soBeepTimer=null;}
+  if(!_soSoundOn||dist>5)return;
+  var interval=dist<=0.5?600:dist<=1?1000:dist<=2?1500:2500;
+  _soPlaySound(dist);
+  _soBeepTimer=setTimeout(function(){_soScheduleSound(_soLastDist);},interval);
+}
+
+function toggleSOSound(){
+  _soSoundOn=!_soSoundOn;
+  var btn=document.getElementById('so-sound-btn');
+  if(btn){btn.textContent=_soSoundOn?'🔔':'🔕';btn.style.color=_soSoundOn?'#3CD87A':'#4A7090';}
+  if(!_soSoundOn&&_soBeepTimer){clearTimeout(_soBeepTimer);_soBeepTimer=null;}
+  else if(_soSoundOn)_soScheduleSound(_soLastDist);
+  toast('Sound '+ (_soSoundOn?'ON':'OFF'));
+}
 
 // Mobile viewport height fix — Android Chrome address bar + content:// protocol
 (function(){
