@@ -474,7 +474,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
           </div>
           <div style="background:#07111D;border-radius:8px;padding:2px 10px;border:1px solid rgba(255,255,255,0.06);margin-bottom:10px">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:11px;color:#6A8090">Avg Epochs</span><div style="display:flex;align-items:center;gap:6px"><input type="range" id="s-epochs" min="1" max="60" value="5" style="width:70px;accent-color:#1B72E8" oninput="this.nextElementSibling.textContent=this.value"/><span style="font-size:11px;color:#80AACC;min-width:16px">5</span></div></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:11px;color:#6A8090">Min HA</span><select class="inp" id="s-minha" style="width:120px;font-size:11px;height:26px"><option>No limit</option><option selected>0.05m (RTK)</option><option>0.15m (SBAS)</option><option>0.5m (GPS)</option></select></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:11px;color:#6A8090">Min HA</span><select class="inp" id="s-minha" style="width:120px;font-size:11px;height:26px"><option>No limit</option><option>0.05m (RTK Fixed)</option><option>0.15m (RTK Float)</option><option>0.5m (DGPS)</option><option>1.5m (SBAS)</option><option selected>3.5m (Good)</option><option>5m (Fair)</option></select></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0"><span style="font-size:11px;color:#6A8090">EGM2008</span><span class="pill pg">Enabled</span></div>
           </div>
           <div style="background:#07111D;border-radius:8px;padding:2px 10px;border:1px solid rgba(255,255,255,0.06)">
@@ -561,8 +561,8 @@ input,button,select,textarea{font-family:inherit;outline:none}
       <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
       <span id="gps-src-label">Phone</span>
     </button>
-      <span class="mono" id="gnss-ha" style="font-size:11px;color:#FFAA40">HA 1.500m</span>
-      <span id="gnss-fix" style="font-size:10px;color:#208850;font-family:monospace">RTK</span>
+      <span class="mono" id="gnss-ha" style="font-size:11px;color:#FFAA40">HA --</span>
+      <span id="gnss-fix" style="font-size:10px;color:#208850;font-family:monospace">--</span>
     </div>
     <button class="btn btns" style="font-size:11px;padding:3px 8px" onclick="showModal('sync')">&#8593; Sync</button>
     <button class="ib" id="map-proj-set" onclick="showModal('projset')" title="Project Settings" style="width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#6A8AAA;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
@@ -613,8 +613,8 @@ input,button,select,textarea{font-family:inherit;outline:none}
     <div style="overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:0">
       <!-- Accuracy big cards -->
       <div style="display:flex;gap:8px;margin-bottom:10px">
-        <div style="flex:1;background:#07111D;border-radius:6px;padding:8px;text-align:center;border:1px solid rgba(0,200,83,0.15)"><div style="font-size:9px;color:#2E6848;margin-bottom:2px;letter-spacing:.08em">HORIZ. ACC.</div><div class="mono" id="gp-ha" style="font-size:18px;color:#30D870;font-weight:600">0.018m</div></div>
-        <div style="flex:1;background:#07111D;border-radius:6px;padding:8px;text-align:center;border:1px solid rgba(0,200,83,0.1)"><div style="font-size:9px;color:#2E6848;margin-bottom:2px;letter-spacing:.08em">VERT. ACC.</div><div class="mono" id="gp-va" style="font-size:18px;color:#30B860;font-weight:600">0.034m</div></div>
+        <div style="flex:1;background:#07111D;border-radius:6px;padding:8px;text-align:center;border:1px solid rgba(0,200,83,0.15)"><div style="font-size:9px;color:#2E6848;margin-bottom:2px;letter-spacing:.08em">HORIZ. ACC.</div><div class="mono" id="gp-ha" style="font-size:18px;color:#30D870;font-weight:600">--</div></div>
+        <div style="flex:1;background:#07111D;border-radius:6px;padding:8px;text-align:center;border:1px solid rgba(0,200,83,0.1)"><div style="font-size:9px;color:#2E6848;margin-bottom:2px;letter-spacing:.08em">VERT. ACC.</div><div class="mono" id="gp-va" style="font-size:18px;color:#30B860;font-weight:600">--</div></div>
       </div>
       <!-- Sats / Fix / PDOP -->
       <div style="display:flex;gap:8px;margin-bottom:10px">
@@ -761,6 +761,10 @@ input,button,select,textarea{font-family:inherit;outline:none}
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="12" x2="21" y2="12"/></svg>
         Radius
       </button>
+      <button class="mpill" onclick="addMeasFromGPS()" title="Add point from my current GPS position" style="background:rgba(60,216,122,0.12);border-color:rgba(60,216,122,0.45);color:#3CD87A">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        GPS
+      </button>
     </div>
     <!-- Divider -->
     <div style="width:1px;height:18px;background:rgba(255,60,80,0.3);flex-shrink:0"></div>
@@ -804,11 +808,11 @@ input,button,select,textarea{font-family:inherit;outline:none}
       <span class="pp-lbl">Y</span>
       <span id="pos-y" class="pp-val" style="text-align:left;font-size:10px">9,287,503.000</span>
       <span class="pp-lbl">H. Acc</span>
-      <span id="pos-ha" class="pp-val ok" style="text-align:right">0.018 m</span>
+      <span id="pos-ha" class="pp-val ok" style="text-align:right">--</span>
       <span class="pp-lbl">Alt</span>
       <span id="pos-alt" class="pp-val" style="text-align:left">48.070 m</span>
       <span class="pp-lbl">V. Acc</span>
-      <span id="pos-va" class="pp-val ok" style="text-align:right">0.034 m</span>
+      <span id="pos-va" class="pp-val ok" style="text-align:right">--</span>
     </div>
   </div>
   <!-- LOCATE FAB -->
@@ -874,20 +878,41 @@ input,button,select,textarea{font-family:inherit;outline:none}
   <!-- Compass + distance readout — compact so polygons on the map stay prominent -->
   <div id="so-compass-wrap" style="position:absolute;top:calc(65% - 20px);bottom:120px;left:0;right:0;display:flex;align-items:center;justify-content:center">
     <svg viewBox="0 0 300 300" style="width:min(150px,calc(100vw - 40px),calc(35vh - 120px));height:min(150px,calc(100vw - 40px),calc(35vh - 120px));overflow:visible">
-      <circle cx="150" cy="150" r="130" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-      <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-      <circle cx="150" cy="150" r="70" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-      <circle cx="150" cy="150" r="40" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-      <circle cx="150" cy="150" r="20" fill="none" stroke="rgba(0,200,83,0.3)" stroke-width="1.5" stroke-dasharray="3 2"/>
-      <text x="150" y="5" text-anchor="middle" font-size="9" fill="#304860" font-family="monospace">N</text>
-      <text x="295" y="155" text-anchor="middle" font-size="9" fill="#304860" font-family="monospace">E</text>
-      <text x="5" y="155" text-anchor="middle" font-size="9" fill="#304860" font-family="monospace">W</text>
-      <text x="150" y="296" text-anchor="middle" font-size="9" fill="#304860" font-family="monospace">S</text>
-      <g id="so-arrow-g" style="transform-origin:150px 150px;transform:rotate(35deg)">
-        <polygon id="so-arrow" points="150,60 160,140 150,130 140,140" fill="#F04020"/>
-        <polygon points="150,240 160,160 150,170 140,160" fill="rgba(255,255,255,0.08)"/>
-        <circle cx="150" cy="150" r="6" fill="#0B1521"/>
-        <circle cx="150" cy="150" r="4" fill="#3A5070"/>
+      <!-- Target crosshair background -->
+      <defs>
+        <radialGradient id="so-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(0,200,83,0.18)"/>
+          <stop offset="70%" stop-color="rgba(0,200,83,0.04)"/>
+          <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+        </radialGradient>
+      </defs>
+      <circle cx="150" cy="150" r="140" fill="url(#so-glow)"/>
+      <!-- Tolerance rings: concentric bullseye with labels at 0.05/0.5/2/5m -->
+      <circle cx="150" cy="150" r="130" fill="none" stroke="rgba(244,67,54,0.25)" stroke-width="1" stroke-dasharray="4 3"/>
+      <circle cx="150" cy="150" r="90"  fill="none" stroke="rgba(255,145,0,0.3)"  stroke-width="1" stroke-dasharray="4 3"/>
+      <circle cx="150" cy="150" r="55"  fill="none" stroke="rgba(60,216,122,0.45)" stroke-width="1.2"/>
+      <circle cx="150" cy="150" r="20"  fill="none" stroke="rgba(60,216,122,0.9)"  stroke-width="2" stroke-dasharray="2 2"/>
+      <!-- Crosshair lines -->
+      <line x1="150" y1="0"   x2="150" y2="25"  stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>
+      <line x1="150" y1="275" x2="150" y2="300" stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>
+      <line x1="0"   y1="150" x2="25"  y2="150" stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>
+      <line x1="275" y1="150" x2="300" y2="150" stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>
+      <!-- Cardinal labels -->
+      <text x="150" y="12" text-anchor="middle" font-size="11" font-weight="700" fill="#80B8FF" font-family="monospace">N</text>
+      <text x="288" y="155" text-anchor="middle" font-size="10" fill="#4A6580" font-family="monospace">E</text>
+      <text x="12"  y="155" text-anchor="middle" font-size="10" fill="#4A6580" font-family="monospace">W</text>
+      <text x="150" y="294" text-anchor="middle" font-size="10" fill="#4A6580" font-family="monospace">S</text>
+      <!-- Centre target (the staked point reference) -->
+      <circle cx="150" cy="150" r="3" fill="#F04020"/>
+      <!-- Rotating direction cone + arrow — shows which way the target is -->
+      <g id="so-arrow-g" style="transform-origin:150px 150px;transform:rotate(0deg);transition:transform 0.25s ease-out">
+        <!-- Direction cone fan (subtle) -->
+        <path d="M150,150 L125,50 A105,105 0 0 1 175,50 Z" fill="rgba(240,64,32,0.12)"/>
+        <!-- Arrow shaft and head -->
+        <line x1="150" y1="150" x2="150" y2="58" stroke="#F04020" stroke-width="3.5" stroke-linecap="round"/>
+        <polygon id="so-arrow" points="150,40 166,70 150,62 134,70" fill="#F04020"/>
+        <!-- Pivot dot -->
+        <circle cx="150" cy="150" r="7" fill="#0B1521" stroke="rgba(240,64,32,0.7)" stroke-width="1.5"/>
       </g>
     </svg>
     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-40px);text-align:center;pointer-events:none">
@@ -900,8 +925,8 @@ input,button,select,textarea{font-family:inherit;outline:none}
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">&#916;E (m)</span><span class="mono" id="so-dx" style="font-size:13px;color:#F06030">--</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">&#916;N (m)</span><span class="mono" id="so-dy" style="font-size:13px;color:#F06030">--</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">&#916;Z (m)</span><span class="mono" id="so-dz" style="font-size:13px;color:#809090">--</span></div>
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">HA (m)</span><span class="mono" id="so-ha" style="font-size:13px;color:#30C870">0.018</span></div>
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">VA (m)</span><span class="mono" id="so-va" style="font-size:13px;color:#30C870">0.034</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">HA (m)</span><span class="mono" id="so-ha" style="font-size:13px;color:#30C870">--</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,0.04)"><span style="font-size:8px;color:#2A4A60">VA (m)</span><span class="mono" id="so-va" style="font-size:13px;color:#30C870">--</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:8px;color:#2A4A60">SATS</span><span class="mono" id="so-sats" style="font-size:13px;color:#6090B8">14</span></div>
     </div>
     <div style="display:flex;gap:8px;padding:8px 12px;align-items:center">
@@ -1380,12 +1405,12 @@ input,button,select,textarea{font-family:inherit;outline:none}
 </div>
 
 <!-- ── ROUTE TRACK ─────────────────────────────────────────────────────── -->
-<div id="ov-route" class="ov">
+    <div id="ov-route" class="ov">
   <div class="mbox" style="width:400px;max-height:85vh;display:flex;flex-direction:column">
     <div class="mhd">
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:#C0D8F0">Route Track</div>
-        <div id="rt-sub" style="font-size:10px;color:#3A6080;margin-top:2px">Record your path as GNSS points and export as a line</div>
+        <div id="rt-title" style="font-size:13px;font-weight:600;color:#C0D8F0">Route / Area Track</div>
+        <div id="rt-sub" style="font-size:10px;color:#3A6080;margin-top:2px">Record a path as line or closed area as polygon</div>
       </div>
       <button class="ib" style="width:24px;height:24px" onclick="closeModal('route')"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
@@ -1398,9 +1423,22 @@ input,button,select,textarea{font-family:inherit;outline:none}
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-family:monospace">
           <div><div style="font-size:9px;color:#3A6080">Points</div><div id="rt-points" style="font-size:14px;color:#70AAFF;font-weight:700">0</div></div>
-          <div><div style="font-size:9px;color:#3A6080">Distance</div><div id="rt-dist" style="font-size:14px;color:#70AAFF;font-weight:700">0 m</div></div>
+          <div><div id="rt-dist-lbl" style="font-size:9px;color:#3A6080">Distance</div><div id="rt-dist" style="font-size:14px;color:#70AAFF;font-weight:700">0 m</div></div>
           <div><div style="font-size:9px;color:#3A6080">Duration</div><div id="rt-dur" style="font-size:14px;color:#70AAFF;font-weight:700">0:00</div></div>
         </div>
+      </div>
+
+      <!-- Geometry type selector -->
+      <div style="font-size:11px;color:#3A6080;margin-bottom:4px">Geometry type</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border:1px solid rgba(27,114,232,0.5);background:rgba(27,114,232,0.08);border-radius:6px;cursor:pointer;font-size:12px">
+          <input type="radio" name="rt-geom" value="line" checked style="accent-color:#1B72E8" onchange="updateRouteModeUI()"/>
+          <span style="color:#C0D8F0">📈 Line (route)</span>
+        </label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border:1px solid rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;font-size:12px">
+          <input type="radio" name="rt-geom" value="polygon" style="accent-color:#1B72E8" onchange="updateRouteModeUI()"/>
+          <span style="color:#C0D8F0">⬠ Polygon (area/farm)</span>
+        </label>
       </div>
 
       <!-- Mode + interval controls -->
@@ -1420,9 +1458,15 @@ input,button,select,textarea{font-family:inherit;outline:none}
         <input class="inp" id="rt-time-val" type="number" min="1" step="1" value="5" style="margin-bottom:10px"/>
       </div>
 
-      <div style="font-size:11px;color:#3A6080;margin-bottom:4px">Route name</div>
+      <!-- Also save each vertex as a point feature -->
+      <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;margin-bottom:10px">
+        <input type="checkbox" id="rt-save-points" style="accent-color:#1B72E8;width:15px;height:15px"/>
+        <div style="flex:1;font-size:11px;color:#A0C8E8">Also save each recorded vertex as a point feature<br><span style="color:#3A6080;font-size:10px">Points go to a &ldquo;Route Points&rdquo; layer (auto-created)</span></div>
+      </label>
+
+      <div style="font-size:11px;color:#3A6080;margin-bottom:4px"><span id="rt-name-lbl">Route name</span></div>
       <input class="inp" id="rt-name" placeholder="e.g. Kibaha Survey Traverse" style="margin-bottom:4px"/>
-      <div style="font-size:10px;color:#3A6080">The route will be saved on a layer called &ldquo;Routes&rdquo; (created automatically).</div>
+      <div id="rt-layer-hint" style="font-size:10px;color:#3A6080">The route will be saved on a layer called &ldquo;Routes&rdquo; (created automatically).</div>
     </div>
 
     <!-- Sticky action bar -->
@@ -1431,7 +1475,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
       <button id="rt-pt" class="btn btns" style="flex:1;min-width:100px;display:none" onclick="recordRoutePoint()">+ Record point</button>
       <button id="rt-pause" class="btn btns" style="flex:1;min-width:80px;display:none" onclick="pauseRouteTrack()">&#10074;&#10074; Pause</button>
       <button id="rt-resume" class="btn btns" style="flex:1;min-width:80px;display:none" onclick="resumeRouteTrack()">&#9654; Resume</button>
-      <button id="rt-stop" class="btn btnr" style="flex:1;min-width:100px;display:none" onclick="stopRouteTrack()">&#9632; Stop &amp; save</button>
+      <button id="rt-finish" class="btn btng" style="flex:1;min-width:100px;display:none" onclick="stopRouteTrack()">&#10003; Finish &amp; save</button>
       <button id="rt-cancel" class="btn btns" style="flex:1;min-width:80px;display:none" onclick="cancelRouteTrack()">&#10005; Discard</button>
     </div>
   </div>
@@ -1694,18 +1738,22 @@ function haversine(a,b,c,d){var R=6371000,r=x=>x*Math.PI/180,dy=r(c-a),dx=r(d-b)
 var uid=()=>'f'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
 
 // ─── BASEMAPS ─────────────────────────────────────────────────────────────────
+// NOTE: tile.openstreetmap.org blocks requests that don't send a Referer
+// header (content:// / file:// / some WebView contexts). Replaced the
+// default "OpenStreetMap" entry with Carto Voyager OSM styling, which is
+// CDN-hosted and allows no-referer requests. Google / ESRI / Carto all work.
 var BMS={
-  osm:     {l:'OpenStreetMap',   url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',           a:'&copy; OpenStreetMap contributors',maxZ:19},
+  osm:     {l:'OSM Streets',     url:'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',a:'&copy; OpenStreetMap &copy; CARTO',maxZ:20},
   gsat:    {l:'Google Satellite',url:'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',    a:'&copy; Google Maps',sub:['0','1','2','3'],maxZ:22},
   ghyb:    {l:'Google Hybrid',   url:'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',    a:'&copy; Google Maps',sub:['0','1','2','3'],maxZ:22},
   gtopo:   {l:'Google Terrain',  url:'https://mt{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',    a:'&copy; Google Maps',sub:['0','1','2','3'],maxZ:22},
-  topo:    {l:'OpenTopoMap',     url:'https://tile.opentopomap.org/{z}/{x}/{y}.png',              a:'&copy; OpenTopoMap',maxZ:17},
-  esritopo:{l:'ESRI Topo',       url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',a:'&copy; Esri',maxZ:19},
-  carto:   {l:'Carto Voyager',   url:'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',a:'&copy; CartoDB',maxZ:20},
+  topo:    {l:'ESRI Topo',       url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',a:'&copy; Esri',maxZ:19},
+  esritopo:{l:'ESRI Imagery',    url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',a:'&copy; Esri',maxZ:19},
+  carto:   {l:'Carto Positron',  url:'https://basemaps.cartocdn.com/rastertiles/positron/{z}/{x}/{y}.png',a:'&copy; CartoDB',maxZ:20},
   cdark:   {l:'Carto Dark',      url:'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',   a:'&copy; CartoDB',maxZ:20}
 };
 var BM_ORDER=['osm','gsat','ghyb','gtopo','topo','esritopo','carto','cdark'];
-var bmIdx=0, curTileLayer=null, curBMId='osm';
+var bmIdx=0, curTileLayer=null, curBMId='gsat';
 
 function applyBasemap(id){
   curBMId=id;bmIdx=BM_ORDER.indexOf(id);if(bmIdx<0)bmIdx=0;
@@ -1716,7 +1764,7 @@ function applyBasemap(id){
   if(bm.sub)opts.subdomains=bm.sub;
   curTileLayer=L.tileLayer(bm.url,opts).addTo(MAP);
   curTileLayer.setZIndex(1);
-  document.getElementById('lb-bm').classList.toggle('on',id!=='osm');
+  document.getElementById('lb-bm').classList.toggle('on',id!=='gsat');
   var sel=document.getElementById('s-basemap');if(sel)sel.value=id;
   toast(bm.l);
 }
@@ -1733,7 +1781,7 @@ var ST={
   soTargets:[],soIdx:0,soObs:[],soDist:0,soAngle:0,soTimer:null,soFeat:null,
   wzStep:1,wzTmpl:'cadastral',impFile:null,impFmt:'csv',
   notes:{},
-  gnss:{ha:1.500,va:0.068,sats:14,fix:'DGPS',hell:11.842,hort:48.070,pdop:1.4,lat:-6.7800,lng:39.2800,speed:0,heading:0,gpsWatchId:null,realGps:false,constellations:{GPS:true,GLONASS:true,Galileo:true,BeiDou:true},cSats:{GPS:7,GLONASS:4,Galileo:2,BeiDou:3}},
+  gnss:{ha:null,va:null,sats:0,fix:'Acquiring',hell:0,hort:0,pdop:0,lat:0,lng:0,speed:0,heading:0,gpsWatchId:null,realGps:false,constellations:{GPS:true,GLONASS:true,Galileo:true,BeiDou:true},cSats:{GPS:0,GLONASS:0,Galileo:0,BeiDou:0}},
   lfLayers:{},
   projects:[
     {id:1,name:'Dar es Salaam Cadastral Survey',area:'Kinondoni District, Dar es Salaam',feats:53,status:'synced',date:'15 Apr 2025',crs:'UTM 37S',tmpl:'cadastral',collector:'Victor PM',desc:'Cadastral boundary survey — 10 plots, corner beacons & road alignment, Kinondoni District.'},
@@ -2022,7 +2070,7 @@ function initMap(){
   MAP._fmapCanvas=L.canvas({padding:0.5,tolerance:5});
   MAP._fmapCanvas.addTo(MAP);
   // Tile layer
-  applyBasemap(curBMId||'osm');
+  applyBasemap(curBMId||'gsat');
   // Events
   MAP.on('click',onMapClick);
   MAP.on('mousemove',onMapMove);
@@ -2341,7 +2389,7 @@ function updSub(){
   var feats=getFeats(ST.pid),lyrs=getLyrs(ST.pid);
   if(p){
     var crsLabel=(p.crsObj&&p.crsObj.label)||p.crs||'WGS84';
-    sub.textContent=crsLabel+' \u00B7 '+lyrs.filter(l=>l.vis).length+' layers \u00B7 '+feats.length+' features';
+    sub.textContent=crsLabel;
   }
 }
 
@@ -2572,7 +2620,9 @@ function confirmNewFeat(){
   var coll=document.getElementById('s-name')?(document.getElementById('s-name').value||'Victor PM'):'Victor PM';
   var now=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   var fid=uid();
-  var f={id:fid,lid:lyr.id,name:nm,type:type,a:{HA:ST.gnss.ha.toFixed(3)+' m',VA:ST.gnss.va.toFixed(3)+' m','Fix Type':ST.gnss.fix,Sats:String(ST.gnss.sats),Status:ST.gnss.ha<3?'Good':ST.gnss.ha<5?'Fair':'Poor',Collected:now,Collector:coll,'Land Use':'',Owner:'',Remarks:''}};
+  var _ha=ST.gnss.ha, _va=ST.gnss.va;
+  var _stat = _ha==null ? '--' : _ha<3.5 ? 'Good' : _ha<5 ? 'Fair' : 'Poor';
+  var f={id:fid,lid:lyr.id,name:nm,type:type,a:{HA:_ha==null?'--':(_ha.toFixed(3)+' m'),VA:_va==null?'--':(_va.toFixed(3)+' m'),'Fix Type':ST.gnss.fix||'--',Sats:String(ST.gnss.sats),Status:_stat,Collected:now,Collector:coll,'Land Use':'',Owner:'',Remarks:''}};
   if(type==='point'){
     f.lat=ll.lat;f.lng=ll.lng;
     var utm=toUTMa(ll.lat,ll.lng);
@@ -3396,9 +3446,31 @@ function _createGpsMkr(ll){
     iconSize:[40,40],iconAnchor:[20,20],className:'gps-mkr-clickable'
   });
   ST.gpsMkr=L.marker(ll,{icon:gIco,zIndexOffset:900,interactive:true}).addTo(MAP);
-  ST.gpsMkr.on('click',function(){showGpsCoordPopup(ST.gpsMkr.getLatLng());});
-  ST.gpsCirc=L.circle(ll,{radius:ST.gnss.ha,color:'#1A88FF',fillColor:'#1A88FF',fillOpacity:0.08,weight:1.2,interactive:false}).addTo(MAP);
+  ST.gpsMkr.on('click',function(e){
+    L.DomEvent.stopPropagation(e);
+    if(ST.measMode){
+      // In measure mode, GPS marker click adds current GPS position as a
+      // measurement vertex instead of opening the coordinate popup.
+      addMeasFromGPS();
+      return;
+    }
+    showGpsCoordPopup(ST.gpsMkr.getLatLng());
+  });
+  ST.gpsCirc=L.circle(ll,{radius:ST.gnss.ha||1,color:'#1A88FF',fillColor:'#1A88FF',fillOpacity:0.08,weight:1.2,interactive:false}).addTo(MAP);
   MAP.setView(ll,18,{animate:true});
+}
+
+// Add the user's current GPS position as a measurement vertex.
+// Works from the measurement toolbar "GPS" pill and from tapping the GPS
+// marker on the map while in measure mode.
+function addMeasFromGPS(){
+  if(!ST.measMode){toast('Turn on Measure first');return;}
+  var g=ST.gnss;
+  if(!g||g.lat==null||g.lng==null||(g.lat===0&&g.lng===0)){
+    toast('Waiting for GPS fix\u2026'); return;
+  }
+  addMeasPt(L.latLng(g.lat,g.lng));
+  toast('Added GPS point #'+ST.measPts.length+(g.ha?' \u00B7 \u00B1'+g.ha.toFixed(2)+'m':''));
 }
 
 function onLocFound(e){
@@ -3478,21 +3550,24 @@ function updPosPan(){
   // Full coordinate values — no truncation
   u('pos-x',utm.eF);
   u('pos-y',utm.nF);
-  u('pos-alt',ST.gnss.hort.toFixed(3)+' m');
+  u('pos-alt',(ST.gnss.hort||0).toFixed(3)+' m');
   // Speed
   var spd=ST.gnss.speed>0.3?ST.gnss.speed.toFixed(1)+' km/h':'0.0 km/h';
   u('pos-spd',spd);
-  u('pos-ha',ST.gnss.ha.toFixed(3)+' m');
-  u('pos-va',ST.gnss.va.toFixed(3)+' m');
-  var c=ST.gnss.ha<0.1?'#3CD87A':ST.gnss.ha<2?'#FFAA40':ST.gnss.ha<5?'#FF8C00':'#FF6A6A';
-  var ha=document.getElementById('pos-ha');if(ha)ha.style.color=c;
-  var va=document.getElementById('pos-va');if(va)va.style.color=c;
+  var ha=ST.gnss.ha, va=ST.gnss.va;
+  u('pos-ha', ha==null ? '--' : (ha.toFixed(3)+' m'));
+  u('pos-va', va==null ? '--' : (va.toFixed(3)+' m'));
+  // Color by Good/Fair/Poor thresholds (3.5m / 5m)
+  var c = ha==null ? '#6A8AAA' : ha<3.5 ? '#00C853' : ha<5 ? '#FF9100' : '#F44336';
+  var haEl=document.getElementById('pos-ha');if(haEl)haEl.style.color=c;
+  var vaEl=document.getElementById('pos-va');if(vaEl)vaEl.style.color=c;
   var fb=document.getElementById('fix-badge');
   if(fb){
-    fb.textContent=ST.gnss.fix;
-    fb.style.color=ST.gnss.fix.includes('RTK')?'#3CD87A':ST.gnss.fix==='DGPS'?'#FFAA40':'#60AAFF';
-    fb.style.borderColor=ST.gnss.fix.includes('RTK')?'rgba(0,200,83,0.35)':ST.gnss.fix==='DGPS'?'rgba(255,170,64,0.35)':'rgba(96,170,255,0.35)';
-    fb.style.background=ST.gnss.fix.includes('RTK')?'rgba(0,200,83,0.14)':ST.gnss.fix==='DGPS'?'rgba(255,170,64,0.14)':'rgba(96,170,255,0.14)';
+    var fix=ST.gnss.fix||'--';
+    fb.textContent=fix;
+    fb.style.color=fix.indexOf('RTK')>=0?'#3CD87A':fix==='DGPS'?'#FFAA40':'#60AAFF';
+    fb.style.borderColor=fix.indexOf('RTK')>=0?'rgba(0,200,83,0.35)':fix==='DGPS'?'rgba(255,170,64,0.35)':'rgba(96,170,255,0.35)';
+    fb.style.background=fix.indexOf('RTK')>=0?'rgba(0,200,83,0.14)':fix==='DGPS'?'rgba(255,170,64,0.14)':'rgba(96,170,255,0.14)';
   }
 }
 
@@ -3593,9 +3668,16 @@ function positionMeasUR(){
   if(!ST.measMode||n===0){ur.style.display='none';return;}
   var last=ST.measPts[n-1];
   var cp=MAP.latLngToContainerPoint(L.latLng(last.lat,last.lng));
+  var sz=MAP.getSize();
+  // Default position: 40px up-right of the last point so the snap indicator
+  // and vertex dot stay visible. Flip sides if near a viewport edge.
+  var dx=40, dy=-40;
+  if(cp.x+dx+140>sz.x) dx=-40-140;   // flip left
+  if(cp.y+dy<10) dy=40;               // flip down
   ur.style.display='block';
-  ur.style.left=cp.x+'px';
-  ur.style.top=cp.y+'px';
+  ur.style.left=(cp.x+dx)+'px';
+  ur.style.top=(cp.y+dy)+'px';
+  ur.style.transform='none';
 }
 
 function updMeasUndoRedo(){
@@ -5217,11 +5299,22 @@ function doExport(){
   if(fmt==='shp'){
     var byType={point:[],line:[],polygon:[]};
     feats.forEach(function(f){if(byType[f.type])byType[f.type].push(f);});
-    var wrote=0;
-    if(byType.point.length){writeShapefile(byType.point,'point',cf,fval,ts,wrote++);}
-    if(byType.line.length){writeShapefile(byType.line,'line',cf,fval,ts,wrote++);}
-    if(byType.polygon.length){writeShapefile(byType.polygon,'polygon',cf,fval,ts,wrote++);}
-    if(!wrote){alert('Shapefile export: no supported features in selection.');return;}
+    var zipEntries=[];
+    ['point','line','polygon'].forEach(function(gt){
+      if(byType[gt].length){
+        var built=buildShapefileBuffers(byType[gt],gt,cf,fval,ts);
+        if(built){
+          zipEntries.push({name:built.name+'.shp',data:new Uint8Array(built.shp)});
+          zipEntries.push({name:built.name+'.shx',data:new Uint8Array(built.shx)});
+          zipEntries.push({name:built.name+'.dbf',data:new Uint8Array(built.dbf)});
+          zipEntries.push({name:built.name+'.prj',data:new TextEncoder().encode(built.prj)});
+          zipEntries.push({name:built.name+'.cpg',data:new TextEncoder().encode('UTF-8')});
+        }
+      }
+    });
+    if(!zipEntries.length){alert('Shapefile export: no supported features in selection.');return;}
+    var zipBlob=buildStoredZip(zipEntries);
+    dlBuf(zipBlob,'fieldmap_'+ts+'_shapefile.zip','application/zip');
     closeModal('export');return;
   }
 
@@ -5302,8 +5395,34 @@ function featsToDXF(feats,cf,fval){
 }
 
 // ── Shapefile export (supports points, lines, polygons) ─────────────────────
-function writeShapefile(feats,geomType,cf,fval,ts,idx){
-  if(!feats.length)return;
+// ── WGS84 .prj content for common CRS used by the app ───────────────────────
+// Auto-picked from the active project's CRS. All use WGS84 datum as expected.
+function prjForProject(){
+  var p=ST.projects.find(function(x){return x.id==ST.pid;});
+  var crsVal=p&&p.crsObj?p.crsObj.crsVal:(p&&p.crs||'').toLowerCase();
+  var z = crsVal==='utm35s'?35 : crsVal==='utm36s'?36 : crsVal==='utm37s'?37 : null;
+  if(z){
+    // UTM S zone WKT
+    var cm=(z-30)*6+3;    // central meridian for zone (33,39,45 for 35/36/37...wait: zone N central meridian = -183+6*zone; adjusted below)
+    cm = -183 + 6*z;
+    return 'PROJCS["WGS_1984_UTM_Zone_'+z+'S",'+
+      'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],'+
+      'PROJECTION["Transverse_Mercator"],'+
+      'PARAMETER["False_Easting",500000.0],'+
+      'PARAMETER["False_Northing",10000000.0],'+
+      'PARAMETER["Central_Meridian",'+cm+'.0],'+
+      'PARAMETER["Scale_Factor",0.9996],'+
+      'PARAMETER["Latitude_Of_Origin",0.0],'+
+      'UNIT["Meter",1.0]]';
+  }
+  // WGS84 geographic
+  return 'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
+}
+
+// Build shapefile component buffers (does NOT download). Returned object has
+// {name, shp, shx, dbf, prj} — caller bundles them into a zip.
+function buildShapefileBuffers(feats,geomType,cf,fval,ts){
+  if(!feats.length)return null;
   var shapeCode=geomType==='point'?1:geomType==='line'?3:5;
   var n=feats.length;
   var xmin=Infinity,xmax=-Infinity,ymin=Infinity,ymax=-Infinity;
@@ -5414,15 +5533,105 @@ function writeShapefile(feats,geomType,cf,fval,ts,idx){
   });
   dbv.setUint8(rOff,0x1A);
 
-  var prj='GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
-
   var suffix=geomType==='point'?'_points':geomType==='line'?'_lines':'_polygons';
   var baseName='fieldmap_'+ts+suffix;
+  return {name:baseName, shp:shpBuf, shx:shxBuf, dbf:dbfBuf, prj:prjForProject()};
+}
+
+// Legacy separate-file writer, kept for fallback (not used now).
+function writeShapefile(feats,geomType,cf,fval,ts,idx){
+  var b=buildShapefileBuffers(feats,geomType,cf,fval,ts); if(!b)return;
   var base=(idx||0)*800;
-  setTimeout(function(){dlBuf(shpBuf,baseName+'.shp','application/octet-stream');},base);
-  setTimeout(function(){dlBuf(shxBuf,baseName+'.shx','application/octet-stream');},base+200);
-  setTimeout(function(){dlBuf(dbfBuf,baseName+'.dbf','application/octet-stream');},base+400);
-  setTimeout(function(){dlFile(prj,baseName+'.prj','text/plain');},base+600);
+  setTimeout(function(){dlBuf(b.shp,b.name+'.shp','application/octet-stream');},base);
+  setTimeout(function(){dlBuf(b.shx,b.name+'.shx','application/octet-stream');},base+200);
+  setTimeout(function(){dlBuf(b.dbf,b.name+'.dbf','application/octet-stream');},base+400);
+  setTimeout(function(){dlFile(b.prj,b.name+'.prj','text/plain');},base+600);
+}
+
+// ── Minimal stored-only (no-compression) ZIP builder ────────────────────────
+// Produces a valid ZIP file containing the given entries with method=0 (STORE).
+// Keeps shapefile .shp/.shx/.dbf/.prj/.cpg together in one download. Uses
+// CRC-32 per the ZIP spec.
+function buildStoredZip(entries){
+  // Build CRC table once
+  if(!buildStoredZip._crcTab){
+    var t=new Uint32Array(256);
+    for(var i=0;i<256;i++){
+      var c=i;
+      for(var j=0;j<8;j++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);
+      t[i]=c>>>0;
+    }
+    buildStoredZip._crcTab=t;
+  }
+  function crc32(u8){
+    var t=buildStoredZip._crcTab, c=0xFFFFFFFF;
+    for(var i=0;i<u8.length;i++) c = (c>>>8) ^ t[(c ^ u8[i]) & 0xFF];
+    return (c^0xFFFFFFFF)>>>0;
+  }
+  var enc=new TextEncoder();
+  var localParts=[], centralParts=[], offsets=[], totalLocal=0;
+  entries.forEach(function(e){
+    var nameBytes=enc.encode(e.name);
+    var data=e.data instanceof Uint8Array ? e.data : new Uint8Array(e.data);
+    var crc=crc32(data);
+    var local=new Uint8Array(30+nameBytes.length+data.length);
+    var dv=new DataView(local.buffer);
+    dv.setUint32(0,0x04034b50,true);      // local file header sig
+    dv.setUint16(4,20,true);               // version needed
+    dv.setUint16(6,0,true);                // flags
+    dv.setUint16(8,0,true);                // method=STORE
+    dv.setUint16(10,0,true);               // mod time
+    dv.setUint16(12,0x21,true);            // mod date
+    dv.setUint32(14,crc,true);
+    dv.setUint32(18,data.length,true);     // compressed size
+    dv.setUint32(22,data.length,true);     // uncompressed size
+    dv.setUint16(26,nameBytes.length,true);
+    dv.setUint16(28,0,true);               // extra length
+    local.set(nameBytes,30);
+    local.set(data,30+nameBytes.length);
+    offsets.push(totalLocal);
+    totalLocal += local.length;
+    localParts.push(local);
+    // Central directory entry
+    var central=new Uint8Array(46+nameBytes.length);
+    var cdv=new DataView(central.buffer);
+    cdv.setUint32(0,0x02014b50,true);
+    cdv.setUint16(4,20,true);              // version made by
+    cdv.setUint16(6,20,true);              // version needed
+    cdv.setUint16(8,0,true);
+    cdv.setUint16(10,0,true);
+    cdv.setUint16(12,0,true);
+    cdv.setUint16(14,0x21,true);
+    cdv.setUint32(16,crc,true);
+    cdv.setUint32(20,data.length,true);
+    cdv.setUint32(24,data.length,true);
+    cdv.setUint16(28,nameBytes.length,true);
+    cdv.setUint16(30,0,true);
+    cdv.setUint16(32,0,true);              // comment length
+    cdv.setUint16(34,0,true);              // disk number
+    cdv.setUint16(36,0,true);              // internal attrs
+    cdv.setUint32(38,0,true);              // external attrs
+    cdv.setUint32(42,offsets[offsets.length-1],true);
+    central.set(nameBytes,46);
+    centralParts.push(central);
+  });
+  var centralSize=centralParts.reduce(function(s,p){return s+p.length;},0);
+  var end=new Uint8Array(22);
+  var edv=new DataView(end.buffer);
+  edv.setUint32(0,0x06054b50,true);
+  edv.setUint16(4,0,true); edv.setUint16(6,0,true);
+  edv.setUint16(8,entries.length,true);
+  edv.setUint16(10,entries.length,true);
+  edv.setUint32(12,centralSize,true);
+  edv.setUint32(16,totalLocal,true);
+  edv.setUint16(20,0,true);
+  var totalSize=totalLocal+centralSize+22;
+  var out=new Uint8Array(totalSize);
+  var pos=0;
+  localParts.forEach(function(p){out.set(p,pos);pos+=p.length;});
+  centralParts.forEach(function(p){out.set(p,pos);pos+=p.length;});
+  out.set(end,pos);
+  return out.buffer;
 }
 
 // ─── STAKEOUT ─────────────────────────────────────────────────────────────────
@@ -5565,8 +5774,8 @@ function markCurrentPos(){
     var lyr=pd.layers.find(function(l){return l.name==='Marked Points'&&l.type==='point';});
     if(!lyr){lyr={id:Date.now(),name:'Marked Points',type:'point',vis:true,color:'#F97316'};pd.layers.push(lyr);}
     pd.features.push({id:'mk_'+Date.now(),lid:lyr.id,name:name,type:'point',lat:lat,lng:lng,
-      a:{Northing:utm.nF,Easting:utm.eF,'H(ortho)':ST.gnss.hort.toFixed(3)+' m',
-         'Fix Type':ST.gnss.fix,HA:ST.gnss.ha.toFixed(3)+' m',Marked:ts.toLocaleString()}});
+      a:{Northing:utm.nF,Easting:utm.eF,'H(ortho)':(ST.gnss.hort!=null?ST.gnss.hort.toFixed(3)+' m':'--'),
+         'Fix Type':ST.gnss.fix||'--',HA:(ST.gnss.ha!=null?ST.gnss.ha.toFixed(3)+' m':'--'),Marked:ts.toLocaleString()}});
     savePD(ST.pid,pd);
   }
   toast(name+' marked — tap marker to stakeout');
@@ -5659,8 +5868,9 @@ function startSO(){
   }
   ST.soTimer=setInterval(updSOUI,300);updSOUI();
 }
-function updSOUI(){var tgt=ST.soFeat,gLat=calLat(),gLng=calLng(),hasGPS=(gLat!==0||gLng!==0),hasTgt=tgt&&tgt.lat!=null&&tgt.lng!=null;if(!hasTgt){document.getElementById('so-dist').textContent='NO TGT';document.getElementById('so-dist').style.color='#4A7090';document.getElementById('so-status').textContent='NO TARGET SET';soUpdateMap();return;}if(!hasGPS){document.getElementById('so-dist').textContent='NO GPS';document.getElementById('so-dist').style.color='#FF9100';document.getElementById('so-status').textContent='ACQUIRING GPS\u2026';soUpdateMap();return;}var dist=haversine(gLat,gLng,tgt.lat,tgt.lng);var dLat=(tgt.lat-gLat)*Math.PI/180,dLng=(tgt.lng-gLng)*Math.PI/180,la1=gLat*Math.PI/180,la2=tgt.lat*Math.PI/180;var bx=Math.sin(dLng)*Math.cos(la2),by=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLng);var bearing=(Math.atan2(bx,by)*180/Math.PI+360)%360;var arrow=(bearing-(ST.gnss.heading||0)+360)%360;document.getElementById('so-arrow-g').style.transform='rotate('+arrow+'deg)';var utmM=toUTMa(gLat,gLng),utmT=toUTMa(tgt.lat,tgt.lng),dE=utmT.e-utmM.e,dN=utmT.n-utmM.n;var tH=parseFloat(((tgt.a&&(tgt.a['H(ortho)']||tgt.a['Elevation']))||'').replace(/[^0-9.\-]/g,''))||null,dZ=tH!=null?(tH-ST.gnss.hort):null;var col=dist>10?'#F04020':dist>2?'#FF9100':'#00C853';var distStr=dist>=1000?(dist/1000).toFixed(3)+' km':dist.toFixed(3)+' m';var status=dist>50?(Math.round(bearing)+'\u00B0 \u00B7 '+distStr):dist>10?'GETTING CLOSE':dist>2?'NEARLY THERE':'IN TOLERANCE';document.getElementById('so-dist').textContent=distStr;document.getElementById('so-dist').style.color=col;document.getElementById('so-status').textContent=status;document.getElementById('so-arrow').setAttribute('fill',col);document.getElementById('so-dx').textContent=(dE>=0?'+':'')+dE.toFixed(3);document.getElementById('so-dy').textContent=(dN>=0?'+':'')+dN.toFixed(3);document.getElementById('so-dz').textContent=dZ!=null?((dZ>=0?'+':'')+dZ.toFixed(3)):'--';document.getElementById('so-ha').textContent=ST.gnss.ha.toFixed(3);document.getElementById('so-va').textContent=ST.gnss.va.toFixed(3);document.getElementById('so-sats').textContent=ST.gnss.sats;var chip=document.getElementById('so-chip');if(chip)chip.textContent=ST.gnss.fix+' \u00B7 '+ST.gnss.sats+'sv';var obs=document.getElementById('so-obs-btn');if(obs){if(dist<=0.05){obs.style.background='#0A4020';obs.style.color='#40D880';obs.textContent='\u2713 In Tolerance \u2014 Observe';}else{obs.style.background='';obs.style.color='';obs.textContent='Observe Point';}}
+function updSOUI(){var tgt=ST.soFeat,gLat=calLat(),gLng=calLng(),hasGPS=(gLat!==0||gLng!==0),hasTgt=tgt&&tgt.lat!=null&&tgt.lng!=null;if(!hasTgt){document.getElementById('so-dist').textContent='NO TGT';document.getElementById('so-dist').style.color='#4A7090';document.getElementById('so-status').textContent='NO TARGET SET';soUpdateMap();return;}if(!hasGPS){document.getElementById('so-dist').textContent='NO GPS';document.getElementById('so-dist').style.color='#FF9100';document.getElementById('so-status').textContent='ACQUIRING GPS\u2026';soUpdateMap();return;}var dist=haversine(gLat,gLng,tgt.lat,tgt.lng);var dLat=(tgt.lat-gLat)*Math.PI/180,dLng=(tgt.lng-gLng)*Math.PI/180,la1=gLat*Math.PI/180,la2=tgt.lat*Math.PI/180;var bx=Math.sin(dLng)*Math.cos(la2),by=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLng);var bearing=(Math.atan2(bx,by)*180/Math.PI+360)%360;var arrow=(bearing-(ST.gnss.heading||0)+360)%360;document.getElementById('so-arrow-g').style.transform='rotate('+arrow+'deg)';var utmM=toUTMa(gLat,gLng),utmT=toUTMa(tgt.lat,tgt.lng),dE=utmT.e-utmM.e,dN=utmT.n-utmM.n;var tH=parseFloat(((tgt.a&&(tgt.a['H(ortho)']||tgt.a['Elevation']))||'').replace(/[^0-9.\-]/g,''))||null,dZ=tH!=null?(tH-ST.gnss.hort):null;var col=dist>10?'#F04020':dist>2?'#FF9100':'#00C853';var distStr=dist>=1000?(dist/1000).toFixed(3)+' km':dist.toFixed(3)+' m';var status=dist>50?(Math.round(bearing)+'\u00B0 \u00B7 '+distStr):dist>10?'GETTING CLOSE':dist>2?'NEARLY THERE':'IN TOLERANCE';document.getElementById('so-dist').textContent=distStr;document.getElementById('so-dist').style.color=col;document.getElementById('so-status').textContent=status;document.getElementById('so-arrow').setAttribute('fill',col);document.getElementById('so-dx').textContent=(dE>=0?'+':'')+dE.toFixed(3);document.getElementById('so-dy').textContent=(dN>=0?'+':'')+dN.toFixed(3);document.getElementById('so-dz').textContent=dZ!=null?((dZ>=0?'+':'')+dZ.toFixed(3)):'--';document.getElementById('so-ha').textContent=ST.gnss.ha==null?'--':ST.gnss.ha.toFixed(3);document.getElementById('so-va').textContent=ST.gnss.va==null?'--':ST.gnss.va.toFixed(3);document.getElementById('so-sats').textContent=ST.gnss.sats;var chip=document.getElementById('so-chip');if(chip)chip.textContent=(ST.gnss.fix||'--')+' \u00B7 '+ST.gnss.sats+'sv';var obs=document.getElementById('so-obs-btn');if(obs){if(dist<=0.05){obs.style.background='#0A4020';obs.style.color='#40D880';obs.textContent='\u2713 In Tolerance \u2014 Observe';}else{obs.style.background='';obs.style.color='';obs.textContent='Observe Point';}}
 _soLastDist=dist;if(dist<=5&&_soSoundOn)_soScheduleSound(dist);
+if(dist<=1.5&&_soSoundOn)_soVoiceGuide(dist,bearing);
 
 // Sync the mini-map — user marker colour + heading are set inside soUpdateMap
 soUpdateMap();}
@@ -6074,10 +6284,48 @@ function openRouteTrack(){
   updateRouteModeUI();
   showModal('route');
 }
+function _routeGeom(){
+  var r=document.querySelector('input[name="rt-geom"]:checked');
+  return r?r.value:'line';
+}
 function updateRouteModeUI(){
   var mode=document.getElementById('rt-mode').value;
   document.getElementById('rt-dist-row').style.display=mode==='distance'?'':'none';
   document.getElementById('rt-time-row').style.display=mode==='time'?'':'none';
+  // Update geometry radio styling (selected border)
+  document.querySelectorAll('input[name="rt-geom"]').forEach(function(rb){
+    var lbl=rb.parentElement;
+    if(rb.checked){
+      lbl.style.border='1px solid rgba(27,114,232,0.5)';
+      lbl.style.background='rgba(27,114,232,0.08)';
+    } else {
+      lbl.style.border='1px solid rgba(255,255,255,0.08)';
+      lbl.style.background='transparent';
+    }
+  });
+  // Adjust labels based on geometry type
+  var geom=_routeGeom();
+  var title=document.getElementById('rt-title');
+  var sub=document.getElementById('rt-sub');
+  var nameLbl=document.getElementById('rt-name-lbl');
+  var distLbl=document.getElementById('rt-dist-lbl');
+  var layerHint=document.getElementById('rt-layer-hint');
+  var nameIn=document.getElementById('rt-name');
+  if(geom==='polygon'){
+    if(title)title.textContent='Area Track';
+    if(sub)sub.textContent='Walk around the area perimeter — finish to close polygon';
+    if(nameLbl)nameLbl.textContent='Area name';
+    if(distLbl)distLbl.textContent='Perimeter';
+    if(layerHint)layerHint.innerHTML='The area will be saved on a layer called &ldquo;Tracked Areas&rdquo; (created automatically).';
+    if(nameIn&&nameIn.placeholder!=='e.g. Farm Plot A')nameIn.placeholder='e.g. Farm Plot A';
+  } else {
+    if(title)title.textContent='Route Track';
+    if(sub)sub.textContent='Record your path as GNSS points and export as a line';
+    if(nameLbl)nameLbl.textContent='Route name';
+    if(distLbl)distLbl.textContent='Distance';
+    if(layerHint)layerHint.innerHTML='The route will be saved on a layer called &ldquo;Routes&rdquo; (created automatically).';
+    if(nameIn)nameIn.placeholder='e.g. Kibaha Survey Traverse';
+  }
 }
 
 // Render the live status block + action buttons according to current session
@@ -6092,14 +6340,14 @@ function _renderRouteUI(){
   var pt=document.getElementById('rt-pt');
   var pause=document.getElementById('rt-pause');
   var resume=document.getElementById('rt-resume');
-  var stop=document.getElementById('rt-stop');
+  var finish=document.getElementById('rt-finish');
   var cancel=document.getElementById('rt-cancel');
   if(!r){
     led.style.background='#3A6080';
     lbl.textContent='Not tracking';
     p.textContent='0';d.textContent='0 m';dur.textContent='0:00';
     start.style.display='';
-    pt.style.display='none';pause.style.display='none';resume.style.display='none';stop.style.display='none';cancel.style.display='none';
+    pt.style.display='none';pause.style.display='none';resume.style.display='none';finish.style.display='none';cancel.style.display='none';
     return;
   }
   var n=r.pts.length;
@@ -6111,15 +6359,16 @@ function _renderRouteUI(){
   if(r.paused){
     led.style.background='#F59E0B';lbl.textContent='Paused';
   } else {
-    led.style.background='#10B981';lbl.textContent='Recording\u2026';
+    led.style.background='#10B981';lbl.textContent=(r.geom==='polygon'?'Tracking area\u2026':'Recording\u2026');
   }
   start.style.display='none';
-  // Only allow manual point-record button in manual mode (or always as a
-  // supplement during auto modes \u2014 handy when user wants a named vertex)
   pt.style.display=r.paused?'none':'';
   pause.style.display=r.paused?'none':'';
   resume.style.display=r.paused?'':'none';
-  stop.style.display='';
+  // "Finish & save" — green for polygon (closes ring), red for line (stop)
+  finish.textContent=(r.geom==='polygon'?'\u2713 Finish (close polygon)':'\u25A0 Stop & save');
+  finish.className=(r.geom==='polygon'?'btn btng':'btn btnr');
+  finish.style.display='';
   cancel.style.display='';
 }
 
@@ -6128,9 +6377,14 @@ function startRouteTrack(){
   var mode=document.getElementById('rt-mode').value;
   var distVal=parseFloat(document.getElementById('rt-dist-val').value)||10;
   var timeVal=parseFloat(document.getElementById('rt-time-val').value)||5;
-  var name=(document.getElementById('rt-name').value||'').trim()||'Untitled Route';
+  var name=(document.getElementById('rt-name').value||'').trim();
+  var geom=_routeGeom();
+  if(!name) name = (geom==='polygon'?'Untitled Area':'Untitled Route');
+  var savePts=!!(document.getElementById('rt-save-points')||{}).checked;
   ST.route={
     name:name,
+    geom:geom,
+    savePts:savePts,
     mode:mode,
     distInterval:Math.max(1,distVal),
     timeIntervalMs:Math.max(500,timeVal*1000),
@@ -6144,16 +6398,20 @@ function startRouteTrack(){
     paused:false,
     timer:null,
   };
-  // Draw a live preview polyline that grows as points are added
+  // Live preview on map — polygon is a growing closed ring, line is dashed
   if(MAP){
-    ST._routePreview=L.polyline([],{color:'#F59E0B',weight:4,opacity:0.85,dashArray:'6 4'}).addTo(MAP);
+    if(geom==='polygon'){
+      ST._routePreview=L.polygon([],{color:'#10B981',fillColor:'#10B981',fillOpacity:0.15,weight:3,opacity:0.9,dashArray:'6 4'}).addTo(MAP);
+    } else {
+      ST._routePreview=L.polyline([],{color:'#F59E0B',weight:4,opacity:0.85,dashArray:'6 4'}).addTo(MAP);
+    }
   }
   // Grab first point immediately so the route always has a starting vertex
   _routeTryRecord(true);
   // Start timer for time-mode and tick updater for UI
   _scheduleRouteTimer();
   _startRouteUITicker();
-  toast('Route tracking started \u2014 mode: '+mode);
+  toast((geom==='polygon'?'Area tracking started':'Route tracking started')+' \u2014 mode: '+mode);
   _renderRouteUI();
 }
 function _scheduleRouteTimer(){
@@ -6192,7 +6450,7 @@ function _routeTryRecord(force){
       if(d<r.distInterval)return;
     }
   }
-  var pt={lat:g.lat,lng:g.lng,ts:now,ha:g.ha};
+  var pt={lat:g.lat,lng:g.lng,ts:now,ha:g.ha,fix:g.fix};
   if(r.pts.length){
     var prev=r.pts[r.pts.length-1];
     r.dist+=_haversineM(prev.lat,prev.lng,pt.lat,pt.lng);
@@ -6200,7 +6458,14 @@ function _routeTryRecord(force){
   r.pts.push(pt);
   r.lastPtTs=now;
   if(ST._routePreview){
-    try{ST._routePreview.addLatLng([pt.lat,pt.lng]);}catch(e){}
+    try{
+      if(r.geom==='polygon'){
+        // Polygon needs full ring re-set so fill redraws
+        ST._routePreview.setLatLngs(r.pts.map(function(p){return[p.lat,p.lng];}));
+      } else {
+        ST._routePreview.addLatLng([pt.lat,pt.lng]);
+      }
+    }catch(e){}
   }
 }
 function _haversineM(la1,ln1,la2,ln2){
@@ -6230,49 +6495,146 @@ function resumeRouteTrack(){
   toast('Route resumed');
 }
 
-// Stop + save: commits the in-memory preview polyline as a real Line feature
-// on a "Routes" layer (auto-created), adds it to the map via addFeatLayer so
-// it renders immediately, and dismisses the tracking session.
+// Finish + save: commits the in-memory preview as either a Line feature
+// (Routes layer) or a Polygon feature (Tracked Areas layer). If the user
+// ticked "Also save points", each recorded vertex is additionally saved as
+// a point feature on a "Route Points" / "Area Vertices" layer.
 function stopRouteTrack(){
   var r=ST.route;if(!r)return;
-  if(r.pts.length<2){
-    if(!confirm('Only '+r.pts.length+' point'+(r.pts.length===1?'':'s')+' recorded. Save anyway?'))return;
+  var isPoly=r.geom==='polygon';
+  var minPts=isPoly?3:2;
+  if(r.pts.length<minPts){
+    if(!confirm('Only '+r.pts.length+' point'+(r.pts.length===1?'':'s')+' recorded. '+
+      (isPoly?'A polygon needs at least 3 points. ':'')+'Save anyway?'))return;
   }
-  // Ensure Routes layer exists
   var pd=getPD(ST.pid);
-  var routeLayer=pd.layers.find(function(l){return l.type==='line'&&l.name==='Routes';});
-  if(!routeLayer){
-    routeLayer={id:Date.now()+Math.floor(Math.random()*100),name:'Routes',type:'line',vis:true,color:'#F59E0B'};
-    pd.layers.push(routeLayer);
-  }
-  // Build feature
+
+  // Build ring (closed for polygon) / line
   var ll=r.pts.map(function(p){return[p.lat,p.lng];});
+  if(isPoly && ll.length){
+    // Close the ring if not already closed
+    var first=ll[0], last=ll[ll.length-1];
+    if(first[0]!==last[0]||first[1]!==last[1]) ll.push([first[0],first[1]]);
+  }
+
+  // Find or create the target layer
+  var layerType=isPoly?'polygon':'line';
+  var layerName=isPoly?'Tracked Areas':'Routes';
+  var layerColor=isPoly?'#10B981':'#F59E0B';
+  var layer=pd.layers.find(function(l){return l.type===layerType&&l.name===layerName;});
+  if(!layer){
+    layer={id:Date.now()+Math.floor(Math.random()*100),name:layerName,type:layerType,vis:true,color:layerColor};
+    pd.layers.push(layer);
+  }
+
+  // Geometry-specific attributes — polygon gets Area + Perimeter + Hectares
+  // like any other polygon feature in the app
+  var durMs=Date.now()-r.startTs-r.pausedTotalMs;
+  var durStr=(function(){var m=Math.floor(durMs/60000);var s=Math.floor((durMs%60000)/1000);return m+':'+String(s).padStart(2,'0');})();
+  var commonAttrs={
+    Source:isPoly?'Area Track':'Route Track',
+    'Track Mode':r.mode,
+    'Point Count':String(r.pts.length),
+    'Duration':durStr,
+    'Started':new Date(r.startTs).toISOString(),
+    'Ended':new Date().toISOString(),
+    Collected:new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+    Collector:(ST.projects.find(function(x){return x.id==ST.pid;})||{}).collector||'',
+  };
+  if(isPoly){
+    // Perimeter = sum of segment distances on the ring
+    var perim=0;
+    for(var i=1;i<ll.length;i++) perim+=_haversineM(ll[i-1][0],ll[i-1][1],ll[i][0],ll[i][1]);
+    // Area: planar shoelace on lat/lng-to-metres projection (adequate for
+    // parcels up to a few km²; matches what the app's confirmNewFeat uses)
+    var areaM2=_polygonAreaM2(ll);
+    commonAttrs['Perimeter (m)']=perim.toFixed(2);
+    commonAttrs['Area m2']=areaM2.toFixed(1);
+    commonAttrs['Area (ha)']=(areaM2/10000).toFixed(4);
+    commonAttrs['Area (acres)']=(areaM2/4046.8564224).toFixed(4);
+  } else {
+    commonAttrs['Distance (m)']=r.dist.toFixed(1);
+  }
+
   var f={
     id:uid(),
-    lid:routeLayer.id,
-    type:'line',
+    lid:layer.id,
+    type:layerType,
     name:r.name,
     ll:ll,
-    a:{
-      Source:'Route Track',
-      'Route Mode':r.mode,
-      'Point Count':String(r.pts.length),
-      'Distance (m)':r.dist.toFixed(1),
-      'Duration':(function(){var ms=Date.now()-r.startTs-r.pausedTotalMs;var m=Math.floor(ms/60000);var s=Math.floor((ms%60000)/1000);return m+':'+String(s).padStart(2,'0');})(),
-      'Started':new Date(r.startTs).toISOString(),
-      'Ended':new Date().toISOString(),
-    },
+    a:commonAttrs,
   };
   pd.features.push(f);
+
+  // Also save each vertex as a point feature if user asked
+  var ptFeats=[];
+  if(r.savePts && r.pts.length){
+    var ptLayerName=isPoly?'Area Vertices':'Route Points';
+    var ptLayer=pd.layers.find(function(l){return l.type==='point'&&l.name===ptLayerName;});
+    if(!ptLayer){
+      ptLayer={id:Date.now()+Math.floor(Math.random()*100)+1,name:ptLayerName,type:'point',vis:true,color:isPoly?'#10B981':'#F59E0B'};
+      pd.layers.push(ptLayer);
+    }
+    r.pts.forEach(function(p,idx){
+      var nm=r.name+' · P'+(idx+1);
+      var ptF={
+        id:uid(),
+        lid:ptLayer.id,
+        type:'point',
+        name:nm,
+        lat:p.lat,
+        lng:p.lng,
+        a:{
+          Source:isPoly?'Area Track Vertex':'Route Track Point',
+          'Parent':r.name,
+          'Vertex #':String(idx+1),
+          HA:(p.ha!=null?p.ha.toFixed(3)+' m':'--'),
+          'Fix Type':p.fix||ST.gnss.fix||'--',
+          Timestamp:new Date(p.ts).toISOString(),
+          Collector:commonAttrs.Collector,
+        },
+      };
+      pd.features.push(ptF);
+      ptFeats.push(ptF);
+    });
+  }
+
   savePD(ST.pid,pd);
-  // Drop the preview line and add the real feature Leaflet layer
   _teardownRoute();
   renderLayerList();
   addFeatLayer(f);
-  toast('Route saved: '+r.pts.length+' points, '+(r.dist<1000?r.dist.toFixed(1)+' m':(r.dist/1000).toFixed(2)+' km'));
+  ptFeats.forEach(addFeatLayer);
+  var msg=(isPoly?'Area saved: ':'Route saved: ')+r.pts.length+' pts';
+  if(isPoly){
+    msg+=' · '+(commonAttrs['Area (ha)']+' ha');
+  } else {
+    msg+=' · '+(r.dist<1000?r.dist.toFixed(1)+' m':(r.dist/1000).toFixed(2)+' km');
+  }
+  if(ptFeats.length) msg+=' (+'+ptFeats.length+' points)';
+  toast(msg);
   closeModal('route');
-  // Zoom to the saved route so the user sees the result
+  // Zoom to result
   if(MAP&&ll.length>1){try{MAP.fitBounds(L.latLngBounds(ll),{padding:[60,60],maxZoom:18});}catch(e){}}
+}
+
+// Polygon area (m²) via spherical-excess-free equal-area-ish shoelace on
+// local tangent metres. Good to ~0.1% for parcels < few km. Same formula
+// style used elsewhere in the app.
+function _polygonAreaM2(ring){
+  if(!ring||ring.length<3) return 0;
+  // Tangent plane centred at the ring centroid
+  var lat0=0;
+  for(var i=0;i<ring.length;i++) lat0+=ring[i][0];
+  lat0/=ring.length;
+  var cosLat0=Math.cos(lat0*Math.PI/180);
+  var xs=[],ys=[];
+  for(var j=0;j<ring.length;j++){
+    xs.push(ring[j][1]*111320*cosLat0);
+    ys.push(ring[j][0]*111320);
+  }
+  var a=0;
+  for(var k=0;k<xs.length-1;k++) a+=xs[k]*ys[k+1]-xs[k+1]*ys[k];
+  return Math.abs(a)/2;
 }
 function cancelRouteTrack(){
   if(!ST.route)return;
@@ -6510,21 +6872,37 @@ function updGNSSDisplay(){
   var u=function(id,v,c){var el=document.getElementById(id);if(!el)return;if(v!==undefined)el.textContent=v;if(c)el.style.color=c;};
   var live=ST.gpsActive&&ST.gnss.realGps;
   var ha=ST.gnss.ha;
-  var color=ha<0.5?'#3CD87A':ha<1.5?'#00C853':ha<4?'#FF9100':'#F44336';
-  var bg=ha<3?'rgba(0,200,83,.1)':ha<5?'rgba(255,145,0,.1)':'rgba(244,67,54,.1)';
+  // Accuracy status thresholds (user-requested):
+  //   < 3.5 m  -> Good  (green)
+  //   < 5.0 m  -> Fair  (orange)
+  //   >= 5.0 m -> Poor  (red)
+  var color, bg, status;
+  if(ha==null||!live){
+    color='#6A8AAA'; bg='rgba(106,138,170,.1)'; status='--';
+  } else if(ha<3.5){
+    color='#00C853'; bg='rgba(0,200,83,.1)'; status='Good';
+  } else if(ha<5){
+    color='#FF9100'; bg='rgba(255,145,0,.1)'; status='Fair';
+  } else {
+    color='#F44336'; bg='rgba(244,67,54,.1)'; status='Poor';
+  }
   // Toolbar chip
   var dotEl=document.getElementById('gnss-dot');if(dotEl)dotEl.style.background=color;
-  u('gnss-ha','HA '+ha.toFixed(3)+'m',color);u('gnss-fix',ST.gnss.fix);
+  var haStr = ha==null ? 'HA --' : ('HA '+ha.toFixed(3)+'m');
+  u('gnss-ha',haStr,color);
+  u('gnss-fix', live ? (ST.gnss.fix||'--') : 'Acquiring');
   var chip=document.getElementById('gnss-chip');if(chip)chip.style.background=bg;
   // GNSS panel — all real values
-  u('gp-ha',ha.toFixed(3)+'m',color);
+  u('gp-ha', ha==null ? '--' : (ha.toFixed(3)+'m'), color);
+  var statusEl=document.getElementById('gp-acc-status');
+  if(statusEl){statusEl.textContent=status; statusEl.style.color=color;}
   // Show calibration status
   var calBadge=document.getElementById('gp-cal-badge');
   if(calBadge){
     calBadge.style.display=GPS_CAL.active?'block':'none';
     if(GPS_CAL.active)calBadge.textContent='✓ Calibrated: '+GPS_CAL.label;
   }
-  u('gp-va',live?ST.gnss.va.toFixed(3)+'m':'--');
+  u('gp-va',(live&&ST.gnss.va!=null&&ST.gnss.va>0)?ST.gnss.va.toFixed(3)+'m':'--');
   // Satellites and PDOP: browser API does NOT expose these — show honestly
   u('gp-sats','N/A');
   u('gp-pdop','N/A');
@@ -6544,10 +6922,11 @@ function updGNSSDisplay(){
     u('gp-hell','--');u('gp-geoid','--');u('gp-hort','--');
   }
   // Stakeout panel
-  u('so-ha',ha.toFixed(3));
+  u('so-ha',ha==null?'--':ha.toFixed(3));
+  u('so-va',(live&&ST.gnss.va!=null&&ST.gnss.va>0)?ST.gnss.va.toFixed(3):'--');
   u('so-sats',live?String(ST.gnss.sats):'--');
   var c2=document.getElementById('so-chip');
-  if(c2)c2.textContent=ST.gnss.fix+(live?' · SBAS':'');
+  if(c2)c2.textContent=(ST.gnss.fix||'--')+(live?' · SBAS':'');
   // When on phone GPS, browser gives NO per-constellation data
   // Show bars with equal length but label counts as N/A
   if(live){
@@ -6695,12 +7074,12 @@ var bmPanelOpen=false;
 var BM_THUMBS={
   gsat:   'https://mt0.google.com/vt/lyrs=s&x=153&y=91&z=8',
   ghyb:   'https://mt0.google.com/vt/lyrs=y&x=153&y=91&z=8',
-  osm:    'https://tile.openstreetmap.org/8/153/91.png',
+  osm:    'https://a.basemaps.cartocdn.com/rastertiles/voyager/8/153/91.png',
   gtopo:  'https://mt0.google.com/vt/lyrs=p&x=153&y=91&z=8',
-  carto:  'https://a.basemaps.cartocdn.com/rastertiles/voyager/8/153/91.png',
+  carto:  'https://a.basemaps.cartocdn.com/rastertiles/positron/8/153/91.png',
   cdark:  'https://a.basemaps.cartocdn.com/dark_all/8/153/91.png',
-  topo:   'https://tile.opentopomap.org/8/153/91.png',
-  esritopo:    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/8/91/153',
+  topo:   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/8/91/153',
+  esritopo:    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/8/91/153',
   esristreet:  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/8/91/153',
   esrinat:     'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/8/91/153',
   esrigray:    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/8/91/153',
@@ -7380,6 +7759,79 @@ var _soBeepTimer=null;
 var _soLastDist=999;
 var _soSoundOn=true;
 
+// ── Voice guidance (female) ──────────────────────────────────────────────
+// Speaks distance + cardinal direction when user is within 1.5 m of target.
+// Uses Web Speech API; picks a female-sounding voice if available.
+var _soVoice=null, _soLastSpokenAt=0, _soLastSpokenMsg='';
+function _soPickVoice(){
+  if(!window.speechSynthesis) return null;
+  if(_soVoice) return _soVoice;
+  var list=speechSynthesis.getVoices()||[];
+  // Priority order — closest-to-Siri voices per platform:
+  //   iOS / macOS  : "Samantha" is Siri's underlying engine. "Ava", "Allison",
+  //                  "Susan", "Zoe" are all Apple voices with similar timbre.
+  //   Android      : "en-us-x-sfg#female_1" or "Google US English" are the
+  //                  cleanest female Android TTS voices.
+  //   Windows/Edge : "Microsoft Aria", "Microsoft Jenny" are the modern
+  //                  neural female voices that sound closest to Siri.
+  var prefs=[
+    // 1. Apple Samantha / Siri family (the real Siri engine, when exposed)
+    function(v){return /^(samantha|siri|ava|allison|susan|zoe|nicky|joelle)(\s|$|\s*\()/i.test(v.name) && /en/i.test(v.lang);},
+    // 2. Windows neural Siri-alikes
+    function(v){return /aria|jenny|nancy|michelle/i.test(v.name) && /en/i.test(v.lang);},
+    // 3. Google Android Siri-alikes
+    function(v){return /google.+(us|uk).+english/i.test(v.name) && !/male/i.test(v.name);},
+    function(v){return /en-us-x-sfg.*female|en-gb-x-.*female/i.test(v.name);},
+    // 4. Any explicitly female English voice
+    function(v){return /female|victoria|karen|tessa|fiona|moira|serena|zira|kate/i.test(v.name) && /en/i.test(v.lang);},
+    // 5. Any English voice that isn't explicitly male
+    function(v){return /^en(-|_)/i.test(v.lang) && !/male/i.test(v.name);},
+    // 6. Fallback
+    function(v){return /^en/i.test(v.lang);},
+    function(v){return true;}
+  ];
+  for(var i=0;i<prefs.length;i++){
+    var hit=list.find(prefs[i]);
+    if(hit){_soVoice=hit;return hit;}
+  }
+  return null;
+}
+// Voices often load asynchronously on first use
+if(window.speechSynthesis){
+  try{speechSynthesis.onvoiceschanged=function(){_soVoice=null;_soPickVoice();};}catch(e){}
+}
+function _soSpeak(msg){
+  if(!_soSoundOn||!window.speechSynthesis) return;
+  // Throttle: don't speak the same msg within 1.5s or anything within 0.8s
+  var now=Date.now();
+  if(now-_soLastSpokenAt < 800) return;
+  if(msg===_soLastSpokenMsg && now-_soLastSpokenAt < 1800) return;
+  try{
+    // Cancel prior so the newest guidance wins (no queue build-up)
+    speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(msg);
+    var v=_soPickVoice(); if(v) u.voice=v;
+    // Siri-like delivery: natural pace, neutral pitch, clear articulation
+    u.rate=1.0; u.pitch=1.0; u.volume=1.0; u.lang=(v&&v.lang)||'en-US';
+    speechSynthesis.speak(u);
+    _soLastSpokenAt=now; _soLastSpokenMsg=msg;
+  }catch(e){}
+}
+// Compose "0.8 metres, north-east" style guidance from distance + bearing
+function _soVoiceGuide(dist, bearing){
+  if(dist==null||!isFinite(dist)) return;
+  if(dist<=0.05){ _soSpeak('On target'); return; }
+  if(dist>1.5) return;   // only guide when very close
+  var b=((bearing%360)+360)%360;
+  var dirs=['north','north east','east','south east','south','south west','west','north west'];
+  var dir=dirs[Math.round(b/45)%8];
+  var distTxt;
+  if(dist<0.1) distTxt=Math.round(dist*100)+' centimetres';
+  else if(dist<1) distTxt=(dist).toFixed(1).replace(/\.0$/,'')+' metres';
+  else distTxt=dist.toFixed(1)+' metres';
+  _soSpeak(distTxt+', '+dir);
+}
+
 function _getAudioCtx(){
   if(!_soAudio){
     try{_soAudio=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}
@@ -7441,8 +7893,12 @@ function toggleSOSound(){
   _soSoundOn=!_soSoundOn;
   var btn=document.getElementById('so-sound-btn');
   if(btn){btn.textContent=_soSoundOn?'🔔':'🔕';btn.style.color=_soSoundOn?'#3CD87A':'#4A7090';}
-  if(!_soSoundOn&&_soBeepTimer){clearTimeout(_soBeepTimer);_soBeepTimer=null;}
-  else if(_soSoundOn)_soScheduleSound(_soLastDist);
+  if(!_soSoundOn){
+    if(_soBeepTimer){clearTimeout(_soBeepTimer);_soBeepTimer=null;}
+    try{if(window.speechSynthesis)speechSynthesis.cancel();}catch(e){}
+  } else {
+    _soScheduleSound(_soLastDist);
+  }
   toast('Sound '+ (_soSoundOn?'ON':'OFF'));
 }
 
@@ -7628,14 +8084,50 @@ function parseNMEA(line){
     var alt=parseFloat(f[9])||0;  // ellipsoidal
     var geoidSep=parseFloat(f[11])||0;
     if(isNaN(lat)||isNaN(lng))return;
+    // Ignore No-Fix GGA entirely — stops 2mm↔300m accuracy bouncing
+    // when the rover momentarily loses fix between epochs.
+    if(fix===0){
+      ST.gnss.fix='No Fix';
+      updGNSSDisplay();
+      return;
+    }
+    // Sanity-clamp HDOP — some receivers emit 99.99 during reacquisition
+    if(hdop>50) hdop=0;
+    // ── Position jump filter ──────────────────────────────────────────────────
+    // Reject coordinate jumps that would require impossible walking speed.
+    // Max plausible movement = prev HA + fix-type sigma + generous 5 m/s walk.
+    // If a fix is wildly outside that, it's a rover glitch — keep the old pos.
+    var prevLat=ST.gnss.lat, prevLng=ST.gnss.lng;
+    if(prevLat && prevLng && Math.abs(prevLat)+Math.abs(prevLng) > 1){
+      var _dLat=(lat-prevLat)*111320;
+      var _dLng=(lng-prevLng)*111320*Math.cos(prevLat*Math.PI/180);
+      var _jump=Math.sqrt(_dLat*_dLat + _dLng*_dLng);
+      var now=Date.now();
+      var dt=ST.gnss._lastFixT ? Math.max(0.2,(now-ST.gnss._lastFixT)/1000) : 1;
+      // Allow previous HA + RTK-mode slack + 5 m/s walking * dt
+      var maxJump = (ST.gnss.ha||3)*3 + 5*dt + 2;
+      if(_jump > maxJump && _jump > 10){
+        // Bad fix — keep the old position, drop this GGA's lat/lng but still
+        // update sats/fix so the UI reflects the dropout.
+        ST.gnss.fix=fixStr+' (reject)'; ST.gnss.fixQuality=fix; ST.gnss.sats=sats;
+        ST.gnss._jumpCount=(ST.gnss._jumpCount||0)+1;
+        // After 3 consecutive rejects the rover has truly moved — accept it.
+        if(ST.gnss._jumpCount < 3){ updGNSSDisplay(); return; }
+      } else {
+        ST.gnss._jumpCount=0;
+      }
+      ST.gnss._lastFixT=now;
+    } else {
+      ST.gnss._lastFixT=Date.now();
+    }
     // Map NMEA fix quality to fix type string
-    var fixStr={0:'No Fix',1:'GPS',2:'DGPS',4:'RTK Fixed',5:'RTK Float',6:'Est.'}[fix]||'GPS';
+    var fixStr2={1:'GPS',2:'DGPS',4:'RTK Fixed',5:'RTK Float',6:'Est.'}[fix]||'GPS';
     ST.gnss.lat=lat; ST.gnss.lng=lng;
     ST.gnss.hell=alt;
     ST.gnss.hort=alt-geoidSep; // H = h - N (from NMEA)
     ST.gnss.geoidSep=geoidSep;
     ST.gnss.sats=sats;
-    ST.gnss.fix=fixStr;
+    ST.gnss.fix=fixStr2;
     ST.gnss.fixQuality=fix;
     ST.gnss.hdop=hdop;
     ST.gnss.realGps=true;
@@ -7645,7 +8137,19 @@ function parseNMEA(line){
     // industry-standard 1-sigma User Equivalent Range Error per fix mode.
     if(!ST.gnss._gstFresh){
       var UERE={4:0.007, 5:0.040, 2:0.700, 1:3.000, 6:10.000}[fix]||3.000;
-      ST.gnss.ha = hdop>0 ? hdop*UERE : UERE;
+      var haNew = hdop>0 ? hdop*UERE : UERE;
+      // Clamp per fix type to prevent unrealistic swings (2mm, 300m...)
+      var clamp={
+        4:[0.005, 0.10],   // RTK Fixed: 5mm – 10cm
+        5:[0.02,  1.00],   // RTK Float: 2cm – 1m
+        2:[0.30,  3.00],   // DGPS: 30cm – 3m
+        1:[1.00,  30.00],  // GPS: 1m – 30m
+        6:[3.00,  50.00],  // Dead reckoning
+        0:[10.0,  99.99]   // No fix
+      }[fix]||[1.0,30.0];
+      if(haNew<clamp[0]) haNew=clamp[0];
+      if(haNew>clamp[1]) haNew=clamp[1];
+      ST.gnss.ha = haNew;
     }
     // Update map marker
     var ll=L.latLng(lat,lng);
@@ -7654,26 +8158,43 @@ function parseNMEA(line){
       else{ST.gpsMkr.setLatLng(ll);if(ST.gpsCirc)ST.gpsCirc.setLatLng(ll);}
       if(ST.trackMode)MAP.panTo(ll,{animate:true,duration:0.5});
     }
-    btSetStatus('✓ '+fixStr+' · '+sats+' sats · HA '+ST.gnss.ha.toFixed(3)+'m',
+    btSetStatus('✓ '+fixStr2+' · '+sats+' sats · HA '+(ST.gnss.ha!=null?ST.gnss.ha.toFixed(3):'--')+'m',
       fix>=4?'#3CD87A':fix>=2?'#FFAA40':'#F44336',true);
     var srcLabel=document.getElementById('gps-src-label');
     if(srcLabel)srcLabel.textContent='Rover ✓';
     updGNSSDisplay();
   } else if(type==='GST'&&f.length>=9){
     // $GNGST,time,rms,stdMaj,stdMin,orient,stdLat,stdLon,stdAlt*cs
-    // This is the TRUE accuracy straight from the rover's Kalman filter —
-    // 1-sigma standard deviation of the position solution. Use this over
-    // HDOP×UERE whenever it's available.
+    // TRUE 1-sigma straight from the rover's Kalman filter. Hardened against
+    // glitches — some rovers emit bad GST during fix transitions (0.002 or
+    // 400.00 values). We clamp per fix mode AND reject single-reading spikes
+    // that are 10× the rolling baseline.
     var stdLat=parseFloat(f[6]);
     var stdLon=parseFloat(f[7]);
     var stdAlt=parseFloat(f[8]);
     if(!isNaN(stdLat)&&!isNaN(stdLon)&&stdLat>0&&stdLon>0){
-      ST.gnss.ha = Math.sqrt(stdLat*stdLat + stdLon*stdLon);
+      var gstHa = Math.sqrt(stdLat*stdLat + stdLon*stdLon);
+      // Fix-type clamp (same bounds as the GGA fallback)
+      var fq=ST.gnss.fixQuality||1;
+      var gClamp={
+        4:[0.005, 0.10],  5:[0.02,  1.00],  2:[0.30,  3.00],
+        1:[1.00,  30.00], 6:[3.00,  50.00], 0:[10.0, 99.99]
+      }[fq]||[0.005,50];
+      if(gstHa<gClamp[0]) gstHa=gClamp[0];
+      if(gstHa>gClamp[1]) gstHa=gClamp[1];
+      // Reject single-reading spikes: if new is >10× the current HA and > 1m
+      // away absolutely, it's a glitch. Keep the previous HA.
+      var prevHa=ST.gnss.ha;
+      if(prevHa>0 && gstHa>prevHa*10 && (gstHa-prevHa)>1){
+        // Drop this GST — don't update ha
+      } else {
+        ST.gnss.ha = gstHa;
+      }
       ST.gnss._gstFresh = true;
       clearTimeout(ST.gnss._gstTimer);
       ST.gnss._gstTimer = setTimeout(function(){ST.gnss._gstFresh=false;},3000);
     }
-    if(!isNaN(stdAlt)&&stdAlt>0) ST.gnss.va = stdAlt;
+    if(!isNaN(stdAlt)&&stdAlt>0 && stdAlt<50) ST.gnss.va = stdAlt;
     updGNSSDisplay();
   } else if(type==='RMC'&&f.length>=9){
     // Speed and heading
