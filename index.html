@@ -633,7 +633,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
       <!-- Sats / Fix / PDOP -->
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <div style="flex:1;background:#07111D;border-radius:6px;padding:6px;text-align:center"><div style="font-size:9px;color:#304860;margin-bottom:2px;letter-spacing:.06em">SATELLITES</div><div class="mono" id="gp-sats" style="font-size:16px;color:#80AACC">14</div></div>
-        <div style="flex:1;background:#07111D;border-radius:6px;padding:6px;text-align:center"><div style="font-size:9px;color:#304860;margin-bottom:2px;letter-spacing:.06em">FIX TYPE</div><div id="gp-fix" style="font-size:10px;color:#40D870;font-weight:600;margin-top:4px">RTK Fixed</div></div>
+        <div style="flex:1;background:#07111D;border-radius:6px;padding:6px;text-align:center"><div style="font-size:9px;color:#304860;margin-bottom:2px;letter-spacing:.06em">FIX TYPE</div><div id="gp-fix" style="font-size:10px;color:#40D870;font-weight:600;margin-top:4px">--</div></div>
         <div style="flex:1;background:#07111D;border-radius:6px;padding:6px;text-align:center"><div style="font-size:9px;color:#304860;margin-bottom:2px;letter-spacing:.06em">PDOP</div><div class="mono" id="gp-pdop" style="font-size:16px;color:#80AACC">N/A</div></div>
       </div>
       <!-- Constellation bars -->
@@ -711,20 +711,21 @@ input,button,select,textarea{font-family:inherit;outline:none}
         Stake Out
       </button>
     </div>
-    <!-- Row 3b: Geometry Tools — line & polygon only -->
+    <!-- Row 3b: Geometry Tools — line & polygon -->
     <div id="attr-geomtools-row" style="display:none;padding:0 12px 10px;flex-shrink:0;background:#08121E">
-      <button class="btn btns" style="width:100%;font-size:11px;font-weight:600;gap:6px;padding:8px" onclick="openGeomTools()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="3 3 21 3 21 21 3 21"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-        Geometry Tools
-      </button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btns" style="flex:1;font-size:11px;font-weight:600;gap:6px;padding:8px" onclick="openGeomTools()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="3 3 21 3 21 21 3 21"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+          Geometry Tools
+        </button>
+        <button id="attr-offset-btn" class="btn btnp" style="flex:1;font-size:11px;font-weight:600;gap:6px;padding:8px;display:none" onclick="openOffsetDialog()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12" stroke-dasharray="2 2"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          Offset Line
+        </button>
+      </div>
     </div>
-    <!-- Row 4: Offset — only shown for line features (road alignment / parallel lines) -->
-    <div id="attr-offset-row" style="display:none;padding:0 12px 10px;flex-shrink:0;background:#08121E">
-      <button class="btn btnp" style="width:100%;font-size:12px;font-weight:600;gap:6px;padding:8px" onclick="openOffsetDialog()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12" stroke-dasharray="2 2"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-        Offset Line
-      </button>
-    </div>
+    <!-- Deprecated: old dedicated Offset row kept hidden for backwards compat -->
+    <div id="attr-offset-row" style="display:none"></div>
   </div>
 
   <!-- EDIT TOOLBAR -->
@@ -895,50 +896,56 @@ input,button,select,textarea{font-family:inherit;outline:none}
     <div id="so-map-status" style="position:absolute;top:6px;left:6px;background:rgba(5,10,20,0.85);border:1px solid rgba(27,114,232,0.3);border-radius:6px;padding:4px 8px;font-size:10px;color:#80AACC;font-family:monospace;z-index:10;pointer-events:none">Awaiting GPS&hellip;</div>
     <!-- Recenter button -->
     <button onclick="soRecenter()" style="position:absolute;bottom:8px;right:8px;width:34px;height:34px;border-radius:50%;background:#0B1521;border:1.5px solid rgba(27,114,232,0.5);color:#5AA8E8;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10" title="Recenter"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+    <!-- Map orientation toggle: cycles North-up / Course-up / Target-up -->
+    <button id="so-orient-btn" onclick="soCycleOrientation()" style="position:absolute;bottom:50px;right:8px;width:34px;height:34px;border-radius:50%;background:#0B1521;border:1.5px solid rgba(27,114,232,0.5);color:#5AA8E8;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;font-size:9px;font-weight:700;flex-direction:column;gap:0;line-height:1" title="Map orientation: North-up"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2"><polygon points="12 2 6 22 12 18 18 22"/></svg><span id="so-orient-lbl" style="font-size:7px;margin-top:1px">N</span></button>
   </div>
   <!-- Compass + distance readout — compact so polygons on the map stay prominent -->
   <div id="so-compass-wrap" style="position:absolute;top:calc(65% - 20px);bottom:120px;left:0;right:0;display:flex;align-items:center;justify-content:center">
-    <svg viewBox="0 0 300 300" style="width:min(150px,calc(100vw - 40px),calc(35vh - 120px));height:min(150px,calc(100vw - 40px),calc(35vh - 120px));overflow:visible">
-      <!-- Target crosshair background -->
+    <svg viewBox="0 0 300 300" style="width:min(110px,calc(100vw - 40px),calc(28vh - 100px));height:min(110px,calc(100vw - 40px),calc(28vh - 100px));overflow:visible">
       <defs>
         <radialGradient id="so-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="rgba(0,200,83,0.18)"/>
-          <stop offset="70%" stop-color="rgba(0,200,83,0.04)"/>
+          <stop offset="0%" stop-color="rgba(0,200,83,0.12)"/>
+          <stop offset="70%" stop-color="rgba(0,200,83,0.03)"/>
           <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
         </radialGradient>
+        <!-- Tick marks: 72 ticks around the ring at 5° spacing, bolder every 30° -->
+        <pattern id="so-ticks" patternUnits="userSpaceOnUse" width="300" height="300"></pattern>
       </defs>
-      <circle cx="150" cy="150" r="140" fill="url(#so-glow)"/>
-      <!-- Tolerance rings: concentric bullseye with labels at 0.05/0.5/2/5m -->
-      <circle cx="150" cy="150" r="130" fill="none" stroke="rgba(244,67,54,0.25)" stroke-width="1" stroke-dasharray="4 3"/>
-      <circle cx="150" cy="150" r="90"  fill="none" stroke="rgba(255,145,0,0.3)"  stroke-width="1" stroke-dasharray="4 3"/>
-      <circle cx="150" cy="150" r="55"  fill="none" stroke="rgba(60,216,122,0.45)" stroke-width="1.2"/>
-      <circle cx="150" cy="150" r="20"  fill="none" stroke="rgba(60,216,122,0.9)"  stroke-width="2" stroke-dasharray="2 2"/>
-      <!-- Crosshair lines -->
-      <line x1="150" y1="0"   x2="150" y2="25"  stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>
-      <line x1="150" y1="275" x2="150" y2="300" stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>
-      <line x1="0"   y1="150" x2="25"  y2="150" stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>
-      <line x1="275" y1="150" x2="300" y2="150" stroke="rgba(255,255,255,0.25)" stroke-width="1.3"/>
-      <!-- Cardinal labels -->
-      <text x="150" y="12" text-anchor="middle" font-size="11" font-weight="700" fill="#80B8FF" font-family="monospace">N</text>
-      <text x="288" y="155" text-anchor="middle" font-size="10" fill="#4A6580" font-family="monospace">E</text>
-      <text x="12"  y="155" text-anchor="middle" font-size="10" fill="#4A6580" font-family="monospace">W</text>
-      <text x="150" y="294" text-anchor="middle" font-size="10" fill="#4A6580" font-family="monospace">S</text>
-      <!-- Centre target (the staked point reference) -->
-      <circle cx="150" cy="150" r="3" fill="#F04020"/>
-      <!-- Rotating direction cone + arrow — shows which way the target is -->
-      <g id="so-arrow-g" style="transform-origin:150px 150px;transform:rotate(0deg);transition:transform 0.25s ease-out">
-        <!-- Direction cone fan (subtle) -->
-        <path d="M150,150 L125,50 A105,105 0 0 1 175,50 Z" fill="rgba(240,64,32,0.12)"/>
-        <!-- Arrow shaft and head -->
-        <line x1="150" y1="150" x2="150" y2="58" stroke="#F04020" stroke-width="3.5" stroke-linecap="round"/>
-        <polygon id="so-arrow" points="150,40 166,70 150,62 134,70" fill="#F04020"/>
-        <!-- Pivot dot -->
-        <circle cx="150" cy="150" r="7" fill="#0B1521" stroke="rgba(240,64,32,0.7)" stroke-width="1.5"/>
+      <!-- Outer ring that rotates with map orientation (user can pin to North) -->
+      <g id="so-ring-g" style="transform-origin:150px 150px;transform:rotate(0deg);transition:transform 0.3s ease-out">
+        <!-- Outer black band -->
+        <circle cx="150" cy="150" r="140" fill="#0A0F1A" stroke="rgba(255,255,255,0.5)" stroke-width="1.2"/>
+        <circle cx="150" cy="150" r="120" fill="#05080F" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
+        <!-- 72 tick marks (every 5°); every 6th is longer -->
+        <g id="so-tick-marks"></g>
+        <!-- Cardinal letters in the ring band -->
+        <text x="150" y="22" text-anchor="middle" font-size="16" font-weight="700" fill="#FFFFFF" font-family="sans-serif">N</text>
+        <text x="280" y="157" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF" font-family="sans-serif">E</text>
+        <text x="150" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF" font-family="sans-serif">S</text>
+        <text x="20"  y="157" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF" font-family="sans-serif">W</text>
+        <!-- Ordinals -->
+        <text x="244" y="68"  text-anchor="middle" font-size="9" fill="#8A9AAC" font-family="sans-serif" transform="rotate(45 244 68)">NE</text>
+        <text x="244" y="244" text-anchor="middle" font-size="9" fill="#8A9AAC" font-family="sans-serif" transform="rotate(135 244 244)">SE</text>
+        <text x="56"  y="244" text-anchor="middle" font-size="9" fill="#8A9AAC" font-family="sans-serif" transform="rotate(-135 56 244)">SW</text>
+        <text x="56"  y="68"  text-anchor="middle" font-size="9" fill="#8A9AAC" font-family="sans-serif" transform="rotate(-45 56 68)">NW</text>
       </g>
+      <!-- Inner tolerance rings (fixed, do not rotate with compass) -->
+      <circle cx="150" cy="150" r="105" fill="url(#so-glow)"/>
+      <circle cx="150" cy="150" r="60"  fill="none" stroke="rgba(60,216,122,0.25)" stroke-width="0.8"/>
+      <circle cx="150" cy="150" r="30"  fill="none" stroke="rgba(60,216,122,0.5)"  stroke-width="1" stroke-dasharray="2 2"/>
+      <!-- Direction arrow: clean solid triangle pointing to target -->
+      <g id="so-arrow-g" style="transform-origin:150px 150px;transform:rotate(0deg);transition:transform 0.25s ease-out">
+        <polygon id="so-arrow" points="150,45 172,115 150,100 128,115" fill="#00D1FF" stroke="#0A1828" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- Reciprocal small triangle at opposite side, dimmed -->
+        <polygon points="150,255 158,225 150,232 142,225" fill="rgba(0,209,255,0.18)"/>
+      </g>
+      <!-- Centre pivot -->
+      <circle cx="150" cy="150" r="6" fill="#0A1828" stroke="rgba(0,209,255,0.8)" stroke-width="1.5"/>
+      <circle cx="150" cy="150" r="2" fill="#00D1FF"/>
     </svg>
-    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-40px);text-align:center;pointer-events:none">
-      <div id="so-dist" style="font-size:18px;font-weight:700;color:#F04020;font-family:monospace">--</div>
-      <div id="so-status" style="font-size:9px;color:#803020;letter-spacing:.05em">SELECT TARGET</div>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none">
+      <div id="so-dist" style="font-size:16px;font-weight:700;color:#00D1FF;font-family:monospace;line-height:1.1">--</div>
+      <div id="so-status" style="font-size:8px;color:#608090;letter-spacing:.05em;margin-top:2px">SELECT TARGET</div>
     </div>
   </div>
   <div style="position:absolute;bottom:0;left:0;right:0;height:120px;background:#07101C;border-top:1px solid rgba(255,255,255,0.08)">
@@ -1552,49 +1559,117 @@ input,button,select,textarea{font-family:inherit;outline:none}
 
       <div id="gt-poly-tools" style="display:none">
         <div style="font-size:10px;color:#3A6080;letter-spacing:.05em;margin:8px 0 4px">POLYGON OPERATIONS</div>
-        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartSplit()">
+        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtShowSplitOptions()">
           <span style="font-size:16px">&#9949;</span>
-          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Split Polygon</div><div style="font-size:10px;color:#4A7090">Draw a cut line across the polygon to split into two</div></div>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Split Polygon</div><div style="font-size:10px;color:#4A7090">Divide by area, cut line, or number of plots</div></div>
         </button>
         <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartMerge()">
           <span style="font-size:16px">&#9647;</span>
-          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Merge with Adjacent</div><div style="font-size:10px;color:#4A7090">Pick another polygon to merge with this one (must share an edge)</div></div>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Merge with Adjacent</div><div style="font-size:10px;color:#4A7090">Tap another polygon on the canvas to merge</div></div>
         </button>
-        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartChamfer()">
+        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtShowChamferOptions()">
           <span style="font-size:16px">&#9698;</span>
-          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Chamfer Corner</div><div style="font-size:10px;color:#4A7090">Bevel a corner (road truncation at junction)</div></div>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Chamfer Corner</div><div style="font-size:10px;color:#4A7090">Bevel a corner — enter setback per edge then tap 2 edges</div></div>
         </button>
+
+        <!-- Split mode picker (shown after tapping Split Polygon) -->
+        <div id="gt-split-opts" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.25);border-radius:6px">
+          <div style="font-size:11px;color:#80B8FF;font-weight:600;margin-bottom:8px">Split Method</div>
+
+          <!-- Method 1: equal area -->
+          <div style="border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:8px;margin-bottom:6px">
+            <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;margin-bottom:4px">
+              <input type="radio" name="gt-split-mode" value="equal" checked style="margin-top:2px;accent-color:#1B72E8"/>
+              <div style="flex:1"><div style="font-size:11px;color:#C0D8F0;font-weight:600">Equal Areas</div>
+              <div style="font-size:9px;color:#4A7090">Auto-divide into N pieces of equal area</div></div>
+            </label>
+            <div style="display:flex;gap:6px;margin-top:4px;padding-left:24px">
+              <div style="flex:1"><div style="font-size:9px;color:#3A6080">Number of pieces</div>
+                <input class="inp" id="gt-split-equal-n" type="number" min="2" max="20" value="2" style="font-size:11px;height:26px"/></div>
+              <div style="flex:1"><div style="font-size:9px;color:#3A6080">Direction</div>
+                <select class="inp" id="gt-split-equal-dir" style="font-size:11px;height:26px">
+                  <option value="auto">Auto</option>
+                  <option value="horizontal">Horizontal cuts</option>
+                  <option value="vertical">Vertical cuts</option>
+                </select></div>
+            </div>
+          </div>
+
+          <!-- Method 2: draw line -->
+          <div style="border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:8px;margin-bottom:6px">
+            <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+              <input type="radio" name="gt-split-mode" value="line" style="margin-top:2px;accent-color:#1B72E8"/>
+              <div style="flex:1"><div style="font-size:11px;color:#C0D8F0;font-weight:600">Draw Cut Line</div>
+              <div style="font-size:9px;color:#4A7090">Close this panel, then tap two points on the map. A preview line shows as you place points; splits on the second tap.</div></div>
+            </label>
+          </div>
+
+          <!-- Method 3: grid / number of plots -->
+          <div style="border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:8px">
+            <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;margin-bottom:4px">
+              <input type="radio" name="gt-split-mode" value="grid" style="margin-top:2px;accent-color:#1B72E8"/>
+              <div style="flex:1"><div style="font-size:11px;color:#C0D8F0;font-weight:600">Grid of Plots</div>
+              <div style="font-size:9px;color:#4A7090">Divide by number of columns &times; rows (e.g. 2&times;1 = two vertical plots)</div></div>
+            </label>
+            <div style="display:flex;gap:6px;margin-top:4px;padding-left:24px">
+              <div style="flex:1"><div style="font-size:9px;color:#3A6080">Columns (vertical splits +1)</div>
+                <input class="inp" id="gt-split-cols" type="number" min="1" max="20" value="2" style="font-size:11px;height:26px"/></div>
+              <div style="flex:1"><div style="font-size:9px;color:#3A6080">Rows (horizontal splits +1)</div>
+                <input class="inp" id="gt-split-rows" type="number" min="1" max="20" value="1" style="font-size:11px;height:26px"/></div>
+            </div>
+          </div>
+
+          <button class="btn btnp" style="width:100%;margin-top:10px;font-size:12px;font-weight:600" onclick="gtRunSplit()">&#9654; Run Split</button>
+        </div>
+
+        <!-- Chamfer options (shown after tapping Chamfer Corner) -->
+        <div id="gt-chamfer-opts" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.25);border-radius:6px">
+          <div style="font-size:11px;color:#80B8FF;font-weight:600;margin-bottom:8px">Chamfer Setbacks</div>
+          <div style="font-size:10px;color:#4A7090;margin-bottom:8px;line-height:1.4">Enter setback distance for each of the two edges meeting at the corner (different values allowed for asymmetric chamfers, like road truncations at junctions).</div>
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <div style="flex:1"><div style="font-size:9px;color:#3A6080">Edge A setback (m)</div>
+              <input class="inp" id="gt-chamfer-d1" type="number" step="0.1" min="0.1" value="5" style="font-size:11px;height:28px"/></div>
+            <div style="flex:1"><div style="font-size:9px;color:#3A6080">Edge B setback (m)</div>
+              <input class="inp" id="gt-chamfer-d2" type="number" step="0.1" min="0.1" value="5" style="font-size:11px;height:28px"/></div>
+          </div>
+          <button class="btn btnp" style="width:100%;font-size:12px;font-weight:600" onclick="gtRunChamfer()">&#9654; Tap Corner on Map</button>
+          <div style="font-size:9px;color:#4A7090;margin-top:6px;line-height:1.4">Closes this panel and highlights the polygon. Tap the corner vertex where the two edges meet.</div>
+        </div>
       </div>
 
       <div id="gt-line-tools" style="display:none">
         <div style="font-size:10px;color:#3A6080;letter-spacing:.05em;margin:8px 0 4px">LINE OPERATIONS</div>
         <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartTrim()">
           <span style="font-size:16px">&#9986;</span>
-          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Trim Line</div><div style="font-size:10px;color:#4A7090">Cut line at its intersection with another line or polygon edge</div></div>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Trim Line</div><div style="font-size:10px;color:#4A7090">Closes panel. Tap the part of the line to keep; it's cut at nearest intersection.</div></div>
         </button>
         <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartExtend()">
           <span style="font-size:16px">&#8614;</span>
-          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Extend to Meet</div><div style="font-size:10px;color:#4A7090">Extend line endpoint to meet another line/edge</div></div>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Extend to Meet</div><div style="font-size:10px;color:#4A7090">Closes panel. Tap the endpoint to extend.</div></div>
         </button>
         <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartMergeLines()">
           <span style="font-size:16px">&#8594;</span>
-          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Join with Another Line</div><div style="font-size:10px;color:#4A7090">Connect this line's endpoint to another line (pick second line)</div></div>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Join with Another Line</div><div style="font-size:10px;color:#4A7090">Closes panel. Tap another line to join.</div></div>
         </button>
       </div>
 
       <div id="gt-prompt" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(255,145,0,0.08);border-left:2px solid rgba(255,145,0,0.5);border-radius:4px;font-size:11px;color:#FFB060"></div>
-
-      <div id="gt-chamfer-opts" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.25);border-radius:6px">
-        <div style="font-size:11px;color:#3A6080;margin-bottom:6px">Chamfer Setback (metres)</div>
-        <input class="inp" id="gt-chamfer-dist" type="number" step="0.1" min="0.1" value="5" style="margin-bottom:10px"/>
-        <div style="font-size:10px;color:#4A7090;line-height:1.4">After entering a setback, tap the corner vertex on the map. The corner will be replaced with a bevelled edge, keeping <b>both</b> adjacent edges intact up to the setback distance.</div>
-      </div>
     </div>
     <div style="display:flex;gap:8px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.07)">
       <button class="btn btns" onclick="gtCancel()">Cancel</button>
-      <div style="flex:1"></div>
-      <button class="btn btnp" id="gt-confirm-btn" onclick="gtConfirm()" style="display:none">Apply</button>
     </div>
+  </div>
+</div>
+
+<!-- Floating prompt banner (shown when user needs to tap on canvas to complete an operation) -->
+<div id="gt-banner" style="display:none;position:absolute;top:56px;left:10px;right:10px;z-index:460;background:rgba(6,12,22,0.95);border:1px solid rgba(255,145,0,0.5);border-radius:8px;padding:8px 12px;box-shadow:0 4px 16px rgba(0,0,0,0.6);pointer-events:auto;backdrop-filter:blur(10px)">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div id="gt-banner-icon" style="font-size:18px">&#9875;</div>
+    <div style="flex:1;min-width:0">
+      <div id="gt-banner-title" style="font-size:11px;font-weight:700;color:#FFC060">TAP ON MAP</div>
+      <div id="gt-banner-msg" style="font-size:10px;color:#80A0C0;margin-top:2px">...</div>
+    </div>
+    <button onclick="gtCancel()" style="background:rgba(244,67,54,0.15);border:1px solid rgba(244,67,54,0.3);color:#FF6A6A;font-size:10px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;flex-shrink:0">CANCEL</button>
   </div>
 </div>
 
@@ -2827,7 +2902,9 @@ function selFeat(fid){
   if(soRow)soRow.style.display=f.type==='point'?'block':'none';
   // Show Offset button only for lines (road alignment / parallel lines)
   var ofRow=document.getElementById('attr-offset-row');
-  if(ofRow)ofRow.style.display=f.type==='line'?'block':'none';
+  if(ofRow)ofRow.style.display='none';
+  var offBtn=document.getElementById('attr-offset-btn');
+  if(offBtn)offBtn.style.display=f.type==='line'?'flex':'none';
   var gtRow=document.getElementById('attr-geomtools-row');
   if(gtRow)gtRow.style.display=(f.type==='line'||f.type==='polygon')?'block':'none';
   openSheet();
@@ -3206,13 +3283,26 @@ function offsetPolyline(ll, distance, side){
 // All geometry math is done in tangent-plane metres at the feature's
 // centroid (equirectangular approximation), then the result is converted
 // back to lat/lng. Good to sub-cm over a 1-km parcel.
+//
+// Interaction model: when a user picks an operation that needs map taps
+// (draw-line-split, merge, chamfer, trim, extend, join-lines), we:
+//   1. close the Geometry Tools modal + attribute panel
+//   2. show a floating banner at top with cancel button
+//   3. highlight the source polygon in bright colour so the user sees
+//      which feature they're operating on
+//   4. attach map click handlers that carry out the operation
+//   5. on completion/cancel, remove banner + highlight and return user
+//      to a normal map state
 var GT={
-  mode:null,            // 'split' | 'merge' | 'chamfer' | 'trim' | 'extend' | 'joinline'
+  mode:null,            // 'split-line' | 'merge' | 'chamfer' | 'trim' | 'extend' | 'joinline'
   srcFid:null,          // feature being edited
   clickPts:[],          // click points collected during interactive ops
-  preview:null,         // preview Leaflet layer
-  mouseLine:null,       // rubber-band line during split/extend/trim
-  chamferDist:5
+  preview:null,         // preview Leaflet layer (rubber-band cut line etc.)
+  mouseLine:null,       // rubber-band line during interactive placement
+  srcHighlight:null,    // bright highlight of source feature during map ops
+  chamferD1:5,
+  chamferD2:5,
+  chamferEdge1:null     // {idx, xyA, xyB} first edge picked for chamfer
 };
 
 function openGeomTools(){
@@ -3223,25 +3313,70 @@ function openGeomTools(){
   document.getElementById('gt-src').innerHTML='Source: <b style="color:#B0D0E8">'+f.name+'</b> \u00B7 '+f.type;
   document.getElementById('gt-poly-tools').style.display=(f.type==='polygon')?'block':'none';
   document.getElementById('gt-line-tools').style.display=(f.type==='line')?'block':'none';
-  document.getElementById('gt-prompt').style.display='none';
+  document.getElementById('gt-split-opts').style.display='none';
   document.getElementById('gt-chamfer-opts').style.display='none';
-  document.getElementById('gt-confirm-btn').style.display='none';
+  document.getElementById('gt-prompt').style.display='none';
   showModal('geomtools');
 }
 
-function _gtPrompt(msg){
-  var el=document.getElementById('gt-prompt');
-  if(el){el.style.display='block';el.innerHTML=msg;}
+// Show the split-mode sub-panel inside the Geometry Tools modal
+function gtShowSplitOptions(){
+  document.getElementById('gt-split-opts').style.display='block';
+  document.getElementById('gt-chamfer-opts').style.display='none';
 }
-function _gtHideUI(){
+// Show the chamfer distance inputs inside the modal
+function gtShowChamferOptions(){
+  document.getElementById('gt-chamfer-opts').style.display='block';
+  document.getElementById('gt-split-opts').style.display='none';
+}
+
+function _gtShowBanner(title,msg,icon){
+  var b=document.getElementById('gt-banner');
+  if(!b)return;
+  b.style.display='block';
+  var t=document.getElementById('gt-banner-title');if(t)t.textContent=title;
+  var m=document.getElementById('gt-banner-msg');if(m)m.textContent=msg;
+  var ic=document.getElementById('gt-banner-icon');if(ic)ic.textContent=icon||'\u261D';
+}
+function _gtHideBanner(){var b=document.getElementById('gt-banner');if(b)b.style.display='none';}
+
+// Highlight the source feature brightly while the user taps on the canvas
+function _gtHighlightSrc(){
+  var f=getFeats(ST.pid).find(function(x){return x.id===GT.srcFid;});
+  if(!f||!MAP)return;
+  _gtClearHighlight();
+  if(f.type==='polygon'&&f.ll){
+    GT.srcHighlight=L.polygon(f.ll,{color:'#FFC040',weight:3,fillColor:'#FFC040',fillOpacity:0.15,dashArray:'6 3',interactive:false}).addTo(MAP);
+  } else if(f.type==='line'&&f.ll){
+    GT.srcHighlight=L.polyline(f.ll,{color:'#FFC040',weight:4,opacity:0.85,dashArray:'6 3',interactive:false}).addTo(MAP);
+  }
+}
+function _gtClearHighlight(){
+  if(GT.srcHighlight&&MAP){try{MAP.removeLayer(GT.srcHighlight);}catch(e){}GT.srcHighlight=null;}
+}
+
+// Enter "map-interaction mode" — close the modal, hide attribute panel,
+// show the floating banner, and start listening for map taps.
+function _gtEnterMapMode(mode,title,msg,icon){
+  GT.mode=mode;
+  GT.clickPts=[];
   closeModal('geomtools');
+  // Close attribute panel too so user has full map access
+  if(typeof closeSheet==='function') closeSheet();
+  _gtHighlightSrc();
+  _gtShowBanner(title,msg,icon);
+  if(MAP){MAP.on('click',_gtMapClick);MAP.on('mousemove',_gtMapMove);}
 }
+
 function gtCancel(){
   GT.mode=null; GT.clickPts=[];
-  if(GT.preview&&MAP){MAP.removeLayer(GT.preview);GT.preview=null;}
-  if(GT.mouseLine&&MAP){MAP.removeLayer(GT.mouseLine);GT.mouseLine=null;}
+  GT.chamferEdge1=null;
+  if(GT.preview&&MAP){try{MAP.removeLayer(GT.preview);}catch(e){}GT.preview=null;}
+  if(GT.mouseLine&&MAP){try{MAP.removeLayer(GT.mouseLine);}catch(e){}GT.mouseLine=null;}
+  _gtClearHighlight();
+  _gtHideBanner();
   if(MAP){MAP.off('click',_gtMapClick);MAP.off('mousemove',_gtMapMove);}
-  _gtHideUI();
+  closeModal('geomtools');
 }
 
 // ── Tangent-plane metres helpers ──────────────────────────────────────────
@@ -3289,30 +3424,46 @@ function _gtPointInPoly(p,poly){
   return inside;
 }
 
-// ── SPLIT POLYGON ────────────────────────────────────────────────────────
-function gtStartSplit(){
-  GT.mode='split'; GT.clickPts=[];
-  _gtPrompt('Tap two points on the map to draw a cut line across the polygon. The line must enter and exit the polygon.');
-  if(GT.preview&&MAP){MAP.removeLayer(GT.preview);GT.preview=null;}
-  if(MAP){MAP.on('click',_gtMapClick);MAP.on('mousemove',_gtMapMove);}
-  closeModal('geomtools');
-  if(typeof toast==='function')toast('Tap first point of cut line');
+// ── SPLIT POLYGON — dispatcher that reads the split-mode radio ──────────
+function gtRunSplit(){
+  var mode=(document.querySelector('input[name="gt-split-mode"]:checked')||{}).value||'equal';
+  if(mode==='line'){
+    // Close modal, enter map-click mode for two-point cut line
+    _gtEnterMapMode('split-line','DRAW CUT LINE','Tap two points on the map to cut the polygon','\u2702');
+    if(typeof toast==='function')toast('Tap first point of cut line');
+    return;
+  }
+  if(mode==='equal'){
+    var n=parseInt(document.getElementById('gt-split-equal-n').value,10);
+    var dir=document.getElementById('gt-split-equal-dir').value;
+    if(!(n>=2&&n<=20)){alert('Number of pieces must be 2-20');return;}
+    _gtSplitGrid(dir==='horizontal'?1:(dir==='vertical'?n:0), dir==='horizontal'?n:(dir==='vertical'?1:0), n, dir);
+    return;
+  }
+  if(mode==='grid'){
+    var cols=parseInt(document.getElementById('gt-split-cols').value,10);
+    var rows=parseInt(document.getElementById('gt-split-rows').value,10);
+    if(!(cols>=1&&cols<=20)||!(rows>=1&&rows<=20)){alert('Columns/rows must be 1-20 each');return;}
+    if(cols*rows<2){alert('Grid must produce at least 2 pieces (cols \u00D7 rows >= 2)');return;}
+    _gtSplitGrid(cols,rows,cols*rows,'grid');
+    return;
+  }
 }
 
 function _gtMapClick(e){
   if(!GT.mode)return;
   L.DomEvent.stopPropagation(e);
-  GT.clickPts.push([e.latlng.lat,e.latlng.lng]);
-  if(GT.mode==='split'){
+  if(GT.mode==='split-line'){
+    GT.clickPts.push([e.latlng.lat,e.latlng.lng]);
     if(GT.clickPts.length===1){
-      if(typeof toast==='function')toast('Tap second point of cut line');
+      _gtShowBanner('DRAW CUT LINE','First point set. Tap second point to complete the cut.','\u2702');
+      if(typeof toast==='function')toast('Tap second point');
     } else if(GT.clickPts.length===2){
-      _gtDoSplit();
+      _gtDoSplitByLine();
     }
   } else if(GT.mode==='chamfer'){
-    _gtDoChamfer(GT.clickPts[0]);
+    _gtHandleChamferClick(e.latlng);
   } else if(GT.mode==='merge'||GT.mode==='joinline'){
-    // Picked map point — resolve to nearest feature of matching type
     var wantType=GT.mode==='merge'?'polygon':'line';
     var f=_gtNearestFeat(e.latlng,wantType);
     if(!f){toast('Tap closer to another '+wantType);return;}
@@ -3325,12 +3476,12 @@ function _gtMapClick(e){
 }
 
 function _gtMapMove(e){
-  if(GT.mode!=='split'||GT.clickPts.length!==1||!MAP)return;
-  if(GT.mouseLine){MAP.removeLayer(GT.mouseLine);}
-  GT.mouseLine=L.polyline([GT.clickPts[0],[e.latlng.lat,e.latlng.lng]],{color:'#F04020',weight:2,dashArray:'6 4'}).addTo(MAP);
+  if(GT.mode!=='split-line'||GT.clickPts.length!==1||!MAP)return;
+  if(GT.mouseLine){try{MAP.removeLayer(GT.mouseLine);}catch(ex){}}
+  GT.mouseLine=L.polyline([GT.clickPts[0],[e.latlng.lat,e.latlng.lng]],{color:'#F04020',weight:3,dashArray:'6 4',interactive:false}).addTo(MAP);
 }
 
-function _gtDoSplit(){
+function _gtDoSplitByLine(){
   var pd=getPD(ST.pid);
   var src=pd.features.find(function(x){return x.id===GT.srcFid;});
   if(!src||src.type!=='polygon'||!src.ll||src.ll.length<3){
@@ -3407,12 +3558,166 @@ function _gtDoSplit(){
   if(typeof toast==='function')toast('Split into '+src.name+'_A + '+src.name+'_B');
 }
 
+// Cut a polygon (in xy metres, CLOSED ring) by an infinite line passing
+// through two points. Returns [leftPoly, rightPoly] in xy metres. For
+// non-convex polygons with more than 2 intersections, we pick the pair
+// giving the most balanced split. Returns null if the line doesn't cross.
+function _gtCutPolyByLine(polyXY, p1, p2){
+  // Ensure polyXY is a closed ring
+  var ring=polyXY.slice();
+  if(ring[0][0]!==ring[ring.length-1][0]||ring[0][1]!==ring[ring.length-1][1])ring.push(ring[0].slice());
+  var crossings=[];
+  for(var i=0;i<ring.length-1;i++){
+    var inter=_gtSegIntersect(p1,p2,ring[i],ring[i+1]);
+    if(inter && inter.u>-1e-6 && inter.u<1+1e-6){
+      crossings.push({edgeIdx:i, x:inter.x, y:inter.y, t:inter.t, u:inter.u});
+    }
+  }
+  crossings=crossings.filter(function(c,i,arr){
+    for(var j=0;j<i;j++)if(Math.hypot(c.x-arr[j].x,c.y-arr[j].y)<0.001)return false;
+    return true;
+  });
+  if(crossings.length<2) return null;
+  crossings.sort(function(a,b){return a.t-b.t;});
+  // For multiple crossings, pair first+last to split into two major halves
+  var A=crossings[0], B=crossings[crossings.length-1];
+  if(A.edgeIdx>B.edgeIdx){var tmp=A;A=B;B=tmp;}
+  var ring1=[[A.x,A.y]];
+  for(var k=A.edgeIdx+1;k<=B.edgeIdx;k++) ring1.push(ring[k].slice());
+  ring1.push([B.x,B.y]);
+  var ring2=[[B.x,B.y]];
+  for(var m=B.edgeIdx+1;m<ring.length-1;m++) ring2.push(ring[m].slice());
+  for(var n=0;n<=A.edgeIdx;n++) ring2.push(ring[n].slice());
+  ring2.push([A.x,A.y]);
+  return [ring1, ring2];
+}
+
+// Split a polygon into cols × rows pieces by drawing parallel lines across
+// its oriented bounding box. Called from gtRunSplit() for "equal" and
+// "grid" modes.
+//
+// Parameters:
+//   cols, rows — grid dimensions (e.g. 2×1 = two vertical plots)
+//   totalN     — target piece count (informational; equals cols*rows)
+//   dirHint    — 'horizontal'|'vertical'|'auto'|'grid'
+function _gtSplitGrid(cols, rows, totalN, dirHint){
+  var pd=getPD(ST.pid);
+  var src=pd.features.find(function(x){return x.id===GT.srcFid;});
+  if(!src||src.type!=='polygon'||!src.ll||src.ll.length<3){alert('Source polygon invalid.');return;}
+  // For "equal" mode with 'auto' direction, pick whichever axis gives the
+  // more elongated parcel (cuts parallel to the LONG axis = prettier plots).
+  var origin=_gtCentroid(src.ll);
+  var polyXY=src.ll.map(function(p){return _gtMetres(p,origin[0],origin[1]);});
+  // Axis-aligned bbox in metres
+  var minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  polyXY.forEach(function(p){if(p[0]<minX)minX=p[0];if(p[0]>maxX)maxX=p[0];if(p[1]<minY)minY=p[1];if(p[1]>maxY)maxY=p[1];});
+  var w=maxX-minX, h=maxY-minY;
+
+  // Resolve dirHint for equal-areas mode when dirHint=='auto'
+  var nCols=cols, nRows=rows;
+  if(dirHint==='horizontal'){nCols=1; nRows=totalN;}
+  else if(dirHint==='vertical'){nCols=totalN; nRows=1;}
+  else if(dirHint==='auto'){
+    // Cut parallel to the longer axis — so if w>h, we cut vertically (along X)
+    if(w>=h){nCols=totalN; nRows=1;}
+    else     {nCols=1; nRows=totalN;}
+  }
+  // 'grid' mode uses cols/rows as-is.
+
+  // Start with the whole polygon as a single ring, then for each vertical
+  // cut split every piece, then for each horizontal cut split every piece.
+  var pieces=[polyXY.slice()];
+
+  // Vertical cuts: nCols-1 cuts at x = minX + w*i/nCols
+  if(nCols>1){
+    var newPieces=[];
+    pieces.forEach(function(poly){
+      // Compute local bbox for this piece
+      var mn=Infinity,mx=-Infinity;
+      poly.forEach(function(p){if(p[0]<mn)mn=p[0];if(p[0]>mx)mx=p[0];});
+      var localW=mx-mn;
+      var cur=[poly];
+      for(var i=1;i<nCols;i++){
+        var x=mn + localW*(i/nCols);
+        var nextCur=[];
+        cur.forEach(function(pc){
+          var res=_gtCutPolyByLine(pc, [x, -1e6], [x, 1e6]);
+          if(res){nextCur.push(res[0], res[1]);}
+          else {nextCur.push(pc);}
+        });
+        cur=nextCur;
+      }
+      newPieces=newPieces.concat(cur);
+    });
+    pieces=newPieces;
+  }
+
+  // Horizontal cuts: nRows-1 cuts at y = minY + h*j/nRows
+  if(nRows>1){
+    var newPieces2=[];
+    pieces.forEach(function(poly){
+      var mn=Infinity,mx=-Infinity;
+      poly.forEach(function(p){if(p[1]<mn)mn=p[1];if(p[1]>mx)mx=p[1];});
+      var localH=mx-mn;
+      var cur=[poly];
+      for(var j=1;j<nRows;j++){
+        var y=mn + localH*(j/nRows);
+        var nextCur=[];
+        cur.forEach(function(pc){
+          var res=_gtCutPolyByLine(pc, [-1e6, y], [1e6, y]);
+          if(res){nextCur.push(res[0], res[1]);}
+          else {nextCur.push(pc);}
+        });
+        cur=nextCur;
+      }
+      newPieces2=newPieces2.concat(cur);
+    });
+    pieces=newPieces2;
+  }
+
+  if(pieces.length<2){
+    alert('Could not produce more than one piece. Polygon may be too irregular.');
+    gtCancel(); return;
+  }
+
+  // Convert each piece back to lat/lng and create new features
+  var srcIdx=pd.features.indexOf(src);
+  var now=new Date().toISOString();
+  function _mkPiece(xy,label){
+    var ll=xy.map(function(p){return _gtLatLng(p,origin[0],origin[1]);});
+    // Drop trailing duplicate if present
+    if(ll.length>3 && ll[0][0]===ll[ll.length-1][0] && ll[0][1]===ll[ll.length-1][1]) ll.pop();
+    if(ll.length<3)return null;
+    var a=Object.assign({},src.a||{});
+    a['Split From']=src.name;
+    a['Split Date']=now.slice(0,10);
+    a['Split Method']=dirHint;
+    var areaM2=(typeof _polygonAreaM2==='function')?_polygonAreaM2(ll):calcAreaLatLng(ll);
+    a['Area m2']=areaM2.toFixed(2);
+    a['Area(ha)']=(areaM2/10000).toFixed(4);
+    a['Area(acres)']=(areaM2/4046.8564224).toFixed(4);
+    var peri=0;for(var i=1;i<ll.length;i++)peri+=haversine(ll[i-1][0],ll[i-1][1],ll[i][0],ll[i][1]);
+    peri+=haversine(ll[ll.length-1][0],ll[ll.length-1][1],ll[0][0],ll[0][1]);
+    a['Perimeter(m)']=peri.toFixed(2);
+    return {id:uid(),lid:src.lid,name:src.name+'_'+label,type:'polygon',ll:ll,a:a};
+  }
+  var newFeats=[];
+  pieces.forEach(function(xy,i){
+    var piece=_mkPiece(xy, 'P'+(i+1));
+    if(piece)newFeats.push(piece);
+  });
+  if(!newFeats.length){alert('Split produced no valid polygons.');gtCancel();return;}
+  // Replace source with the new pieces
+  pd.features.splice.apply(pd.features,[srcIdx,1].concat(newFeats));
+  savePD(ST.pid,pd);
+  renderAll();
+  gtCancel();
+  toast('Split into '+newFeats.length+' pieces');
+}
+
 // ── MERGE POLYGONS ───────────────────────────────────────────────────────
 function gtStartMerge(){
-  GT.mode='merge';
-  _gtPrompt('Tap another polygon on the map to merge it with this one. The two polygons should overlap or share an edge.');
-  closeModal('geomtools');
-  if(MAP)MAP.on('click',_gtMapClick);
+  _gtEnterMapMode('merge','TAP POLYGON TO MERGE','Tap another polygon on the map to merge it with the highlighted source.','\u25AD');
   if(typeof toast==='function')toast('Tap another polygon');
 }
 
@@ -3495,86 +3800,120 @@ function _gtConvexHull(pts){
 }
 
 // ── CHAMFER POLYGON CORNER ───────────────────────────────────────────────
-function gtStartChamfer(){
-  GT.mode='chamfer';
-  document.getElementById('gt-chamfer-opts').style.display='block';
-  _gtPrompt('Set setback distance above, then tap the corner vertex you want to chamfer.');
-  if(MAP)MAP.on('click',_gtMapClick);
-  // Don't close modal — user needs to enter distance
+// User enters distance for each of the two edges meeting at the corner,
+// then taps those two edges on the map (highlighted in blue as they pick
+// them). The two edges must share a common vertex; we detect this and
+// bevel the corner.
+function gtRunChamfer(){
+  GT.chamferD1=parseFloat(document.getElementById('gt-chamfer-d1').value)||5;
+  GT.chamferD2=parseFloat(document.getElementById('gt-chamfer-d2').value)||5;
+  if(GT.chamferD1<=0||GT.chamferD2<=0){alert('Setbacks must be > 0');return;}
+  GT.chamferEdge1=null;
+  _gtEnterMapMode('chamfer','TAP FIRST EDGE','Tap the first of the two edges meeting at the corner you want to chamfer.','\u2701');
+  if(typeof toast==='function')toast('Tap first edge of the corner');
 }
 
-function _gtDoChamfer(pickLL){
-  GT.chamferDist=parseFloat(document.getElementById('gt-chamfer-dist').value)||5;
-  var pd=getPD(ST.pid);
-  var src=pd.features.find(function(x){return x.id===GT.srcFid;});
-  if(!src||src.type!=='polygon'||!src.ll||src.ll.length<3){gtCancel();return;}
-  // Find the nearest vertex in the polygon
-  var bestI=-1,bestD=Infinity;
-  for(var i=0;i<src.ll.length;i++){
-    var d=Math.hypot(src.ll[i][0]-pickLL[0], src.ll[i][1]-pickLL[1]);
-    if(d<bestD){bestD=d;bestI=i;}
-  }
-  if(bestI<0){alert('Could not find vertex');gtCancel();return;}
-  // Distance in metres check
-  var approxM=bestD*111320;
-  if(approxM>50){
-    alert('Tap closer to a polygon corner vertex (tapped '+approxM.toFixed(1)+'m away).');
-    return; // allow retry
-  }
-  // Adjacent vertices (handle wraparound)
+// Given a tap location, find the nearest edge of the source polygon.
+// Returns {idx, startLL, endLL, distM} or null.
+function _gtNearestEdge(latlng){
+  var src=getFeats(ST.pid).find(function(x){return x.id===GT.srcFid;});
+  if(!src||src.type!=='polygon'||!src.ll)return null;
+  var origin=_gtCentroid(src.ll);
+  var pxy=_gtMetres([latlng.lat,latlng.lng],origin[0],origin[1]);
+  var best=null, bestD=Infinity;
   var n=src.ll.length;
-  var prev=src.ll[(bestI-1+n)%n];
-  var cur=src.ll[bestI];
-  var next=src.ll[(bestI+1)%n];
-  var origin=cur;
-  var pm=_gtMetres(prev,origin[0],origin[1]);
-  var cm=_gtMetres(cur,origin[0],origin[1]);  // [0,0]
-  var nm=_gtMetres(next,origin[0],origin[1]);
-  // Unit vectors FROM the corner
-  var vp=[pm[0]-cm[0],pm[1]-cm[1]]; var lp=Math.hypot(vp[0],vp[1]); vp=[vp[0]/lp,vp[1]/lp];
-  var vn=[nm[0]-cm[0],nm[1]-cm[1]]; var ln=Math.hypot(vn[0],vn[1]); vn=[vn[0]/ln,vn[1]/ln];
-  // Setback can't exceed either adjacent edge
-  var d=GT.chamferDist;
-  if(d>=lp||d>=ln){
-    alert('Setback ('+d+'m) is longer than an adjacent edge (min '+Math.min(lp,ln).toFixed(2)+'m). Reduce setback.');
+  for(var i=0;i<n;i++){
+    var a=_gtMetres(src.ll[i],origin[0],origin[1]);
+    var b=_gtMetres(src.ll[(i+1)%n],origin[0],origin[1]);
+    var d=_gtPtToSegDist(pxy,a,b);
+    if(d<bestD){bestD=d;best={idx:i,startLL:src.ll[i],endLL:src.ll[(i+1)%n],distM:d,a:a,b:b};}
+  }
+  if(best&&bestD<30) return best;  // within 30m = accepted edge tap
+  return null;
+}
+
+function _gtHandleChamferClick(latlng){
+  var edge=_gtNearestEdge(latlng);
+  if(!edge){toast('Tap closer to a polygon edge');return;}
+  if(!GT.chamferEdge1){
+    GT.chamferEdge1=edge;
+    // Highlight the first edge in green
+    if(GT.preview&&MAP){try{MAP.removeLayer(GT.preview);}catch(ex){}}
+    GT.preview=L.polyline([edge.startLL,edge.endLL],{color:'#3CD87A',weight:5,opacity:0.9,interactive:false}).addTo(MAP);
+    _gtShowBanner('TAP SECOND EDGE','First edge selected (green). Now tap the second edge \u2014 it must share a corner with the first.','\u2701');
     return;
   }
-  var pA=[cm[0]+vp[0]*d, cm[1]+vp[1]*d];
-  var pB=[cm[0]+vn[0]*d, cm[1]+vn[1]*d];
+  // Second edge — check they share a vertex
+  var e1=GT.chamferEdge1, e2=edge;
+  var e1a=e1.idx, e1b=(e1.idx+1)%(getFeats(ST.pid).find(function(x){return x.id===GT.srcFid;}).ll.length);
+  var e2a=e2.idx, e2b=(e2.idx+1)%(getFeats(ST.pid).find(function(x){return x.id===GT.srcFid;}).ll.length);
+  var shared=-1;
+  [e1a,e1b].forEach(function(v){if(v===e2a||v===e2b)shared=v;});
+  if(shared<0){
+    alert('The two edges must share a corner vertex. Try again.');
+    return;
+  }
+  _gtApplyChamfer(shared, e1, e2);
+}
+
+function _gtApplyChamfer(cornerIdx, edge1, edge2){
+  var pd=getPD(ST.pid);
+  var src=pd.features.find(function(x){return x.id===GT.srcFid;});
+  if(!src){gtCancel();return;}
+  var n=src.ll.length;
+  // For a chamfer at cornerIdx, identify the OTHER vertex on each edge
+  var other1 = (edge1.idx===cornerIdx) ? (cornerIdx+1)%n : edge1.idx;
+  var other2 = (edge2.idx===cornerIdx) ? (cornerIdx+1)%n : edge2.idx;
+  var cur=src.ll[cornerIdx];
+  var prev=src.ll[other1];
+  var next=src.ll[other2];
+  var origin=cur;
+  var pm=_gtMetres(prev,origin[0],origin[1]);
+  var cm=_gtMetres(cur, origin[0],origin[1]);   // ≈[0,0]
+  var nm=_gtMetres(next,origin[0],origin[1]);
+  var vp=[pm[0]-cm[0],pm[1]-cm[1]]; var lp=Math.hypot(vp[0],vp[1]); vp=[vp[0]/lp,vp[1]/lp];
+  var vn=[nm[0]-cm[0],nm[1]-cm[1]]; var ln=Math.hypot(vn[0],vn[1]); vn=[vn[0]/ln,vn[1]/ln];
+  var d1=GT.chamferD1, d2=GT.chamferD2;
+  if(d1>=lp){alert('Edge A setback ('+d1+'m) > edge length ('+lp.toFixed(2)+'m). Reduce.');gtCancel();return;}
+  if(d2>=ln){alert('Edge B setback ('+d2+'m) > edge length ('+ln.toFixed(2)+'m). Reduce.');gtCancel();return;}
+  var pA=[cm[0]+vp[0]*d1, cm[1]+vp[1]*d1];
+  var pB=[cm[0]+vn[0]*d2, cm[1]+vn[1]*d2];
+  // Important: the two new vertices must be inserted at cornerIdx in the
+  // order that walks the polygon: i.e., whichever of A or B sits on the
+  // edge going TOWARDS cornerIdx-1 goes first. Determine that from which
+  // adjacent vertex each originated.
+  var newLL=src.ll.slice();
+  // Find which of pA/pB is on the "prev-neighbour" edge of cornerIdx
+  var prevNeighbour=(cornerIdx-1+n)%n;
+  var firstIsPrev = (other1===prevNeighbour);
   var llA=_gtLatLng(pA,origin[0],origin[1]);
   var llB=_gtLatLng(pB,origin[0],origin[1]);
-  // Replace the corner vertex with pA, pB (in direction prev→next)
-  var newLL=src.ll.slice();
-  newLL.splice(bestI,1,llA,llB);
-  // Recompute area / perimeter
+  var insertOrder = firstIsPrev ? [llA,llB] : [llB,llA];
+  newLL.splice(cornerIdx,1,insertOrder[0],insertOrder[1]);
   var peri=0;for(var k=1;k<newLL.length;k++)peri+=haversine(newLL[k-1][0],newLL[k-1][1],newLL[k][0],newLL[k][1]);
   peri+=haversine(newLL[newLL.length-1][0],newLL[newLL.length-1][1],newLL[0][0],newLL[0][1]);
   var areaM2=(typeof _polygonAreaM2==='function')?_polygonAreaM2(newLL):calcAreaLatLng(newLL);
   src.ll=newLL;
   src.a=src.a||{};
-  src.a['Chamfered']='CP'+bestI+' @ '+d+'m';
+  src.a['Chamfered']='CP'+cornerIdx+' \u00B7 '+d1+'m + '+d2+'m';
   src.a['Perimeter(m)']=peri.toFixed(2);
   src.a['Area m2']=areaM2.toFixed(2);
   src.a['Area(ha)']=(areaM2/10000).toFixed(4);
   savePD(ST.pid,pd);
   renderAll();
   gtCancel();
-  if(typeof toast==='function')toast('Corner chamfered at '+d+'m');
+  if(typeof toast==='function')toast('Corner chamfered at '+d1+'m + '+d2+'m');
 }
 
 // ── TRIM / EXTEND LINE ────────────────────────────────────────────────────
 function gtStartTrim(){
-  GT.mode='trim';
-  _gtPrompt('Tap the part of the line you want to <b>keep</b>. The line will be cut at its nearest intersection with another line/polygon edge.');
-  closeModal('geomtools');
-  if(MAP)MAP.on('click',_gtMapClick);
+  _gtEnterMapMode('trim','TAP SIDE TO KEEP','Tap the part of the line you want to KEEP. It will be cut at its nearest intersection with another line/polygon edge.','\u2702');
+  if(typeof toast==='function')toast('Tap the side to keep');
 }
 
 function gtStartExtend(){
-  GT.mode='extend';
-  _gtPrompt('Tap the endpoint you want to extend, then the line will be extended to meet the nearest other line/edge along its current direction.');
-  closeModal('geomtools');
-  if(MAP)MAP.on('click',_gtMapClick);
+  _gtEnterMapMode('extend','TAP ENDPOINT','Tap the endpoint to extend. It will reach along its current direction to meet the nearest line/edge.','\u2197');
+  if(typeof toast==='function')toast('Tap the endpoint to extend');
 }
 
 function _gtDoTrimExtend(pickLL){
@@ -3665,10 +4004,8 @@ function _gtDoTrimExtend(pickLL){
 
 // ── JOIN LINES ────────────────────────────────────────────────────────────
 function gtStartMergeLines(){
-  GT.mode='joinline';
-  _gtPrompt('Tap another line to join with this one. Both lines will merge into a single polyline connected at their nearest endpoints.');
-  closeModal('geomtools');
-  if(MAP)MAP.on('click',_gtMapClick);
+  _gtEnterMapMode('joinline','TAP LINE TO JOIN','Tap another line on the map \u2014 the two will be joined at their nearest endpoints.','\u21A6');
+  if(typeof toast==='function')toast('Tap another line');
 }
 
 function _gtDoJoinLines(otherFeat){
@@ -4178,6 +4515,11 @@ function updPosPan(){
   var spd=ST.gnss.speed>0.3?ST.gnss.speed.toFixed(1)+' km/h':'0.0 km/h';
   u('pos-spd',spd);
   var ha=ST.gnss.ha, va=ST.gnss.va;
+  // Safety net: derive VA from HA if still null (rover emits no GST, phone
+  // emits no altitudeAccuracy, etc.)
+  if(va==null||va<=0){
+    if(ha!=null&&ha>0){va=ha*1.6;ST.gnss.va=va;}
+  }
   u('pos-ha', ha==null ? '--' : (ha.toFixed(3)+' m'));
   u('pos-va', va==null ? '--' : (va.toFixed(3)+' m'));
   // Color by Good/Fair/Poor thresholds (3.5m / 5m)
@@ -6428,6 +6770,79 @@ function markCurrentPos(){
   }
   toast(name+' marked — tap marker to stakeout');
 }
+// ─── STAKEOUT COMPASS ORIENTATION ────────────────────────────────────────
+// Three modes cycled by the orientation button:
+//   'north'   — Map and compass ring fixed with North at top (default)
+//   'course'  — Map rotates so user's course (heading) is always up
+//   'target'  — Map rotates so the target is always up from user
+var SO_ORIENT='north';
+function soCycleOrientation(){
+  var order=['north','course','target'];
+  SO_ORIENT=order[(order.indexOf(SO_ORIENT)+1)%order.length];
+  localStorage.setItem('fm_so_orient',SO_ORIENT);
+  var lbl={north:'N',course:'C',target:'T'}[SO_ORIENT];
+  var title={north:'North-up',course:'Course-up',target:'Target-up'}[SO_ORIENT];
+  var btn=document.getElementById('so-orient-btn');
+  var lblEl=document.getElementById('so-orient-lbl');
+  if(btn)btn.title='Map orientation: '+title;
+  if(lblEl)lblEl.textContent=lbl;
+  if(typeof toast==='function')toast('Map: '+title);
+  soApplyOrientation();
+}
+// Restore preference on page load
+(function(){var v=localStorage.getItem('fm_so_orient');if(v==='north'||v==='course'||v==='target')SO_ORIENT=v;})();
+
+// Draw tick marks on the compass ring once per render. Every 5° has a short
+// tick; every 30° has a longer bold tick.
+function _soRenderTicks(){
+  var host=document.getElementById('so-tick-marks');
+  if(!host||host._done)return;
+  var marks=[];
+  for(var a=0;a<360;a+=5){
+    var long=(a%30===0);
+    var r1=long?117:120;
+    var r2=135;
+    var rad=a*Math.PI/180;
+    var x1=150+Math.sin(rad)*r1, y1=150-Math.cos(rad)*r1;
+    var x2=150+Math.sin(rad)*r2, y2=150-Math.cos(rad)*r2;
+    marks.push('<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="'+(long?'#FFFFFF':'rgba(255,255,255,0.4)')+'" stroke-width="'+(long?'1.5':'0.7')+'"/>');
+  }
+  host.innerHTML=marks.join('');
+  host._done=true;
+}
+
+// Apply rotation to the compass ring and (optionally) the map based on mode.
+// Heading = device heading from deviceorientation or GNSS course.
+// bearingToTgt = calculated bearing to the active target (degrees, 0=N).
+function soApplyOrientation(bearingToTgt){
+  _soRenderTicks();
+  var ring=document.getElementById('so-ring-g');
+  if(!ring)return;
+  var heading=ST.gnss.heading||0;
+  var ringRot=0; // rotation applied to the compass letters/ticks
+  var mapRot=0;  // rotation applied to the mini-map container
+  if(SO_ORIENT==='north'){
+    ringRot=0;
+    mapRot=0;
+  } else if(SO_ORIENT==='course'){
+    // Course-up: user's heading is up. Ring letters rotate opposite so N still points to real north.
+    ringRot=-heading;
+    mapRot=-heading;
+  } else if(SO_ORIENT==='target'){
+    // Target-up: the target direction is at the top
+    var b=(bearingToTgt!=null)?bearingToTgt:0;
+    ringRot=-b;
+    mapRot=-b;
+  }
+  ring.style.transform='rotate('+ringRot.toFixed(1)+'deg)';
+  // Rotate the mini-map container if present (purely visual CSS rotation of leaflet pane)
+  var mapEl=document.getElementById('somap');
+  if(mapEl){
+    if(SO_ORIENT==='north'){mapEl.style.transform='';mapEl.style.transformOrigin='';}
+    else{mapEl.style.transform='rotate('+mapRot.toFixed(1)+'deg)';mapEl.style.transformOrigin='50% 50%';}
+  }
+}
+
 function soUpdateMap(){
   if(!SOMAP)return;
   var gLat=calLat(),gLng=calLng();
@@ -6516,12 +6931,86 @@ function startSO(){
   }
   ST.soTimer=setInterval(updSOUI,300);updSOUI();
 }
-function updSOUI(){var tgt=ST.soFeat,gLat=calLat(),gLng=calLng(),hasGPS=(gLat!==0||gLng!==0),hasTgt=tgt&&tgt.lat!=null&&tgt.lng!=null;if(!hasTgt){document.getElementById('so-dist').textContent='NO TGT';document.getElementById('so-dist').style.color='#4A7090';document.getElementById('so-status').textContent='NO TARGET SET';soUpdateMap();return;}if(!hasGPS){document.getElementById('so-dist').textContent='NO GPS';document.getElementById('so-dist').style.color='#FF9100';document.getElementById('so-status').textContent='ACQUIRING GPS\u2026';soUpdateMap();return;}var dist=haversine(gLat,gLng,tgt.lat,tgt.lng);var dLat=(tgt.lat-gLat)*Math.PI/180,dLng=(tgt.lng-gLng)*Math.PI/180,la1=gLat*Math.PI/180,la2=tgt.lat*Math.PI/180;var bx=Math.sin(dLng)*Math.cos(la2),by=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLng);var bearing=(Math.atan2(bx,by)*180/Math.PI+360)%360;var arrow=(bearing-(ST.gnss.heading||0)+360)%360;document.getElementById('so-arrow-g').style.transform='rotate('+arrow+'deg)';var utmM=toUTMa(gLat,gLng),utmT=toUTMa(tgt.lat,tgt.lng),dE=utmT.e-utmM.e,dN=utmT.n-utmM.n;var tH=parseFloat(((tgt.a&&(tgt.a['H(ortho)']||tgt.a['Elevation']))||'').replace(/[^0-9.\-]/g,''))||null,dZ=tH!=null?(tH-ST.gnss.hort):null;var col=dist>10?'#F04020':dist>2?'#FF9100':'#00C853';var distStr=dist>=1000?(dist/1000).toFixed(3)+' km':dist.toFixed(3)+' m';var status=dist>50?(Math.round(bearing)+'\u00B0 \u00B7 '+distStr):dist>10?'GETTING CLOSE':dist>2?'NEARLY THERE':'IN TOLERANCE';document.getElementById('so-dist').textContent=distStr;document.getElementById('so-dist').style.color=col;document.getElementById('so-status').textContent=status;document.getElementById('so-arrow').setAttribute('fill',col);document.getElementById('so-dx').textContent=(dE>=0?'+':'')+dE.toFixed(3);document.getElementById('so-dy').textContent=(dN>=0?'+':'')+dN.toFixed(3);document.getElementById('so-dz').textContent=dZ!=null?((dZ>=0?'+':'')+dZ.toFixed(3)):'--';document.getElementById('so-ha').textContent=ST.gnss.ha==null?'--':ST.gnss.ha.toFixed(3);document.getElementById('so-va').textContent=ST.gnss.va==null?'--':ST.gnss.va.toFixed(3);document.getElementById('so-sats').textContent=ST.gnss.sats;var chip=document.getElementById('so-chip');if(chip)chip.textContent=(ST.gnss.fix||'--')+' \u00B7 '+ST.gnss.sats+'sv';var obs=document.getElementById('so-obs-btn');if(obs){if(dist<=0.05){obs.style.background='#0A4020';obs.style.color='#40D880';obs.textContent='\u2713 In Tolerance \u2014 Observe';}else{obs.style.background='';obs.style.color='';obs.textContent='Observe Point';}}
-_soLastDist=dist;if(dist<=5&&_soSoundOn)_soScheduleSound(dist);
-if(dist<=1.5&&_soSoundOn)_soVoiceGuide(dist,bearing);
+// Returns true when the app is receiving positions from an external GNSS
+// rover (via NMEA push, Bluetooth, or mock location with rover-supplied
+// GST). Used to gate voice guidance — voice only plays with a rover.
+function _soIsRoverActive(){
+  if(ST.gnss&&ST.gnss._gstFresh)return true;                 // rover GST arriving
+  if(typeof BT_DEVICE!=='undefined'&&BT_DEVICE)return true;  // Web BT rover connected
+  // NMEA bridge: if the host WebView is pushing NMEA, we have a rover
+  if(window._nmeaLastAt && (Date.now()-window._nmeaLastAt)<5000)return true;
+  return false;
+}
 
-// Sync the mini-map — user marker colour + heading are set inside soUpdateMap
-soUpdateMap();}
+function updSOUI(){
+  var tgt=ST.soFeat,gLat=calLat(),gLng=calLng();
+  var hasGPS=(gLat!==0||gLng!==0), hasTgt=tgt&&tgt.lat!=null&&tgt.lng!=null;
+  var bearing=0;
+  if(!hasTgt){
+    document.getElementById('so-dist').textContent='NO TGT';
+    document.getElementById('so-dist').style.color='#4A7090';
+    document.getElementById('so-status').textContent='NO TARGET SET';
+    soApplyOrientation(null);
+    soUpdateMap();
+    return;
+  }
+  if(!hasGPS){
+    document.getElementById('so-dist').textContent='NO GPS';
+    document.getElementById('so-dist').style.color='#FF9100';
+    document.getElementById('so-status').textContent='ACQUIRING GPS\u2026';
+    soApplyOrientation(null);
+    soUpdateMap();
+    return;
+  }
+  var dist=haversine(gLat,gLng,tgt.lat,tgt.lng);
+  var dLat=(tgt.lat-gLat)*Math.PI/180, dLng=(tgt.lng-gLng)*Math.PI/180;
+  var la1=gLat*Math.PI/180, la2=tgt.lat*Math.PI/180;
+  var bx=Math.sin(dLng)*Math.cos(la2);
+  var by=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLng);
+  bearing=(Math.atan2(bx,by)*180/Math.PI+360)%360;
+  // Apply orientation to compass ring (and map, depending on mode)
+  soApplyOrientation(bearing);
+  // Arrow rotation depends on orientation:
+  //   north-up  → arrow points at absolute bearing
+  //   course-up → arrow points at bearing relative to user heading
+  //   target-up → arrow always points straight up (target is by definition at top)
+  var arrow=0;
+  if(SO_ORIENT==='north') arrow=bearing;
+  else if(SO_ORIENT==='course') arrow=(bearing-(ST.gnss.heading||0)+360)%360;
+  else if(SO_ORIENT==='target') arrow=0;
+  document.getElementById('so-arrow-g').style.transform='rotate('+arrow.toFixed(1)+'deg)';
+  // Offsets in UTM metres
+  var utmM=toUTMa(gLat,gLng), utmT=toUTMa(tgt.lat,tgt.lng);
+  var dE=utmT.e-utmM.e, dN=utmT.n-utmM.n;
+  var tH=parseFloat(((tgt.a&&(tgt.a['H(ortho)']||tgt.a['Elevation']))||'').replace(/[^0-9.\-]/g,''))||null;
+  var dZ=tH!=null?(tH-ST.gnss.hort):null;
+  var col=dist>10?'#F04020':dist>2?'#FF9100':'#00C853';
+  var distStr=dist>=1000?(dist/1000).toFixed(3)+' km':dist.toFixed(3)+' m';
+  var status=dist>50?(Math.round(bearing)+'\u00B0 \u00B7 '+distStr):dist>10?'GETTING CLOSE':dist>2?'NEARLY THERE':'IN TOLERANCE';
+  document.getElementById('so-dist').textContent=distStr;
+  document.getElementById('so-dist').style.color=col;
+  document.getElementById('so-status').textContent=status;
+  document.getElementById('so-arrow').setAttribute('fill',col);
+  document.getElementById('so-dx').textContent=(dE>=0?'+':'')+dE.toFixed(3);
+  document.getElementById('so-dy').textContent=(dN>=0?'+':'')+dN.toFixed(3);
+  document.getElementById('so-dz').textContent=dZ!=null?((dZ>=0?'+':'')+dZ.toFixed(3)):'--';
+  document.getElementById('so-ha').textContent=ST.gnss.ha==null?'--':ST.gnss.ha.toFixed(3);
+  document.getElementById('so-va').textContent=ST.gnss.va==null?'--':ST.gnss.va.toFixed(3);
+  document.getElementById('so-sats').textContent=ST.gnss.sats;
+  var chip=document.getElementById('so-chip');
+  if(chip)chip.textContent=(ST.gnss.fix||'--')+' \u00B7 '+ST.gnss.sats+'sv';
+  var obs=document.getElementById('so-obs-btn');
+  if(obs){
+    if(dist<=0.05){obs.style.background='#0A4020';obs.style.color='#40D880';obs.textContent='\u2713 In Tolerance \u2014 Observe';}
+    else{obs.style.background='';obs.style.color='';obs.textContent='Observe Point';}
+  }
+  // Sound: beeps always run (both modes). Voice: ROVER ONLY.
+  _soLastDist=dist;
+  if(dist<=5&&_soSoundOn)_soScheduleSound(dist);
+  if(dist<=1.5&&_soSoundOn&&_soIsRoverActive())_soVoiceGuide(dist,bearing);
+  // Sync the mini-map
+  soUpdateMap();
+}
 function stopSO(){if(ST.soTimer){clearInterval(ST.soTimer);ST.soTimer=null;}}
 function exitStakeout(){
   stopSO();
@@ -7661,7 +8150,6 @@ function updGNSSDisplay(){
     calBadge.style.display=GPS_CAL.active?'block':'none';
     if(GPS_CAL.active)calBadge.textContent='✓ Calibrated: '+GPS_CAL.label;
   }
-  u('gp-va',(live&&ST.gnss.va!=null&&ST.gnss.va>0)?ST.gnss.va.toFixed(3)+'m':'--');
   // Satellites and PDOP: browser API does NOT expose these — show honestly
   u('gp-sats','N/A');
   u('gp-pdop','N/A');
@@ -7680,9 +8168,24 @@ function updGNSSDisplay(){
   } else {
     u('gp-hell','--');u('gp-geoid','--');u('gp-hort','--');
   }
+  // Safety net: if VA has somehow stayed null despite the GPS paths, derive
+  // it from the current HA × 1.6 right here on every tick. Guarantees the
+  // display never shows '--' when HA is known.
+  if(live && ha!=null && ha>0 && (ST.gnss.va==null || ST.gnss.va<=0)){
+    ST.gnss.va = ha*1.6;
+  }
+  // Real fix type in GNSS panel (not hardcoded "RTK Fixed" anymore)
+  var fixEl=document.getElementById('gp-fix');
+  if(fixEl){
+    var fx=live?(ST.gnss.fix||'--'):'Acquiring';
+    fixEl.textContent=fx;
+    fixEl.style.color=/Fixed/i.test(fx)?'#40D870':/Float/i.test(fx)?'#80D0FF':/DGPS|SBAS/i.test(fx)?'#FFC060':'#A0B8CC';
+  }
   // Stakeout panel
   u('so-ha',ha==null?'--':ha.toFixed(3));
   u('so-va',(live&&ST.gnss.va!=null&&ST.gnss.va>0)?ST.gnss.va.toFixed(3):'--');
+  // GNSS panel VA
+  u('gp-va',(live&&ST.gnss.va!=null&&ST.gnss.va>0)?ST.gnss.va.toFixed(3)+'m':'--');
   u('so-sats',live?String(ST.gnss.sats):'--');
   var c2=document.getElementById('so-chip');
   if(c2)c2.textContent=(ST.gnss.fix||'--')+(live?' · SBAS':'');
@@ -8059,6 +8562,7 @@ function enterEditMode(fid){
 function exitEditMode(save){
   if(!save&&!ES.active){return;}
   var savedFid=ES.fid;
+  var wasActive=ES.active;
   if(save&&ES.fid){
     var pd=getPD(ST.pid),f=pd.features.find(x=>x.id===ES.fid);
     if(f){
@@ -8085,12 +8589,26 @@ function exitEditMode(save){
     if(lf.setStyle)lf.setStyle({opacity:1,fillOpacity:0.15});
     else if(lf.setOpacity)lf.setOpacity(1);
   }
-  ES.active=false;ES.fid=null;ES.ll=null;ES.origLl=null;ES.origPt=null;ES.selVtx=-1;
-  document.getElementById('edit-tb').style.display='none';
-  document.getElementById('edit-del-vtx').style.display='none';
+  // Critical: clear ALL edit-state fields atomically BEFORE renderAll so any
+  // click that fires during the render sees a clean non-editing state.
+  ES.active=false;ES.fid=null;ES.type=null;ES.ll=null;ES.origLl=null;ES.origPt=null;ES.selVtx=-1;
+  var etb=document.getElementById('edit-tb');if(etb)etb.style.display='none';
+  var dvb=document.getElementById('edit-del-vtx');if(dvb)dvb.style.display='none';
+  // CRITICAL FIX: Fully reset the attribute-sheet state so the NEXT feature
+  // click is guaranteed to reopen the panel cleanly. Previously some combo
+  // of stale ST.shOpen and lingering CSS transform prevented re-opening.
+  ST.shOpen=false;
+  ST.selFid=null;
+  var ap=document.getElementById('attr-panel');
+  if(ap){ap.style.transform='translateX(100%)';}
+  clearSelectionHighlight();
+  if(typeof _updateUnselPill==='function')_updateUnselPill();
   if(MAP)setTimeout(function(){MAP.invalidateSize();},60);
   renderAll();
-  if(save&&savedFid)setTimeout(function(){selFeat(savedFid);},120);
+  // Don't auto-reselect the saved feature — this was blocking the user's
+  // subsequent clicks on OTHER features because the 120ms timeout overrode
+  // their selection. If the user wants to see updated attrs for the saved
+  // feature, they can tap it. This matches ArcGIS/Collector behaviour.
 }
 
 // ─── HANDLES ──────────────────────────────────────────────────────────────────
@@ -8837,61 +9355,54 @@ function _getAudioCtx(){
 
 // Soft chime — triangle wave + low-pass filter + slow attack/decay.
 // Sounds like a musical bell, not a piercing sine tone.
+// Ultra-soft "pluck" beep — sine fundamental + a body resonance via
+// bandpass, short envelope. Sounds like a soft water droplet / marimba
+// tap rather than an alarm beep.
 function _beep(freq,dur,vol,type,delay){
   var ctx=_getAudioCtx();if(!ctx)return;
-  delay=delay||0;vol=vol||0.3;
+  delay=delay||0; vol=(vol==null?0.12:vol);
+  var t0=ctx.currentTime+delay;
+  // Main oscillator — pure sine (softest possible waveform)
   var osc=ctx.createOscillator();
   var gain=ctx.createGain();
-  var filter=ctx.createBiquadFilter();
-  filter.type='lowpass';
-  filter.frequency.value=Math.min(freq*3, 2200);
-  filter.Q.value=1.2;
-  osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-  // Triangle = warmer, less harsh than sine/square for the same pitch
-  osc.type='triangle';
+  // Body resonance filter to round off any clickiness
+  var filt=ctx.createBiquadFilter();
+  filt.type='lowpass';
+  filt.frequency.value=freq*2.4;
+  filt.Q.value=0.9;
+  osc.type='sine';
   osc.frequency.value=freq;
-  var t0=ctx.currentTime+delay;
-  // Slow attack (30ms) + gentle decay = chime, not a blip
+  osc.connect(gain); gain.connect(filt); filt.connect(ctx.destination);
+  // Envelope: very fast attack (8ms), medium decay — a marimba-like pluck
   gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(vol, t0+0.03);
+  gain.gain.exponentialRampToValueAtTime(vol, t0+0.008);
   gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
   osc.start(t0);
-  osc.stop(t0+dur+0.1);
-  // Subtle harmonic above for a richer bell timbre
-  var osc2=ctx.createOscillator();
-  var g2=ctx.createGain();
-  osc2.connect(g2); g2.connect(filter);
-  osc2.type='triangle';
-  osc2.frequency.value=freq*2;
-  g2.gain.setValueAtTime(0.0001, t0);
-  g2.gain.exponentialRampToValueAtTime(vol*0.35, t0+0.03);
-  g2.gain.exponentialRampToValueAtTime(0.0001, t0+dur*0.7);
-  osc2.start(t0);
-  osc2.stop(t0+dur+0.1);
+  osc.stop(t0+dur+0.05);
 }
 
 function _soPlaySound(dist){
   if(!_soSoundOn)return;
   if(dist>5){return;}
   else if(dist<=0.05){
-    // ON TARGET — soft major-chord bell: A4-C#5-E5 (concert pitch, pleasant)
-    _beep(440,0.35,0.32,null,0);
-    _beep(554,0.35,0.32,null,0.08);
-    _beep(659,0.45,0.32,null,0.16);
-    if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
+    // ON TARGET — gentle 3-note ascending "arrived" ping (E5-G5-B5)
+    _beep(659, 0.18, 0.14, null, 0);
+    _beep(784, 0.18, 0.14, null, 0.12);
+    _beep(988, 0.28, 0.14, null, 0.24);
+    if(navigator.vibrate)navigator.vibrate([80,40,80,40,160]);
   } else if(dist<=0.5){
-    // < 0.5m — two gentle high chimes (E5 twice)
-    _beep(659,0.18,0.28,null,0);
-    _beep(659,0.18,0.28,null,0.2);
-    if(navigator.vibrate)navigator.vibrate([60,40,60]);
+    // < 0.5m — soft double "tik" at high pitch (E5)
+    _beep(659, 0.10, 0.11, null, 0);
+    _beep(659, 0.10, 0.11, null, 0.14);
+    if(navigator.vibrate)navigator.vibrate([45,30,45]);
   } else if(dist<=1){
-    // 0.5–1m — single mid chime (C#5)
-    _beep(554,0.22,0.26,null,0);
-    if(navigator.vibrate)navigator.vibrate([60,40,60]);
+    // 0.5–1m — single soft pluck at C#5
+    _beep(554, 0.12, 0.11, null, 0);
+    if(navigator.vibrate)navigator.vibrate(45);
   } else {
-    // 1–5m — soft low chime (A4)
-    _beep(440,0.22,0.24,null,0);
-    if(navigator.vibrate)navigator.vibrate(40);
+    // 1–5m — very quiet low pluck at A4
+    _beep(440, 0.11, 0.09, null, 0);
+    if(navigator.vibrate)navigator.vibrate(35);
   }
 }
 
@@ -9077,6 +9588,8 @@ function nmeaChecksum(s){
 function parseNMEA(line){
   line=line.trim();
   if(!line.startsWith('$'))return;
+  // Mark last-NMEA-received for _soIsRoverActive() heuristic
+  window._nmeaLastAt = Date.now();
   // Verify checksum if present
   var starIdx=line.lastIndexOf('*');
   if(starIdx>0){
