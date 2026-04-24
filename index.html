@@ -473,7 +473,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
             </div>
           </div>
           <div style="background:#07111D;border-radius:8px;padding:2px 10px;border:1px solid rgba(255,255,255,0.06);margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:11px;color:#6A8090">Avg Epochs</span><div style="display:flex;align-items:center;gap:6px"><input type="range" id="s-epochs" min="1" max="60" value="5" style="width:70px;accent-color:#1B72E8" oninput="this.nextElementSibling.textContent=this.value"/><span style="font-size:11px;color:#80AACC;min-width:16px">5</span></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:11px;color:#6A8090">Avg Epochs</span><div style="display:flex;align-items:center;gap:6px"><input type="range" id="s-epochs" min="1" max="60" value="5" style="width:70px;accent-color:#1B72E8" oninput="this.nextElementSibling.textContent=this.value;localStorage.setItem('fm_avg_epochs',this.value)"/><span style="font-size:11px;color:#80AACC;min-width:16px">5</span></div></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-size:11px;color:#6A8090">Min HA</span><select class="inp" id="s-minha" style="width:120px;font-size:11px;height:26px"><option>No limit</option><option>0.05m (RTK Fixed)</option><option>0.15m (RTK Float)</option><option>0.5m (DGPS)</option><option>1.5m (SBAS)</option><option selected>3.5m (Good)</option><option>5m (Fair)</option></select></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0"><span style="font-size:11px;color:#6A8090">EGM2008</span><span class="pill pg">Enabled</span></div>
           </div>
@@ -494,6 +494,20 @@ input,button,select,textarea{font-family:inherit;outline:none}
               <button id="s-ntrip-btn" class="btn btng" style="font-size:11px;width:100%" onclick="toggleNTRIP()">Connect NTRIP</button>
             </div>
             <div id="s-ntrip-status" style="font-size:10px;color:#3A6080;padding:0 0 6px;text-align:center">Not connected</div>
+          </div>
+          <!-- Stakeout Voice picker -->
+          <div style="background:#07111D;border-radius:8px;padding:10px;border:1px solid rgba(255,255,255,0.06);margin-top:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <div>
+                <div style="font-size:11px;color:#6A8090;font-weight:600">Stakeout Voice</div>
+                <div style="font-size:9px;color:#2E5272">Pick the voice used for distance &amp; direction guidance under 1.5&thinsp;m</div>
+              </div>
+              <button class="btn btns" style="font-size:10px;padding:4px 10px" onclick="soRenderVoicePicker();var b=document.getElementById('voice-picker-box');b.style.display=b.style.display==='block'?'none':'block'">Choose\u2026</button>
+            </div>
+            <div id="voice-picker-box" style="display:none;max-height:260px;overflow-y:auto;background:#050A14;border-radius:6px;border:1px solid rgba(255,255,255,0.05)">
+              <div id="voice-picker-list"></div>
+            </div>
+            <div style="font-size:9px;color:#2E5272;margin-top:6px;line-height:1.4">&#9432; Siri-brand voice is not accessible to web apps on any platform. Tap <b>Test</b> to preview each voice your phone has installed &mdash; Google, Samsung Bixby, or any third-party TTS engine you add will appear in the list.</div>
           </div>
         </div>
         <div class="spane" id="sp-map">
@@ -695,6 +709,13 @@ input,button,select,textarea{font-family:inherit;outline:none}
       <button class="btn btng" style="width:100%;font-size:12px;font-weight:600;gap:6px;padding:8px" onclick="stakeoutSelected()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
         Stake Out
+      </button>
+    </div>
+    <!-- Row 3b: Geometry Tools — line & polygon only -->
+    <div id="attr-geomtools-row" style="display:none;padding:0 12px 10px;flex-shrink:0;background:#08121E">
+      <button class="btn btns" style="width:100%;font-size:11px;font-weight:600;gap:6px;padding:8px" onclick="openGeomTools()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="3 3 21 3 21 21 3 21"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+        Geometry Tools
       </button>
     </div>
     <!-- Row 4: Offset — only shown for line features (road alignment / parallel lines) -->
@@ -1522,6 +1543,61 @@ input,button,select,textarea{font-family:inherit;outline:none}
   </div>
 </div>
 
+<!-- Geometry Tools (Split / Merge / Trim / Extend / Chamfer) -->
+<div id="ov-geomtools" class="ov">
+  <div class="mbox" style="width:440px">
+    <div class="mhd"><span style="font-size:13px;font-weight:600;color:#C0D8F0">Geometry Tools</span><button class="ib" style="width:24px;height:24px" onclick="closeModal('geomtools')"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="mbd">
+      <div id="gt-src" style="font-size:11px;color:#6A8AAA;margin-bottom:10px;padding:7px 10px;background:rgba(27,114,232,0.07);border-left:2px solid rgba(27,114,232,0.4);border-radius:4px">Source: &mdash;</div>
+
+      <div id="gt-poly-tools" style="display:none">
+        <div style="font-size:10px;color:#3A6080;letter-spacing:.05em;margin:8px 0 4px">POLYGON OPERATIONS</div>
+        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartSplit()">
+          <span style="font-size:16px">&#9949;</span>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Split Polygon</div><div style="font-size:10px;color:#4A7090">Draw a cut line across the polygon to split into two</div></div>
+        </button>
+        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartMerge()">
+          <span style="font-size:16px">&#9647;</span>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Merge with Adjacent</div><div style="font-size:10px;color:#4A7090">Pick another polygon to merge with this one (must share an edge)</div></div>
+        </button>
+        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartChamfer()">
+          <span style="font-size:16px">&#9698;</span>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Chamfer Corner</div><div style="font-size:10px;color:#4A7090">Bevel a corner (road truncation at junction)</div></div>
+        </button>
+      </div>
+
+      <div id="gt-line-tools" style="display:none">
+        <div style="font-size:10px;color:#3A6080;letter-spacing:.05em;margin:8px 0 4px">LINE OPERATIONS</div>
+        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartTrim()">
+          <span style="font-size:16px">&#9986;</span>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Trim Line</div><div style="font-size:10px;color:#4A7090">Cut line at its intersection with another line or polygon edge</div></div>
+        </button>
+        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartExtend()">
+          <span style="font-size:16px">&#8614;</span>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Extend to Meet</div><div style="font-size:10px;color:#4A7090">Extend line endpoint to meet another line/edge</div></div>
+        </button>
+        <button class="btn btns" style="width:100%;font-size:12px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;text-align:left" onclick="gtStartMergeLines()">
+          <span style="font-size:16px">&#8594;</span>
+          <div style="flex:1"><div style="color:#C0D8F0;font-weight:600">Join with Another Line</div><div style="font-size:10px;color:#4A7090">Connect this line's endpoint to another line (pick second line)</div></div>
+        </button>
+      </div>
+
+      <div id="gt-prompt" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(255,145,0,0.08);border-left:2px solid rgba(255,145,0,0.5);border-radius:4px;font-size:11px;color:#FFB060"></div>
+
+      <div id="gt-chamfer-opts" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.25);border-radius:6px">
+        <div style="font-size:11px;color:#3A6080;margin-bottom:6px">Chamfer Setback (metres)</div>
+        <input class="inp" id="gt-chamfer-dist" type="number" step="0.1" min="0.1" value="5" style="margin-bottom:10px"/>
+        <div style="font-size:10px;color:#4A7090;line-height:1.4">After entering a setback, tap the corner vertex on the map. The corner will be replaced with a bevelled edge, keeping <b>both</b> adjacent edges intact up to the setback distance.</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:10px 16px;border-top:1px solid rgba(255,255,255,0.07)">
+      <button class="btn btns" onclick="gtCancel()">Cancel</button>
+      <div style="flex:1"></div>
+      <button class="btn btnp" id="gt-confirm-btn" onclick="gtConfirm()" style="display:none">Apply</button>
+    </div>
+  </div>
+</div>
+
 <!-- New Feature (name + layer picker) -->
 <div id="ov-newfeat" class="ov">
   <div class="mbox" style="width:380px">
@@ -1591,11 +1667,15 @@ input,button,select,textarea{font-family:inherit;outline:none}
           </div>
         </div>
 
-        <!-- GPS CALIBRATION -->
+        <!-- GPS CALIBRATION — MULTI-POINT HELMERT -->
         <div style="font-size:11px;color:#3A6080;margin-bottom:6px;letter-spacing:.04em">GPS CALIBRATION</div>
         <div style="background:#07111D;border-radius:7px;border:1px solid rgba(0,207,255,0.15);padding:10px;margin-bottom:12px">
-          <div style="font-size:10px;color:#4A8090;margin-bottom:8px;line-height:1.5">Stand on a <strong style="color:#70AACC">known control point</strong>, enter its precise coordinates, then tap <strong style="color:#00cfff">Apply Calibration</strong>. The system will calculate the offset and correct all GPS readings for this session.</div>
+          <div style="font-size:10px;color:#4A8090;margin-bottom:8px;line-height:1.5">
+            Add <strong style="color:#70AACC">2&ndash;4 control points</strong> to compute a shift+rotate+scale transformation (Helmert).
+            <br>With 1 point = shift only. With 2+ = full localisation to your control network.
+          </div>
           <div id="cal-active-badge" style="display:none;background:rgba(0,200,83,0.12);border:1px solid rgba(0,200,83,0.3);border-radius:6px;padding:5px 10px;margin-bottom:8px;font-size:10px;color:#3CD87A;font-family:monospace"></div>
+
           <div style="display:flex;gap:6px;margin-bottom:6px">
             <div style="flex:1">
               <div style="font-size:10px;color:#4A7090;margin-bottom:3px">Northing (Y)</div>
@@ -1616,18 +1696,17 @@ input,button,select,textarea{font-family:inherit;outline:none}
               </select>
             </div>
             <div style="flex:1">
-              <div style="font-size:10px;color:#4A7090;margin-bottom:3px">Altitude (optional)</div>
+              <div style="font-size:10px;color:#4A7090;margin-bottom:3px">Altitude (opt)</div>
               <input class="inp" id="cal-alt" placeholder="e.g. 1228.961" style="font-size:11px;height:28px"/>
             </div>
           </div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btnp" style="flex:2;font-size:11px" onclick="applyCalibration()">
-              &#9881; Apply Calibration
-            </button>
-            <button class="btn btns" style="flex:1;font-size:11px" onclick="clearCalibration()">
-              &#10005; Clear
-            </button>
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <button class="btn btnp" style="flex:2;font-size:11px" onclick="calAddPoint()" title="Take current GPS position and pair with the entered known coords">&#43; Add Control Point</button>
+            <button class="btn btns" style="flex:1;font-size:11px" onclick="clearCalibration()">&#10005; Clear All</button>
           </div>
+          <!-- Control-points list -->
+          <div id="cal-cp-list" style="background:#050A14;border-radius:5px;border:1px solid rgba(255,255,255,0.05);max-height:130px;overflow-y:auto;font-family:monospace;font-size:10px;display:none"></div>
+          <div id="cal-fit-summary" style="font-size:10px;color:#4A8090;padding:6px 0 0;display:none;font-family:monospace"></div>
         </div>
 
         <div style="font-size:11px;color:#3A6080;margin-bottom:6px;letter-spacing:.04em">DANGER ZONE</div>
@@ -2749,6 +2828,8 @@ function selFeat(fid){
   // Show Offset button only for lines (road alignment / parallel lines)
   var ofRow=document.getElementById('attr-offset-row');
   if(ofRow)ofRow.style.display=f.type==='line'?'block':'none';
+  var gtRow=document.getElementById('attr-geomtools-row');
+  if(gtRow)gtRow.style.display=(f.type==='line'||f.type==='polygon')?'block':'none';
   openSheet();
 }
 function calcAreaLatLng(ll){
@@ -3119,6 +3200,511 @@ function offsetPolyline(ll, distance, side){
   return out.map(function(p){return[lat0+p[1]/mLat, lng0+p[0]/mLng];});
 }
 
+// ─── GEOMETRY TOOLS ────────────────────────────────────────────────────────
+// Split / Merge / Chamfer polygons, Trim / Extend / Join lines.
+//
+// All geometry math is done in tangent-plane metres at the feature's
+// centroid (equirectangular approximation), then the result is converted
+// back to lat/lng. Good to sub-cm over a 1-km parcel.
+var GT={
+  mode:null,            // 'split' | 'merge' | 'chamfer' | 'trim' | 'extend' | 'joinline'
+  srcFid:null,          // feature being edited
+  clickPts:[],          // click points collected during interactive ops
+  preview:null,         // preview Leaflet layer
+  mouseLine:null,       // rubber-band line during split/extend/trim
+  chamferDist:5
+};
+
+function openGeomTools(){
+  var f=ST.pid?getFeats(ST.pid).find(function(x){return x.id===ST.selFid;}):null;
+  if(!f){alert('Select a feature first.');return;}
+  if(f.type!=='line'&&f.type!=='polygon'){alert('Geometry Tools work on lines and polygons only.');return;}
+  GT.srcFid=f.id;
+  document.getElementById('gt-src').innerHTML='Source: <b style="color:#B0D0E8">'+f.name+'</b> \u00B7 '+f.type;
+  document.getElementById('gt-poly-tools').style.display=(f.type==='polygon')?'block':'none';
+  document.getElementById('gt-line-tools').style.display=(f.type==='line')?'block':'none';
+  document.getElementById('gt-prompt').style.display='none';
+  document.getElementById('gt-chamfer-opts').style.display='none';
+  document.getElementById('gt-confirm-btn').style.display='none';
+  showModal('geomtools');
+}
+
+function _gtPrompt(msg){
+  var el=document.getElementById('gt-prompt');
+  if(el){el.style.display='block';el.innerHTML=msg;}
+}
+function _gtHideUI(){
+  closeModal('geomtools');
+}
+function gtCancel(){
+  GT.mode=null; GT.clickPts=[];
+  if(GT.preview&&MAP){MAP.removeLayer(GT.preview);GT.preview=null;}
+  if(GT.mouseLine&&MAP){MAP.removeLayer(GT.mouseLine);GT.mouseLine=null;}
+  if(MAP){MAP.off('click',_gtMapClick);MAP.off('mousemove',_gtMapMove);}
+  _gtHideUI();
+}
+
+// ── Tangent-plane metres helpers ──────────────────────────────────────────
+function _gtMetres(ll,originLat,originLng){
+  var mLat=111320;
+  var mLng=111320*Math.cos(originLat*Math.PI/180);
+  return [(ll[1]-originLng)*mLng, (ll[0]-originLat)*mLat];
+}
+function _gtLatLng(xy,originLat,originLng){
+  var mLat=111320;
+  var mLng=111320*Math.cos(originLat*Math.PI/180);
+  return [originLat + xy[1]/mLat, originLng + xy[0]/mLng];
+}
+function _gtCentroid(ll){
+  var lat=0,lng=0;ll.forEach(function(p){lat+=p[0];lng+=p[1];});
+  return [lat/ll.length, lng/ll.length];
+}
+
+// Segment-segment intersection in 2D. Returns {x,y,t,u} or null.
+// t∈[0,1] = position along p1→p2; u∈[0,1] = position along p3→p4
+function _gtSegIntersect(p1,p2,p3,p4){
+  var x1=p1[0],y1=p1[1],x2=p2[0],y2=p2[1],x3=p3[0],y3=p3[1],x4=p4[0],y4=p4[1];
+  var den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+  if(Math.abs(den)<1e-9)return null;
+  var t=((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4))/den;
+  var u=-((x1-x2)*(y1-y3)-(y1-y2)*(x1-x3))/den;
+  return {x:x1+t*(x2-x1), y:y1+t*(y2-y1), t:t, u:u};
+}
+
+// Distance point→segment (for snapping to edges)
+function _gtPtToSegDist(p,a,b){
+  var dx=b[0]-a[0],dy=b[1]-a[1];
+  var len2=dx*dx+dy*dy; if(len2<1e-9)return Math.hypot(p[0]-a[0],p[1]-a[1]);
+  var t=Math.max(0,Math.min(1, ((p[0]-a[0])*dx+(p[1]-a[1])*dy)/len2 ));
+  return Math.hypot(p[0]-a[0]-t*dx, p[1]-a[1]-t*dy);
+}
+
+// Point-in-polygon (ray casting) — polygon in xy metres
+function _gtPointInPoly(p,poly){
+  var inside=false, x=p[0], y=p[1];
+  for(var i=0,j=poly.length-1;i<poly.length;j=i++){
+    var xi=poly[i][0], yi=poly[i][1], xj=poly[j][0], yj=poly[j][1];
+    if(((yi>y)!=(yj>y)) && (x<(xj-xi)*(y-yi)/(yj-yi+1e-12)+xi))inside=!inside;
+  }
+  return inside;
+}
+
+// ── SPLIT POLYGON ────────────────────────────────────────────────────────
+function gtStartSplit(){
+  GT.mode='split'; GT.clickPts=[];
+  _gtPrompt('Tap two points on the map to draw a cut line across the polygon. The line must enter and exit the polygon.');
+  if(GT.preview&&MAP){MAP.removeLayer(GT.preview);GT.preview=null;}
+  if(MAP){MAP.on('click',_gtMapClick);MAP.on('mousemove',_gtMapMove);}
+  closeModal('geomtools');
+  if(typeof toast==='function')toast('Tap first point of cut line');
+}
+
+function _gtMapClick(e){
+  if(!GT.mode)return;
+  L.DomEvent.stopPropagation(e);
+  GT.clickPts.push([e.latlng.lat,e.latlng.lng]);
+  if(GT.mode==='split'){
+    if(GT.clickPts.length===1){
+      if(typeof toast==='function')toast('Tap second point of cut line');
+    } else if(GT.clickPts.length===2){
+      _gtDoSplit();
+    }
+  } else if(GT.mode==='chamfer'){
+    _gtDoChamfer(GT.clickPts[0]);
+  } else if(GT.mode==='merge'||GT.mode==='joinline'){
+    // Picked map point — resolve to nearest feature of matching type
+    var wantType=GT.mode==='merge'?'polygon':'line';
+    var f=_gtNearestFeat(e.latlng,wantType);
+    if(!f){toast('Tap closer to another '+wantType);return;}
+    if(f.id===GT.srcFid){toast('Pick a DIFFERENT '+wantType);return;}
+    if(GT.mode==='merge')_gtDoMerge(f);
+    else _gtDoJoinLines(f);
+  } else if(GT.mode==='trim'||GT.mode==='extend'){
+    _gtDoTrimExtend(e.latlng);
+  }
+}
+
+function _gtMapMove(e){
+  if(GT.mode!=='split'||GT.clickPts.length!==1||!MAP)return;
+  if(GT.mouseLine){MAP.removeLayer(GT.mouseLine);}
+  GT.mouseLine=L.polyline([GT.clickPts[0],[e.latlng.lat,e.latlng.lng]],{color:'#F04020',weight:2,dashArray:'6 4'}).addTo(MAP);
+}
+
+function _gtDoSplit(){
+  var pd=getPD(ST.pid);
+  var src=pd.features.find(function(x){return x.id===GT.srcFid;});
+  if(!src||src.type!=='polygon'||!src.ll||src.ll.length<3){
+    toast('Source polygon invalid'); gtCancel(); return;
+  }
+  var origin=_gtCentroid(src.ll);
+  var cut=[_gtMetres(GT.clickPts[0],origin[0],origin[1]),
+           _gtMetres(GT.clickPts[1],origin[0],origin[1])];
+  var polyXY=src.ll.map(function(p){return _gtMetres(p,origin[0],origin[1]);});
+  // Close the polygon for edge iteration
+  if(polyXY[0][0]!==polyXY[polyXY.length-1][0]||polyXY[0][1]!==polyXY[polyXY.length-1][1]){
+    polyXY.push(polyXY[0].slice());
+  }
+  // Find where the cut line crosses polygon edges — we need exactly 2 crossings for a clean split
+  var crossings=[];
+  for(var i=0;i<polyXY.length-1;i++){
+    var inter=_gtSegIntersect(cut[0],cut[1],polyXY[i],polyXY[i+1]);
+    if(inter && inter.t>=-1e-6 && inter.t<=1+1e-6 && inter.u>-1e-6 && inter.u<1+1e-6){
+      crossings.push({edgeIdx:i, x:inter.x, y:inter.y, u:inter.u, t:inter.t});
+    }
+  }
+  // Dedup near-identical crossings
+  crossings=crossings.filter(function(c,i,arr){
+    for(var j=0;j<i;j++)if(Math.hypot(c.x-arr[j].x,c.y-arr[j].y)<0.001)return false;
+    return true;
+  });
+  if(crossings.length<2){
+    alert('Cut line must cross the polygon on exactly two edges. Found: '+crossings.length+'.\n\nTry again with a line that clearly passes through the polygon.');
+    gtCancel(); return;
+  }
+  if(crossings.length>2){
+    // For non-convex polygons with >2 crossings, take the two crossings that give the longest cut
+    crossings.sort(function(a,b){return a.t-b.t;});
+    crossings=[crossings[0], crossings[crossings.length-1]];
+  }
+  // Order by edge index (A first, B second)
+  crossings.sort(function(a,b){return a.edgeIdx-b.edgeIdx;});
+  var A=crossings[0], B=crossings[1];
+  // Build ring 1: A → vertices between A and B → B → back to A (via cut line)
+  var ring1=[[A.x,A.y]];
+  for(var k=A.edgeIdx+1;k<=B.edgeIdx;k++) ring1.push(polyXY[k].slice());
+  ring1.push([B.x,B.y]);
+  // Build ring 2: B → vertices after B (wrap around) → A
+  var ring2=[[B.x,B.y]];
+  for(var m=B.edgeIdx+1;m<polyXY.length-1;m++) ring2.push(polyXY[m].slice());
+  for(var n=0;n<=A.edgeIdx;n++) ring2.push(polyXY[n].slice());
+  ring2.push([A.x,A.y]);
+  // Convert back to lat/lng
+  var p1=ring1.map(function(xy){return _gtLatLng(xy,origin[0],origin[1]);});
+  var p2=ring2.map(function(xy){return _gtLatLng(xy,origin[0],origin[1]);});
+  if(p1.length<3||p2.length<3){alert('Split produced invalid polygons.');gtCancel();return;}
+  // Remove original, add two new polygons with attributes copied
+  var srcIdx=pd.features.indexOf(src);
+  var now=new Date().toISOString();
+  function _mkSplit(ll,suffix){
+    var a=Object.assign({},src.a||{});
+    a['Split From']=src.name;
+    a['Split Date']=now.slice(0,10);
+    // Recalculate area
+    var areaM2=(typeof _polygonAreaM2==='function')?_polygonAreaM2(ll):calcAreaLatLng(ll);
+    a['Area m2']=areaM2.toFixed(2);
+    a['Area(ha)']=(areaM2/10000).toFixed(4);
+    a['Area(acres)']=(areaM2/4046.8564224).toFixed(4);
+    // Recalc perimeter
+    var peri=0;for(var i=1;i<ll.length;i++)peri+=haversine(ll[i-1][0],ll[i-1][1],ll[i][0],ll[i][1]);
+    peri+=haversine(ll[ll.length-1][0],ll[ll.length-1][1],ll[0][0],ll[0][1]);
+    a['Perimeter(m)']=peri.toFixed(2);
+    return {id:uid(),lid:src.lid,name:src.name+suffix,type:'polygon',ll:ll,a:a};
+  }
+  pd.features.splice(srcIdx,1,_mkSplit(p1,'_A'),_mkSplit(p2,'_B'));
+  savePD(ST.pid,pd);
+  renderAll();
+  gtCancel();
+  if(typeof toast==='function')toast('Split into '+src.name+'_A + '+src.name+'_B');
+}
+
+// ── MERGE POLYGONS ───────────────────────────────────────────────────────
+function gtStartMerge(){
+  GT.mode='merge';
+  _gtPrompt('Tap another polygon on the map to merge it with this one. The two polygons should overlap or share an edge.');
+  closeModal('geomtools');
+  if(MAP)MAP.on('click',_gtMapClick);
+  if(typeof toast==='function')toast('Tap another polygon');
+}
+
+// Find the nearest feature of a given geometry type to a clicked latlng
+function _gtNearestFeat(latlng,type){
+  var feats=getFeats(ST.pid).filter(function(f){return f.type===type && f.id!==GT.srcFid;});
+  if(!feats.length)return null;
+  var best=null, bestD=Infinity;
+  var p=[latlng.lat,latlng.lng];
+  feats.forEach(function(f){
+    if(!f.ll||!f.ll.length)return;
+    var d=Infinity;
+    if(type==='polygon'){
+      // Use nearest vertex as proxy — fine for tap tolerance
+      for(var i=0;i<f.ll.length;i++){
+        var dd=Math.hypot(f.ll[i][0]-p[0], f.ll[i][1]-p[1]);
+        if(dd<d)d=dd;
+      }
+    } else {
+      for(var j=0;j<f.ll.length;j++){
+        var dd2=Math.hypot(f.ll[j][0]-p[0], f.ll[j][1]-p[1]);
+        if(dd2<d)d=dd2;
+      }
+    }
+    if(d<bestD){bestD=d;best=f;}
+  });
+  // Require within ~50m tolerance
+  return bestD<0.0005?best:null;
+}
+
+function _gtDoMerge(otherFeat){
+  var pd=getPD(ST.pid);
+  var src=pd.features.find(function(x){return x.id===GT.srcFid;});
+  if(!src||src.type!=='polygon'){toast('Source polygon missing');gtCancel();return;}
+  // Simple merge algorithm: convex hull of the union of vertices. Good for
+  // adjacent parcels; not appropriate for arbitrary non-convex unions, but
+  // this is the reasonable default without bringing in a full polygon-
+  // clipping library.
+  var all=src.ll.concat(otherFeat.ll);
+  var hull=_gtConvexHull(all);
+  if(hull.length<3){alert('Could not compute merged polygon.');gtCancel();return;}
+  var now=new Date().toISOString();
+  var peri=0;for(var i=1;i<hull.length;i++)peri+=haversine(hull[i-1][0],hull[i-1][1],hull[i][0],hull[i][1]);
+  peri+=haversine(hull[hull.length-1][0],hull[hull.length-1][1],hull[0][0],hull[0][1]);
+  var areaM2=(typeof _polygonAreaM2==='function')?_polygonAreaM2(hull):calcAreaLatLng(hull);
+  var a=Object.assign({},src.a||{});
+  a['Merged With']=otherFeat.name;
+  a['Merge Date']=now.slice(0,10);
+  a['Area m2']=areaM2.toFixed(2);
+  a['Area(ha)']=(areaM2/10000).toFixed(4);
+  a['Area(acres)']=(areaM2/4046.8564224).toFixed(4);
+  a['Perimeter(m)']=peri.toFixed(2);
+  var merged={id:uid(),lid:src.lid,name:src.name+'+'+otherFeat.name,type:'polygon',ll:hull,a:a};
+  // Remove originals, add merged
+  pd.features=pd.features.filter(function(f){return f.id!==src.id && f.id!==otherFeat.id;});
+  pd.features.push(merged);
+  savePD(ST.pid,pd);
+  renderAll();
+  selFeat(merged.id);
+  gtCancel();
+  if(typeof toast==='function')toast('Merged into: '+merged.name);
+}
+
+// Andrew's monotone chain convex hull
+function _gtConvexHull(pts){
+  if(pts.length<3)return pts.slice();
+  var p=pts.map(function(x){return x.slice();}).sort(function(a,b){return a[1]-b[1]||a[0]-b[0];});
+  var cross=function(O,A,B){return (A[1]-O[1])*(B[0]-O[0])-(A[0]-O[0])*(B[1]-O[1]);};
+  var lo=[],hi=[];
+  for(var i=0;i<p.length;i++){
+    while(lo.length>=2 && cross(lo[lo.length-2],lo[lo.length-1],p[i])<=0)lo.pop();
+    lo.push(p[i]);
+  }
+  for(var j=p.length-1;j>=0;j--){
+    while(hi.length>=2 && cross(hi[hi.length-2],hi[hi.length-1],p[j])<=0)hi.pop();
+    hi.push(p[j]);
+  }
+  lo.pop();hi.pop();
+  return lo.concat(hi);
+}
+
+// ── CHAMFER POLYGON CORNER ───────────────────────────────────────────────
+function gtStartChamfer(){
+  GT.mode='chamfer';
+  document.getElementById('gt-chamfer-opts').style.display='block';
+  _gtPrompt('Set setback distance above, then tap the corner vertex you want to chamfer.');
+  if(MAP)MAP.on('click',_gtMapClick);
+  // Don't close modal — user needs to enter distance
+}
+
+function _gtDoChamfer(pickLL){
+  GT.chamferDist=parseFloat(document.getElementById('gt-chamfer-dist').value)||5;
+  var pd=getPD(ST.pid);
+  var src=pd.features.find(function(x){return x.id===GT.srcFid;});
+  if(!src||src.type!=='polygon'||!src.ll||src.ll.length<3){gtCancel();return;}
+  // Find the nearest vertex in the polygon
+  var bestI=-1,bestD=Infinity;
+  for(var i=0;i<src.ll.length;i++){
+    var d=Math.hypot(src.ll[i][0]-pickLL[0], src.ll[i][1]-pickLL[1]);
+    if(d<bestD){bestD=d;bestI=i;}
+  }
+  if(bestI<0){alert('Could not find vertex');gtCancel();return;}
+  // Distance in metres check
+  var approxM=bestD*111320;
+  if(approxM>50){
+    alert('Tap closer to a polygon corner vertex (tapped '+approxM.toFixed(1)+'m away).');
+    return; // allow retry
+  }
+  // Adjacent vertices (handle wraparound)
+  var n=src.ll.length;
+  var prev=src.ll[(bestI-1+n)%n];
+  var cur=src.ll[bestI];
+  var next=src.ll[(bestI+1)%n];
+  var origin=cur;
+  var pm=_gtMetres(prev,origin[0],origin[1]);
+  var cm=_gtMetres(cur,origin[0],origin[1]);  // [0,0]
+  var nm=_gtMetres(next,origin[0],origin[1]);
+  // Unit vectors FROM the corner
+  var vp=[pm[0]-cm[0],pm[1]-cm[1]]; var lp=Math.hypot(vp[0],vp[1]); vp=[vp[0]/lp,vp[1]/lp];
+  var vn=[nm[0]-cm[0],nm[1]-cm[1]]; var ln=Math.hypot(vn[0],vn[1]); vn=[vn[0]/ln,vn[1]/ln];
+  // Setback can't exceed either adjacent edge
+  var d=GT.chamferDist;
+  if(d>=lp||d>=ln){
+    alert('Setback ('+d+'m) is longer than an adjacent edge (min '+Math.min(lp,ln).toFixed(2)+'m). Reduce setback.');
+    return;
+  }
+  var pA=[cm[0]+vp[0]*d, cm[1]+vp[1]*d];
+  var pB=[cm[0]+vn[0]*d, cm[1]+vn[1]*d];
+  var llA=_gtLatLng(pA,origin[0],origin[1]);
+  var llB=_gtLatLng(pB,origin[0],origin[1]);
+  // Replace the corner vertex with pA, pB (in direction prev→next)
+  var newLL=src.ll.slice();
+  newLL.splice(bestI,1,llA,llB);
+  // Recompute area / perimeter
+  var peri=0;for(var k=1;k<newLL.length;k++)peri+=haversine(newLL[k-1][0],newLL[k-1][1],newLL[k][0],newLL[k][1]);
+  peri+=haversine(newLL[newLL.length-1][0],newLL[newLL.length-1][1],newLL[0][0],newLL[0][1]);
+  var areaM2=(typeof _polygonAreaM2==='function')?_polygonAreaM2(newLL):calcAreaLatLng(newLL);
+  src.ll=newLL;
+  src.a=src.a||{};
+  src.a['Chamfered']='CP'+bestI+' @ '+d+'m';
+  src.a['Perimeter(m)']=peri.toFixed(2);
+  src.a['Area m2']=areaM2.toFixed(2);
+  src.a['Area(ha)']=(areaM2/10000).toFixed(4);
+  savePD(ST.pid,pd);
+  renderAll();
+  gtCancel();
+  if(typeof toast==='function')toast('Corner chamfered at '+d+'m');
+}
+
+// ── TRIM / EXTEND LINE ────────────────────────────────────────────────────
+function gtStartTrim(){
+  GT.mode='trim';
+  _gtPrompt('Tap the part of the line you want to <b>keep</b>. The line will be cut at its nearest intersection with another line/polygon edge.');
+  closeModal('geomtools');
+  if(MAP)MAP.on('click',_gtMapClick);
+}
+
+function gtStartExtend(){
+  GT.mode='extend';
+  _gtPrompt('Tap the endpoint you want to extend, then the line will be extended to meet the nearest other line/edge along its current direction.');
+  closeModal('geomtools');
+  if(MAP)MAP.on('click',_gtMapClick);
+}
+
+function _gtDoTrimExtend(pickLL){
+  var pd=getPD(ST.pid);
+  var src=pd.features.find(function(x){return x.id===GT.srcFid;});
+  if(!src||src.type!=='line'||!src.ll||src.ll.length<2){gtCancel();return;}
+  var pLL=[pickLL.lat,pickLL.lng];
+  var origin=_gtCentroid(src.ll);
+  var lineXY=src.ll.map(function(p){return _gtMetres(p,origin[0],origin[1]);});
+  var pickXY=_gtMetres(pLL,origin[0],origin[1]);
+  // Gather all "target" edges: every other line/polygon in the project
+  var targets=[];
+  getFeats(ST.pid).forEach(function(f){
+    if(f.id===src.id)return;
+    if(f.type==='line'&&f.ll&&f.ll.length>1){
+      for(var i=0;i<f.ll.length-1;i++)targets.push([_gtMetres(f.ll[i],origin[0],origin[1]),_gtMetres(f.ll[i+1],origin[0],origin[1])]);
+    } else if(f.type==='polygon'&&f.ll&&f.ll.length>2){
+      for(var j=0;j<f.ll.length;j++){var a=f.ll[j],b=f.ll[(j+1)%f.ll.length];targets.push([_gtMetres(a,origin[0],origin[1]),_gtMetres(b,origin[0],origin[1])]);}
+    }
+  });
+  if(!targets.length){alert('No other lines/polygons to '+GT.mode+' against.');gtCancel();return;}
+
+  if(GT.mode==='trim'){
+    // Find which segment of the source line the user tapped on (closest)
+    var bestSegIdx=0,bestSegD=Infinity;
+    for(var k=0;k<lineXY.length-1;k++){
+      var dd=_gtPtToSegDist(pickXY,lineXY[k],lineXY[k+1]);
+      if(dd<bestSegD){bestSegD=dd;bestSegIdx=k;}
+    }
+    // Find all intersections of THIS segment with target edges
+    var crosses=[];
+    for(var t=0;t<targets.length;t++){
+      var inter=_gtSegIntersect(lineXY[bestSegIdx],lineXY[bestSegIdx+1],targets[t][0],targets[t][1]);
+      if(inter && inter.t>1e-4 && inter.t<1-1e-4 && inter.u>=-1e-6 && inter.u<=1+1e-6){
+        crosses.push(inter);
+      }
+    }
+    if(!crosses.length){alert('Tapped segment has no intersections with any other line/edge.');gtCancel();return;}
+    // Decide direction: pick chooses which side to KEEP. Project pick onto segment to find u along segment
+    var segDx=lineXY[bestSegIdx+1][0]-lineXY[bestSegIdx][0];
+    var segDy=lineXY[bestSegIdx+1][1]-lineXY[bestSegIdx][1];
+    var segLen2=segDx*segDx+segDy*segDy;
+    var pickU=((pickXY[0]-lineXY[bestSegIdx][0])*segDx+(pickXY[1]-lineXY[bestSegIdx][1])*segDy)/segLen2;
+    // Find intersection that bounds the "keep" side — pick nearest crossing between pickU and the chosen end
+    crosses.sort(function(a,b){return Math.abs(a.t-pickU)-Math.abs(b.t-pickU);});
+    var cutT=crosses[0].t;
+    // Rebuild line: keep vertices up to bestSegIdx, then add intersection, or start from intersection and keep rest
+    var keepStart=pickU<cutT;
+    var newXY;
+    if(keepStart){
+      newXY=lineXY.slice(0,bestSegIdx+1).concat([[crosses[0].x,crosses[0].y]]);
+    } else {
+      newXY=[[crosses[0].x,crosses[0].y]].concat(lineXY.slice(bestSegIdx+1));
+    }
+    if(newXY.length<2){alert('Trim produced invalid line.');gtCancel();return;}
+    src.ll=newXY.map(function(xy){return _gtLatLng(xy,origin[0],origin[1]);});
+    var len=0;for(var L=1;L<src.ll.length;L++)len+=haversine(src.ll[L-1][0],src.ll[L-1][1],src.ll[L][0],src.ll[L][1]);
+    src.a=src.a||{}; src.a['Trimmed']=new Date().toISOString().slice(0,10); src.a['Length']=len.toFixed(3)+' m';
+    savePD(ST.pid,pd); renderAll(); gtCancel();
+    toast('Line trimmed to '+len.toFixed(2)+'m');
+  } else {
+    // Extend: figure out which endpoint the user tapped (closer one), cast ray outward
+    var distS=Math.hypot(pickXY[0]-lineXY[0][0],pickXY[1]-lineXY[0][1]);
+    var distE=Math.hypot(pickXY[0]-lineXY[lineXY.length-1][0],pickXY[1]-lineXY[lineXY.length-1][1]);
+    var atStart=distS<distE;
+    var p0=atStart?lineXY[1]:lineXY[lineXY.length-2];
+    var p1=atStart?lineXY[0]:lineXY[lineXY.length-1];
+    var dx=p1[0]-p0[0],dy=p1[1]-p0[1];
+    var mag=Math.hypot(dx,dy);if(mag<1e-6){alert('Endpoint segment too short');gtCancel();return;}
+    // Extend along direction; find nearest intersection at t>1 (beyond endpoint)
+    var rayEnd=[p1[0]+dx/mag*10000, p1[1]+dy/mag*10000];
+    var bestHit=null, bestT=Infinity;
+    for(var tt=0;tt<targets.length;tt++){
+      var inter=_gtSegIntersect(p1,rayEnd,targets[tt][0],targets[tt][1]);
+      if(inter && inter.t>1e-4 && inter.u>=-1e-6 && inter.u<=1+1e-6){
+        if(inter.t<bestT){bestT=inter.t;bestHit=inter;}
+      }
+    }
+    if(!bestHit){alert('No line/edge found along this direction to extend to.');gtCancel();return;}
+    var newEndLL=_gtLatLng([bestHit.x,bestHit.y],origin[0],origin[1]);
+    if(atStart)src.ll.unshift(newEndLL); else src.ll.push(newEndLL);
+    var len=0;for(var M=1;M<src.ll.length;M++)len+=haversine(src.ll[M-1][0],src.ll[M-1][1],src.ll[M][0],src.ll[M][1]);
+    src.a=src.a||{}; src.a['Extended']=new Date().toISOString().slice(0,10); src.a['Length']=len.toFixed(3)+' m';
+    savePD(ST.pid,pd); renderAll(); gtCancel();
+    toast('Line extended to '+len.toFixed(2)+'m');
+  }
+}
+
+// ── JOIN LINES ────────────────────────────────────────────────────────────
+function gtStartMergeLines(){
+  GT.mode='joinline';
+  _gtPrompt('Tap another line to join with this one. Both lines will merge into a single polyline connected at their nearest endpoints.');
+  closeModal('geomtools');
+  if(MAP)MAP.on('click',_gtMapClick);
+}
+
+function _gtDoJoinLines(otherFeat){
+  var pd=getPD(ST.pid);
+  var src=pd.features.find(function(x){return x.id===GT.srcFid;});
+  if(!src||src.type!=='line'){gtCancel();return;}
+  // Find which endpoints are closest to each other
+  var A0=src.ll[0], A1=src.ll[src.ll.length-1];
+  var B0=otherFeat.ll[0], B1=otherFeat.ll[otherFeat.ll.length-1];
+  function hd(a,b){return haversine(a[0],a[1],b[0],b[1]);}
+  var combos=[
+    {key:'A1B0',d:hd(A1,B0), ll:src.ll.concat(otherFeat.ll.slice(1))},
+    {key:'A1B1',d:hd(A1,B1), ll:src.ll.concat(otherFeat.ll.slice(0,-1).reverse())},
+    {key:'A0B0',d:hd(A0,B0), ll:src.ll.slice().reverse().concat(otherFeat.ll.slice(1))},
+    {key:'A0B1',d:hd(A0,B1), ll:src.ll.slice().reverse().concat(otherFeat.ll.slice(0,-1).reverse())}
+  ];
+  combos.sort(function(x,y){return x.d-y.d;});
+  var best=combos[0];
+  var newLL=best.ll;
+  var len=0;for(var i=1;i<newLL.length;i++)len+=haversine(newLL[i-1][0],newLL[i-1][1],newLL[i][0],newLL[i][1]);
+  var a=Object.assign({},src.a||{});
+  a['Joined With']=otherFeat.name;
+  a['Join Date']=new Date().toISOString().slice(0,10);
+  a['Length']=len.toFixed(3)+' m';
+  var joined={id:uid(),lid:src.lid,name:src.name+'+'+otherFeat.name,type:'line',ll:newLL,a:a};
+  pd.features=pd.features.filter(function(f){return f.id!==src.id && f.id!==otherFeat.id;});
+  pd.features.push(joined);
+  savePD(ST.pid,pd);
+  renderAll();
+  selFeat(joined.id);
+  gtCancel();
+  toast('Lines joined: '+joined.name);
+}
+
+function gtConfirm(){}
+
 function doOffset(){
   if(!ST.selFid){alert('No feature selected.');return;}
   var pd=getPD(ST.pid);
@@ -3182,20 +3768,37 @@ function doOffset(){
 }
 
 // ─── GNSS POINT AVERAGING ──────────────────────────────────────────────────
-// Collects 5 samples at 1-sample/second, averages position and accuracy,
-// then calls promptFeat() with the mean position. Counter animates 0→5 on
-// the progress bar in the GNSS panel. A second press while active cancels.
+// Collects N samples at 1 Hz, averages position + accuracy, then calls
+// promptFeat() with the mean. N comes from the Avg Epochs slider in Settings
+// (persisted per project and globally). Counter animates on the progress bar.
+// A second press while active cancels.
 var gnssAvgCount=0, gnssAvgTarget=5, gnssAvgSamples=[], gnssAvgTimer=null, gnssAvgActive=false;
+
+function _readAvgTarget(){
+  // Project-specific override (set in Project Settings "ps-avg")
+  if(ST.pid){
+    var p=ST.projects.find(function(x){return x.id==ST.pid;});
+    if(p&&p.avgSamples){var n=parseInt(p.avgSamples,10);if(n>0&&n<=60) return n;}
+  }
+  // Global slider in app Settings
+  var g=document.getElementById('s-epochs');
+  if(g){var v=parseInt(g.value,10);if(v>0&&v<=60) return v;}
+  var saved=parseInt(localStorage.getItem('fm_avg_epochs')||'',10);
+  if(saved>0&&saved<=60) return saved;
+  return 5;
+}
 
 function gnssAvgUpdateUI(){
   var pct=Math.round(gnssAvgCount/gnssAvgTarget*100);
   var bar=document.getElementById('avg-bar');if(bar)bar.style.width=pct+'%';
   var lbl=document.getElementById('avg-label');
   if(lbl){
-    lbl.textContent=gnssAvgCount+'/'+gnssAvgTarget+' avg';
+    // Show current HA during averaging so user knows quality live
+    var liveHa=ST.gnss.ha;
+    var haStr=(liveHa!=null&&isFinite(liveHa))?(' · \u00B1'+liveHa.toFixed(2)+'m'):'';
+    lbl.textContent=gnssAvgCount+'/'+gnssAvgTarget+' avg'+(gnssAvgActive?haStr:'');
     lbl.style.color=gnssAvgActive?'#60D890':'#50A870';
   }
-  // Reflect state on both Collect buttons (panel + ribbon)
   var btns=document.querySelectorAll('[onclick="gnssCollect()"]');
   btns.forEach(function(b){
     if(gnssAvgActive){
@@ -3215,14 +3818,17 @@ function gnssAvgReset(){
 }
 
 function gnssAvgStep(){
-  // Take one sample from current GNSS state
-  // Apply calibration offset to each sample so averaged position is corrected
-  gnssAvgSamples.push({
-    lat:calLat(), lng:calLng(),
-    hort:calAlt(), hell:ST.gnss.hell,
-    ha:ST.gnss.ha, va:ST.gnss.va
-  });
-  gnssAvgCount=gnssAvgSamples.length;
+  // Only record a sample if we actually have a fix. Don't count zero-lat
+  // placeholders or the null-HA "Acquiring" state as a real epoch.
+  var hasFix = ST.gnss.realGps && ST.gnss.lat!=null && (Math.abs(ST.gnss.lat)+Math.abs(ST.gnss.lng))>0.01;
+  if(hasFix){
+    gnssAvgSamples.push({
+      lat:calLat(), lng:calLng(),
+      hort:calAlt()||0, hell:ST.gnss.hell||0,
+      ha:ST.gnss.ha||0, va:ST.gnss.va||0
+    });
+    gnssAvgCount=gnssAvgSamples.length;
+  }
   gnssAvgUpdateUI();
 
   if(gnssAvgCount>=gnssAvgTarget){
@@ -3242,38 +3848,48 @@ function gnssAvgFinish(){
     sum.lat+=s.lat;sum.lng+=s.lng;sum.hort+=s.hort;sum.hell+=s.hell;sum.ha+=s.ha;sum.va+=s.va;
   });
   Object.keys(sum).forEach(function(k){sum[k]/=n;});
+  // Compute RMS of position scatter (metres). Smaller = more consistent fix.
+  var rmsE=0, rmsN=0;
+  var cosLat=Math.cos(sum.lat*Math.PI/180);
+  gnssAvgSamples.forEach(function(s){
+    var dE=(s.lng-sum.lng)*111320*cosLat;
+    var dN=(s.lat-sum.lat)*111320;
+    rmsE+=dE*dE; rmsN+=dN*dN;
+  });
+  rmsE=Math.sqrt(rmsE/n); rmsN=Math.sqrt(rmsN/n);
+  var rms=Math.sqrt(rmsE*rmsE+rmsN*rmsN);
   // Save live GNSS values, swap in averaged values for promptFeat
   var orig={lat:ST.gnss.lat,lng:ST.gnss.lng,hort:ST.gnss.hort,hell:ST.gnss.hell,ha:ST.gnss.ha,va:ST.gnss.va};
   ST.gnss.lat=sum.lat;ST.gnss.lng=sum.lng;
   ST.gnss.hort=sum.hort;ST.gnss.hell=sum.hell;
-  ST.gnss.ha=sum.ha;ST.gnss.va=sum.va;
-  if(typeof toast==='function')toast('Averaged '+n+' samples \u00B7 HA '+sum.ha.toFixed(3)+' m');
+  // Blend mean HA with position scatter RMS — the true "collected accuracy"
+  ST.gnss.ha=Math.sqrt(sum.ha*sum.ha + rms*rms);
+  ST.gnss.va=sum.va;
+  if(typeof toast==='function')
+    toast('Averaged '+n+' samples \u00B7 \u00B1'+ST.gnss.ha.toFixed(3)+'m (scatter '+rms.toFixed(3)+'m)');
   try{
     promptFeat(L.latLng(sum.lat,sum.lng),'point');
   } finally {
-    // Restore live GNSS so the next real-GPS tick (or simulation) resumes normally
     ST.gnss.lat=orig.lat;ST.gnss.lng=orig.lng;
     ST.gnss.hort=orig.hort;ST.gnss.hell=orig.hell;
     ST.gnss.ha=orig.ha;ST.gnss.va=orig.va;
   }
-  // Brief pause so user sees the filled 5/5 bar before it resets
   setTimeout(gnssAvgReset,1200);
 }
 
 function gnssCollect(){
   if(!ST.pid){alert('Open a project first.');return;}
-  // Second press while active → cancel
   if(gnssAvgActive){
     if(typeof toast==='function')toast('Averaging cancelled');
     gnssAvgReset();
     return;
   }
+  gnssAvgTarget=_readAvgTarget();
   gnssAvgActive=true;
   gnssAvgCount=0;
   gnssAvgSamples=[];
   gnssAvgUpdateUI();
-  if(typeof toast==='function')toast('Averaging: collecting 5 samples\u2026');
-  // First sample immediately, subsequent ones at 1 Hz (via gnssAvgStep)
+  if(typeof toast==='function')toast('Averaging: collecting '+gnssAvgTarget+' samples\u2026');
   gnssAvgStep();
 }
 
@@ -3385,7 +4001,13 @@ function onNativeGPS(pos){
   // .accuracy field (often 3.0m) regardless of real RTK σ.
   if(!ST.gnss._gstFresh){
     if(c.accuracy!=null&&c.accuracy>0)ST.gnss.ha=c.accuracy;
-    if(c.altitudeAccuracy!=null&&c.altitudeAccuracy>0)ST.gnss.va=c.altitudeAccuracy;
+    if(c.altitudeAccuracy!=null&&c.altitudeAccuracy>0){
+      ST.gnss.va=c.altitudeAccuracy;
+    } else if(ST.gnss.ha!=null&&ST.gnss.ha>0){
+      // Most Android phones don't report altitudeAccuracy. Vertical is
+      // typically 1.5–1.8× horizontal for consumer GNSS chips with SBAS.
+      ST.gnss.va=ST.gnss.ha*1.6;
+    }
   }
 
   // ── Altitude (ellipsoidal → orthometric via ~Tanzania geoid sep -36.2m) ────
@@ -3482,7 +4104,8 @@ function onLocFound(e){
     ST.gnss.realGps=true;
     if(e.altitude!=null){ST.gnss.hell=e.altitude;ST.gnss.hort=e.altitude+36.2;}
     ST.gnss.fix=e.accuracy<0.05?'RTK Fixed':e.accuracy<0.5?'RTK Float':e.accuracy<5?'DGPS':e.accuracy<15?'SBAS':'GPS';
-    if(e.altitudeAccuracy!=null&&e.altitudeAccuracy>0)ST.gnss.va=Math.min(e.altitudeAccuracy,99);
+    if(e.altitudeAccuracy!=null&&e.altitudeAccuracy>0) ST.gnss.va=Math.min(e.altitudeAccuracy,99);
+    else if(e.accuracy>0) ST.gnss.va = Math.min(e.accuracy*1.6, 99);
     _createGpsMkr(e.latlng);
   }
   updPosPan();
@@ -4495,25 +5118,50 @@ function updateImpPreview(){
   if(!ST.impFile){pv.style.display='none';return;}
   if(ST.impFmt==='csv'&&ST.impRows){
     var hasHdr=(document.getElementById('imp-hasheader')||{}).checked!==false;
+    var headers=hasHdr?ST.impRows[0]:ST.impRows[0].map(function(_,i){return'col_'+(i+1);});
     var data=hasHdr?ST.impRows.slice(1):ST.impRows;
     var ixN=parseInt(document.getElementById('imp-col-n').value,10);
     var ixX=parseInt(document.getElementById('imp-col-x').value,10);
     var ixY=parseInt(document.getElementById('imp-col-y').value,10);
-    var n=0,minLat=90,maxLat=-90,minLng=180,maxLng=-180;
-    data.slice(0,500).forEach(function(row){
+    var ixZ=parseInt(document.getElementById('imp-col-z').value,10);
+    var n=0,minLat=90,maxLat=-90,minLng=180,maxLng=-180,errs=0;
+    var samples=[];
+    data.slice(0,500).forEach(function(row,idx){
       var x=parseFloat(row[ixX]),y=parseFloat(row[ixY]);
-      if(isNaN(x)||isNaN(y))return;
+      if(isNaN(x)||isNaN(y)){errs++;return;}
       var lat,lng;
       if(zone==null){lat=y;lng=x;}
       else {var ll=fromUTM(x,y,{zone:zone,datum:datum});lat=ll.lat;lng=ll.lng;}
-      if(lat<-90||lat>90||lng<-180||lng>180)return;
+      if(lat<-90||lat>90||lng<-180||lng>180){errs++;return;}
       n++;minLat=Math.min(minLat,lat);maxLat=Math.max(maxLat,lat);minLng=Math.min(minLng,lng);maxLng=Math.max(maxLng,lng);
+      if(samples.length<3){
+        samples.push({
+          name: ixN>=0?(row[ixN]||'PT-'+(idx+1)):'PT-'+(idx+1),
+          lat:lat, lng:lng,
+          z: ixZ>=0?parseFloat(row[ixZ]):NaN
+        });
+      }
     });
     pv.style.display='block';
-    if(!n){body.innerHTML='<span style="color:#F06030">No valid rows with current column mapping</span>';return;}
-    body.innerHTML='<b style="color:#60AAFF">'+data.length+' rows</b> &middot; '+n+' valid samples<br>'
-      +'Bounds: <span class="mono">'+minLat.toFixed(5)+', '+minLng.toFixed(5)+'</span> &rarr; <span class="mono">'+maxLat.toFixed(5)+', '+maxLng.toFixed(5)+'</span>';
-    document.getElementById('imp-info').textContent=data.length+' rows &middot; '+n+' valid';
+    if(!n){body.innerHTML='<span style="color:#F06030">No valid rows with current column mapping. Check that X/Y columns and CRS match your data.</span>';return;}
+    // Auto-suggest CRS if bounds clearly outside valid range
+    var warn='';
+    if(zone!=null && (minLat<-20||maxLat>10||minLng<20||maxLng>45)){
+      warn='<div style="margin-top:4px;color:#FFAA40"><b>&#9888;</b> Coordinates out of East-Africa range for '+crs.toUpperCase()+'. Try a different zone or WGS84.</div>';
+    }
+    var sampleHtml=samples.map(function(s,i){
+      var utm=toUTMa(s.lat,s.lng);
+      return '<div style="margin-top:4px;padding:4px 6px;background:rgba(0,0,0,0.25);border-radius:4px;font-family:monospace;font-size:10px">'+
+        '<span style="color:#60AAFF">'+(i+1)+'. '+s.name+'</span> &rarr; '+
+        '<span style="color:#B0C8E0">'+s.lat.toFixed(6)+', '+s.lng.toFixed(6)+'</span>'+
+        (isNaN(s.z)?'':' <span style="color:#80A0C0">z='+s.z.toFixed(2)+'m</span>')+
+        ' <span style="color:#4A7090">(N'+utm.nF+' E'+utm.eF+')</span>'+
+        '</div>';
+    }).join('');
+    body.innerHTML='<b style="color:#60AAFF">'+data.length+' rows</b> &middot; '+n+' valid'+(errs?' &middot; '+errs+' skipped':'')+'<br>'
+      +'<span style="font-size:10px;color:#6A90AC">Bounds: '+minLat.toFixed(5)+', '+minLng.toFixed(5)+' \u2192 '+maxLat.toFixed(5)+', '+maxLng.toFixed(5)+'</span>'
+      +warn+sampleHtml;
+    document.getElementById('imp-info').textContent=data.length+' rows \u00B7 '+n+' valid';
   } else if(ST.impFmt) {
     pv.style.display='block';
     body.innerHTML='File ready. Click <b>Import</b> to load features into <b style="color:#60AAFF">'+(crs==='wgs84'?'WGS84':('UTM '+zone+'S'))+' / '+datum+'</b>.';
@@ -6666,12 +7314,16 @@ function toggleHomeSet(){
   if(btn){btn.style.background=homeSetOpen?'rgba(27,114,232,.2)':'rgba(255,255,255,.05)';btn.style.color=homeSetOpen?'#70AAFF':'#4A7090';}
   if(homeSetOpen){
     var si=document.getElementById('storage-info');if(si){var t=0;for(var k in localStorage)if(k.startsWith('fm'))t+=localStorage[k].length;si.textContent='Storage: '+(t/1024).toFixed(1)+' KB | '+ST.projects.length+' projects | '+ST.projects.reduce((a,p)=>a+(p.feats||0),0)+' features';}
-    // Reflect stored global CRS/Datum in dropdowns
     var g=ST.globalCRS;
     var cs=document.getElementById('s-crs'),ds=document.getElementById('s-datum');
     if(cs)cs.value=(g&&g.crsVal)||'utm37s';
     if(ds)ds.value=(g&&g.datum)||'WGS84';
-    // Reflect cached tile count
+    // Restore Avg Epochs slider from persisted value
+    var ep=document.getElementById('s-epochs');
+    if(ep){
+      var savedEp=parseInt(localStorage.getItem('fm_avg_epochs')||'',10);
+      if(savedEp>0&&savedEp<=60){ep.value=savedEp;if(ep.nextElementSibling)ep.nextElementSibling.textContent=savedEp;}
+    }
     if(typeof updateTileCacheInfo==='function')updateTileCacheInfo();
   }
 }
@@ -6740,30 +7392,115 @@ function toggleNTRIP(){
 // ─── OFFLINE TILE CACHE ───────────────────────────────────────────────────────
 // Pre-downloads basemap tiles for the currently visible map area + a few zoom
 // levels so surveyors can keep working offline. Tiles are stored base64 in
-// localStorage keyed by URL; the tile layer's `tileUrlFunction`/fetch then
-// checks the cache first. Works for any raster tile basemap.
-var TILE_CACHE_PREFIX='fm6_tile_';
-function tileCacheInfo(){
-  var count=0,bytes=0;
-  for(var k in localStorage){if(k.indexOf(TILE_CACHE_PREFIX)===0){count++;bytes+=localStorage[k].length;}}
-  return{count:count,kb:(bytes/1024).toFixed(1)};
+// ─── OFFLINE TILE CACHE (IndexedDB) ──────────────────────────────────────────
+// Persistent tile store. Blobs keyed by URL. Capacity is bounded by the
+// browser's quota (typically 6-60% of free disk) — hundreds of MB realistic.
+// Tile layers transparently pull from this cache via a createTile override.
+var TILE_DB_NAME='fm_tile_cache', TILE_STORE='tiles', TILE_DB_VER=1;
+var _tdb=null, _tdbOpening=null;
+
+function _openTileDB(){
+  if(_tdb)return Promise.resolve(_tdb);
+  if(_tdbOpening)return _tdbOpening;
+  _tdbOpening=new Promise(function(resolve){
+    try{
+      var req=indexedDB.open(TILE_DB_NAME,TILE_DB_VER);
+      req.onupgradeneeded=function(e){
+        var db=e.target.result;
+        if(!db.objectStoreNames.contains(TILE_STORE))
+          db.createObjectStore(TILE_STORE,{keyPath:'url'});
+      };
+      req.onsuccess=function(e){_tdb=e.target.result;resolve(_tdb);};
+      req.onerror=function(){resolve(null);};
+    }catch(e){resolve(null);}
+  });
+  return _tdbOpening;
 }
+
+function tileCacheGet(url){
+  return _openTileDB().then(function(db){
+    if(!db)return null;
+    return new Promise(function(res){
+      try{
+        var tx=db.transaction(TILE_STORE,'readonly'),st=tx.objectStore(TILE_STORE),rq=st.get(url);
+        rq.onsuccess=function(){res(rq.result?rq.result.blob:null);};
+        rq.onerror=function(){res(null);};
+      }catch(e){res(null);}
+    });
+  });
+}
+
+function tileCachePut(url,blob){
+  return _openTileDB().then(function(db){
+    if(!db)return;
+    return new Promise(function(res){
+      try{
+        var tx=db.transaction(TILE_STORE,'readwrite'),st=tx.objectStore(TILE_STORE);
+        st.put({url:url,blob:blob,size:blob.size,ts:Date.now()});
+        tx.oncomplete=function(){res();}; tx.onerror=function(){res();};
+      }catch(e){res();}
+    });
+  });
+}
+
+function tileCacheStats(){
+  return _openTileDB().then(function(db){
+    if(!db)return {count:0,bytes:0};
+    return new Promise(function(res){
+      try{
+        var tx=db.transaction(TILE_STORE,'readonly'),st=tx.objectStore(TILE_STORE);
+        var count=0, bytes=0;
+        st.openCursor().onsuccess=function(e){
+          var c=e.target.result;
+          if(c){count++;bytes+=c.value.size||0;c.continue();}
+          else res({count:count,bytes:bytes});
+        };
+      }catch(e){res({count:0,bytes:0});}
+    });
+  });
+}
+
+function tileCacheClearAll(){
+  return _openTileDB().then(function(db){
+    if(!db)return;
+    return new Promise(function(res){
+      try{
+        var tx=db.transaction(TILE_STORE,'readwrite'),st=tx.objectStore(TILE_STORE);
+        st.clear(); tx.oncomplete=function(){res();}; tx.onerror=function(){res();};
+      }catch(e){res();}
+    });
+  });
+}
+
 function updateTileCacheInfo(){
   var el=document.getElementById('tile-cache-info');if(!el)return;
-  var info=tileCacheInfo();
-  el.textContent=info.count?(info.count+' tiles \u00B7 '+info.kb+' KB'):'No tiles cached';
+  el.textContent='\u2026';
+  tileCacheStats().then(function(s){
+    if(!el)return;
+    var mb=(s.bytes/1048576);
+    el.textContent=s.count?(s.count+' tiles \u00B7 '+(mb>=1?mb.toFixed(1)+' MB':(s.bytes/1024).toFixed(1)+' KB')):'No tiles cached';
+  });
 }
+
+function clearTileCache(){
+  if(!confirm('Remove all cached map tiles?'))return;
+  tileCacheClearAll().then(function(){
+    updateTileCacheInfo();
+    if(typeof toast==='function')toast('Tile cache cleared');
+  });
+}
+
+// Pre-download tiles for current map view across z-1 to z+2
 function cacheCurrentBasemap(){
   if(!MAP){alert('Open the map first.');return;}
   var b=MAP.getBounds();
-  var z0=Math.max(MAP.getZoom()-1,10);
-  var z1=Math.min(MAP.getZoom()+2,18);
-  // Find the current active TileLayer
+  var cur=MAP.getZoom();
+  var z0=Math.max(cur-1,10), z1=Math.min(cur+2,19);
   var tl=null;
   MAP.eachLayer(function(l){if(l instanceof L.TileLayer&&l._url&&!tl)tl=l;});
   if(!tl){alert('No active tile layer to cache.');return;}
-  var url=tl._url;
-  // Compute tile ranges for the bounds across zoom levels
+  var url=tl._url, subs=(tl.options&&tl.options.subdomains)||['a','b','c'];
+  if(typeof subs==='string')subs=subs.split('');
   function lng2x(lng,z){return Math.floor((lng+180)/360*Math.pow(2,z));}
   function lat2y(lat,z){var r=lat*Math.PI/180;return Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*Math.pow(2,z));}
   var tiles=[];
@@ -6771,13 +7508,17 @@ function cacheCurrentBasemap(){
     var x0=lng2x(b.getWest(),z),x1=lng2x(b.getEast(),z);
     var y0=lat2y(b.getNorth(),z),y1=lat2y(b.getSouth(),z);
     for(var x=x0;x<=x1;x++)for(var y=y0;y<=y1;y++)tiles.push({z:z,x:x,y:y});
-    if(tiles.length>400){break;} // safety cap
   }
   if(!tiles.length){alert('No tiles in range.');return;}
-  var cap=Math.min(tiles.length,400);
+  // Cap bumped high — IndexedDB handles volume localStorage never could
+  var cap=Math.min(tiles.length,4000);
   tiles=tiles.slice(0,cap);
   if(typeof toast==='function')toast('Caching '+cap+' tiles\u2026');
-  var done=0,ok=0;
+  var done=0,ok=0,si=0;
+  function _build(t){
+    var s=subs[(si++)%subs.length];
+    return url.replace('{z}',t.z).replace('{x}',t.x).replace('{y}',t.y).replace('{s}',s);
+  }
   function next(){
     if(done>=cap){
       updateTileCacheInfo();
@@ -6785,25 +7526,43 @@ function cacheCurrentBasemap(){
       return;
     }
     var t=tiles[done++];
-    var tileUrl=url.replace('{z}',t.z).replace('{x}',t.x).replace('{y}',t.y).replace('{s}','a');
-    // Convert to data URL via fetch + FileReader (respects CORS where set)
-    fetch(tileUrl,{mode:'cors'}).then(function(r){return r.blob();}).then(function(blob){
-      return new Promise(function(res){var fr=new FileReader();fr.onload=function(){res(fr.result);};fr.readAsDataURL(blob);});
-    }).then(function(dataUrl){
-      try{localStorage.setItem(TILE_CACHE_PREFIX+t.z+'_'+t.x+'_'+t.y,dataUrl);ok++;}catch(e){/* quota */}
-      next();
+    var tileUrl=_build(t);
+    fetch(tileUrl,{mode:'cors'}).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(blob){
+      return tileCachePut(tileUrl,blob).then(function(){ok++;next();});
     }).catch(function(){next();});
   }
-  // Run 4 parallel fetches
-  for(var i=0;i<4&&i<cap;i++)next();
+  // 6 parallel fetches
+  for(var i=0;i<6&&i<cap;i++)next();
 }
-function clearTileCache(){
-  if(!confirm('Remove all cached map tiles?'))return;
-  var keys=[];for(var k in localStorage)if(k.indexOf(TILE_CACHE_PREFIX)===0)keys.push(k);
-  keys.forEach(function(k){localStorage.removeItem(k);});
-  updateTileCacheInfo();
-  if(typeof toast==='function')toast('Tile cache cleared');
-}
+
+// ── Intercept Leaflet tile loads: cache-first, then network ──────────────
+// Monkey-patch L.TileLayer.prototype.createTile once the page loads.
+(function(){
+  if(typeof L==='undefined'||!L.TileLayer)return;
+  var origCreateTile=L.TileLayer.prototype.createTile;
+  L.TileLayer.prototype.createTile=function(coords,done){
+    var img=document.createElement('img');
+    L.DomEvent.on(img,'load',L.Util.bind(this._tileOnLoad,this,done,img));
+    L.DomEvent.on(img,'error',L.Util.bind(this._tileOnError,this,done,img));
+    if(this.options.crossOrigin||this.options.crossOrigin===''){
+      img.crossOrigin=this.options.crossOrigin===true?'':this.options.crossOrigin;
+    }
+    img.alt='';
+    img.setAttribute('role','presentation');
+    var url=this.getTileUrl(coords);
+    // Try IndexedDB cache first
+    tileCacheGet(url).then(function(blob){
+      if(blob){
+        img.src=URL.createObjectURL(blob);
+      } else {
+        img.src=url;
+        // Silently cache successful fetches in the background
+        fetch(url,{mode:'cors'}).then(function(r){if(r.ok)return r.blob();}).then(function(b){if(b)tileCachePut(url,b);}).catch(function(){});
+      }
+    }).catch(function(){img.src=url;});
+    return img;
+  };
+})();
 
 // ─── SCREEN / MODAL ──────────────────────────────────────────────────────────
 function showScreen(name){
@@ -6820,7 +7579,7 @@ function showModal(name){
   if(name==='notes')renderNotes();
   if(name==='export')popExpSel();
   if(name==='fsearch'){setTimeout(()=>{var i=document.getElementById('srch-q');if(i){i.focus();i.value='';doSearch('');}},100);}
-  if(name==='projset')populateProjSettings();
+  if(name==='projset'){populateProjSettings();if(typeof _calRenderList==='function'){_calRenderList();_calUpdateBadge();}}
   if(name==='import'&&typeof updateImpLayout==='function')updateImpLayout();
   var e=document.getElementById('ov-'+name);if(e)e.classList.add('on');
 }
@@ -7662,84 +8421,266 @@ function hookDrawSnap(){
 
 // ─── GPS CALIBRATION ENGINE ──────────────────────────────────────────────────
 // Stores a lat/lng offset that is added to every raw GPS reading.
-// When the user stands on a known control point and enters precise coords,
-// we calculate delta = (precise - gps) and apply it forever until cleared.
-var GPS_CAL={active:false,dLat:0,dLng:0,dAlt:0,label:''};
+// ─── MULTI-POINT GPS CALIBRATION (Helmert 2D) ────────────────────────────────
+// Builds a similarity transformation from GPS-measured positions to known
+// control coordinates. 1 pt = translation only, 2+ pts = full Helmert
+// (translation + rotation + scale). Works in UTM metres on a per-zone basis.
+//
+// Model (at a chosen origin in UTM metres):
+//   E_known = dE + s*cos(t)*E_gps - s*sin(t)*N_gps
+//   N_known = dN + s*sin(t)*E_gps + s*cos(t)*N_gps
+// Solved via least-squares closed-form (Granshaw / Dewitt).
+var GPS_CAL={
+  active:false,            // whether calibration is being applied to live positions
+  points:[],               // [{gpsLat,gpsLng,gpsAlt,kN,kE,kAlt,zone,label}]
+  zone:37,
+  // Resolved transformation parameters in UTM-metres (per zone)
+  dE:0, dN:0, dZ:0, scale:1, theta:0, rmsE:0, rmsN:0, rms:0,
+  label:''
+};
 
-function applyCalibration(){
+// Simple placeholders so old code paths keep compiling
+Object.defineProperty(GPS_CAL,'dLat',{get:function(){return 0;},set:function(){}});
+Object.defineProperty(GPS_CAL,'dLng',{get:function(){return 0;},set:function(){}});
+Object.defineProperty(GPS_CAL,'dAlt',{get:function(){return this.dZ;},set:function(v){this.dZ=v;}});
+
+function _calRenderList(){
+  var box=document.getElementById('cal-cp-list');
+  if(!box)return;
+  if(!GPS_CAL.points.length){box.style.display='none';box.innerHTML='';return;}
+  box.style.display='block';
+  box.innerHTML=GPS_CAL.points.map(function(p,i){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">'+
+      '<div style="flex:1;min-width:0;color:#A0C0E8">'+
+        '<div style="font-weight:600">CP'+(i+1)+(p.label?' &middot; '+p.label:'')+'</div>'+
+        '<div style="color:#3A6080;font-size:9px">N '+p.kN.toFixed(2)+' E '+p.kE.toFixed(2)+' (Z'+p.zone+')</div>'+
+      '</div>'+
+      '<button class="btn btns" style="font-size:10px;padding:3px 8px" onclick="calRemovePoint('+i+')">&times;</button>'+
+    '</div>';
+  }).join('');
+}
+
+// Add a new control-point pair: current GPS reading ↔ entered known coords
+function calAddPoint(){
+  if(!ST.gpsActive||ST.gnss.lat===0){alert('GPS must be active. Stand on the control point first.');return;}
   var nStr=document.getElementById('cal-n').value.replace(/,/g,'').trim();
   var eStr=document.getElementById('cal-e').value.replace(/,/g,'').trim();
   var altStr=document.getElementById('cal-alt').value.replace(/,/g,'').trim();
   var zone=parseInt(document.getElementById('cal-zone').value)||37;
   var n=parseFloat(nStr), e=parseFloat(eStr);
-  if(isNaN(n)||isNaN(e)){alert('Enter valid Northing and Easting.');return;}
-  if(!ST.gpsActive||ST.gnss.lat===0){alert('GPS must be active. Turn on GPS first, then apply calibration while standing on the control point.');return;}
-
-  // Convert precise known point back to lat/lng
-  var precise=fromUTM(e,n,{zone:zone,hemisphere:'S',datum:'WGS84'});
-  // Current raw GPS
-  var rawLat=ST.gnss.lat, rawLng=ST.gnss.lng;
-  GPS_CAL.dLat=precise.lat-rawLat;
-  GPS_CAL.dLng=precise.lng-rawLng;
-  GPS_CAL.dAlt=altStr&&!isNaN(parseFloat(altStr))?(parseFloat(altStr)-ST.gnss.hort):0;
-  GPS_CAL.active=true;
-  var utm=toUTM(precise.lat,precise.lng,{zone:zone,datum:'WGS84'});
-  GPS_CAL.label='Cal: N '+Math.round(n)+' E '+Math.round(e)+' (Z'+zone+'S)';
-
-  // Save calibration with the project
-  if(ST.pid){
-    var p=ST.projects.find(function(x){return x.id==ST.pid;});
-    if(p)p.calibration={dLat:GPS_CAL.dLat,dLng:GPS_CAL.dLng,dAlt:GPS_CAL.dAlt,label:GPS_CAL.label};
-    saveData();
+  if(isNaN(n)||isNaN(e)){alert('Enter valid Northing and Easting for this control point.');return;}
+  // Enforce single zone for all points
+  if(GPS_CAL.points.length && GPS_CAL.points[0].zone!==zone){
+    if(!confirm('Other control points are in zone '+GPS_CAL.points[0].zone+'. Clear and use zone '+zone+'?')) return;
+    GPS_CAL.points=[];
   }
-
-  // Show active badge
-  var badge=document.getElementById('cal-active-badge');
-  if(badge){
-    badge.style.display='block';
-    badge.innerHTML='&#9989; CALIBRATION ACTIVE<br><span style="color:#7AAECE">'+GPS_CAL.label+'</span>'
-      +'<br><span style="color:#4A8090">ΔLat: '+(GPS_CAL.dLat*111320).toFixed(3)+'m  ΔLng: '+(GPS_CAL.dLng*111320*Math.cos(rawLat*Math.PI/180)).toFixed(3)+'m  ΔAlt: '+GPS_CAL.dAlt.toFixed(3)+'m</span>';
-  }
-
-  // Update cbar label
-  var calChip=document.getElementById('cal-chip');
-  if(!calChip){
-    var chip=document.createElement('span');
-    chip.id='cal-chip';
-    chip.style.cssText='position:absolute;bottom:22px;left:44px;right:44px;height:18px;text-align:center;font-size:9px;font-family:monospace;color:#00cfff;background:rgba(0,10,20,0.85);z-index:401;pointer-events:none;border-top:1px solid rgba(0,207,255,0.2);display:flex;align-items:center;justify-content:center;letter-spacing:1px';
-    chip.textContent='CAL ACTIVE';
-    var fm=document.getElementById('sc-map');if(fm)fm.appendChild(chip);
-  }else{calChip.textContent='CAL ACTIVE';}
-
-  toast('✓ Calibration applied — offset: Δ'+(GPS_CAL.dLat*111320).toFixed(2)+'m N, Δ'+(GPS_CAL.dLng*111320*Math.cos(rawLat*Math.PI/180)).toFixed(2)+'m E');
-  closeModal('projset');
+  GPS_CAL.zone=zone;
+  GPS_CAL.points.push({
+    gpsLat:ST.gnss.lat, gpsLng:ST.gnss.lng, gpsAlt:ST.gnss.hort||0,
+    kN:n, kE:e, kAlt:(altStr&&!isNaN(parseFloat(altStr)))?parseFloat(altStr):null,
+    zone:zone, label:'N'+Math.round(n)+'/E'+Math.round(e)
+  });
+  _calFitAndApply();
+  _calRenderList();
+  // Clear entry fields for next CP
+  document.getElementById('cal-n').value='';
+  document.getElementById('cal-e').value='';
+  document.getElementById('cal-alt').value='';
+  toast('Control point '+GPS_CAL.points.length+' added');
 }
 
+function calRemovePoint(idx){
+  GPS_CAL.points.splice(idx,1);
+  _calFitAndApply();
+  _calRenderList();
+}
+
+// Compute Helmert params from current control-point list and apply
+function _calFitAndApply(){
+  var pts=GPS_CAL.points;
+  if(!pts.length){
+    GPS_CAL.active=false; GPS_CAL.dE=GPS_CAL.dN=GPS_CAL.dZ=0; GPS_CAL.scale=1; GPS_CAL.theta=0;
+    GPS_CAL.rmsE=GPS_CAL.rmsN=GPS_CAL.rms=0;
+    _calUpdateBadge();
+    if(ST.pid){var p=ST.projects.find(function(x){return x.id==ST.pid;});if(p)delete p.calibration;saveData();}
+    return;
+  }
+  var zone=pts[0].zone;
+  // Convert all GPS pts to UTM of the same zone for uniform metres
+  var src=pts.map(function(p){var u=toUTM(p.gpsLat,p.gpsLng,{zone:zone,datum:'WGS84'});return {E:u.e,N:u.n,Alt:p.gpsAlt};});
+  var dst=pts.map(function(p){return {E:p.kE,N:p.kN,Alt:p.kAlt};});
+  var n=pts.length;
+
+  if(n===1){
+    // Translation only
+    GPS_CAL.scale=1; GPS_CAL.theta=0;
+    GPS_CAL.dE=dst[0].E-src[0].E;
+    GPS_CAL.dN=dst[0].N-src[0].N;
+    GPS_CAL.rmsE=GPS_CAL.rmsN=GPS_CAL.rms=0;
+  } else {
+    // Least-squares Helmert — centroids first
+    var cs={E:0,N:0}, cd={E:0,N:0};
+    src.forEach(function(p){cs.E+=p.E;cs.N+=p.N;});
+    dst.forEach(function(p){cd.E+=p.E;cd.N+=p.N;});
+    cs.E/=n;cs.N/=n;cd.E/=n;cd.N/=n;
+    var sumXx=0,sumYy=0,sumXy=0,sumYx=0,sumXX=0,sumYY=0;
+    for(var i=0;i<n;i++){
+      var sx=src[i].E-cs.E, sy=src[i].N-cs.N;
+      var dx=dst[i].E-cd.E, dy=dst[i].N-cd.N;
+      sumXx += sx*dx; sumYy += sy*dy;
+      sumXy += sx*dy; sumYx += sy*dx;
+      sumXX += sx*sx + sy*sy;
+    }
+    // Closed form: a = (Σ(sx*dx+sy*dy))/Σ(sx²+sy²), b = (Σ(sx*dy−sy*dx))/Σ(sx²+sy²)
+    // Then scale = √(a²+b²), theta = atan2(b,a)
+    var a=(sumXx+sumYy)/sumXX;
+    var b=(sumXy-sumYx)/sumXX;
+    var scale=Math.sqrt(a*a+b*b);
+    var theta=Math.atan2(b,a);
+    // Translation (bring rotated+scaled src centroid to dst centroid)
+    var cosT=Math.cos(theta), sinT=Math.sin(theta);
+    var dE=cd.E - scale*(cosT*cs.E - sinT*cs.N);
+    var dN=cd.N - scale*(sinT*cs.E + cosT*cs.N);
+    GPS_CAL.scale=scale; GPS_CAL.theta=theta;
+    GPS_CAL.dE=dE; GPS_CAL.dN=dN;
+    // Residuals
+    var sE=0, sN=0;
+    for(var j=0;j<n;j++){
+      var tE=dE + scale*(cosT*src[j].E - sinT*src[j].N);
+      var tN=dN + scale*(sinT*src[j].E + cosT*src[j].N);
+      var rE=dst[j].E-tE, rN=dst[j].N-tN;
+      sE+=rE*rE; sN+=rN*rN;
+    }
+    GPS_CAL.rmsE=Math.sqrt(sE/n); GPS_CAL.rmsN=Math.sqrt(sN/n);
+    GPS_CAL.rms=Math.sqrt(GPS_CAL.rmsE*GPS_CAL.rmsE + GPS_CAL.rmsN*GPS_CAL.rmsN);
+  }
+  // Z: mean of per-point alt deltas (points with known altitude)
+  var altPairs=pts.filter(function(p){return p.kAlt!=null;});
+  if(altPairs.length){
+    var dSum=0;
+    altPairs.forEach(function(p){dSum += p.kAlt - p.gpsAlt;});
+    GPS_CAL.dZ=dSum/altPairs.length;
+  } else GPS_CAL.dZ=0;
+
+  GPS_CAL.active=true;
+  GPS_CAL.zone=zone;
+  GPS_CAL.label=(n===1?'Shift':(n+'-pt Helmert'))+' \u00B7 Z'+zone;
+  if(ST.pid){
+    var p2=ST.projects.find(function(x){return x.id==ST.pid;});
+    if(p2)p2.calibration={
+      v:2, points:pts.slice(), zone:zone,
+      dE:GPS_CAL.dE, dN:GPS_CAL.dN, dZ:GPS_CAL.dZ,
+      scale:GPS_CAL.scale, theta:GPS_CAL.theta, label:GPS_CAL.label
+    };
+    saveData();
+  }
+  _calUpdateBadge();
+}
+
+function _calUpdateBadge(){
+  var badge=document.getElementById('cal-active-badge');
+  if(!badge)return;
+  if(!GPS_CAL.active){badge.style.display='none';}
+  else{
+    var scalePpm=(GPS_CAL.scale-1)*1e6;
+    var rotDeg=GPS_CAL.theta*180/Math.PI;
+    badge.style.display='block';
+    badge.innerHTML='&#9989; CAL: '+GPS_CAL.label+'<br>'+
+      '<span style="color:#7AAECE">dE '+GPS_CAL.dE.toFixed(3)+' dN '+GPS_CAL.dN.toFixed(3)+
+      (GPS_CAL.points.length>=2?' &middot; scale '+scalePpm.toFixed(1)+'ppm &middot; rot '+rotDeg.toFixed(4)+'\u00B0':'')+'</span>';
+  }
+  var fit=document.getElementById('cal-fit-summary');
+  if(fit){
+    if(GPS_CAL.points.length>=2){
+      fit.style.display='block';
+      fit.innerHTML='Fit residuals: RMS '+GPS_CAL.rms.toFixed(3)+'m (E '+GPS_CAL.rmsE.toFixed(3)+', N '+GPS_CAL.rmsN.toFixed(3)+')';
+    } else fit.style.display='none';
+  }
+  // In-map CAL chip
+  var chip=document.getElementById('cal-chip');
+  if(GPS_CAL.active){
+    if(!chip){
+      var c=document.createElement('span');c.id='cal-chip';
+      c.style.cssText='position:absolute;bottom:22px;left:44px;right:44px;height:18px;text-align:center;font-size:9px;font-family:monospace;color:#00cfff;background:rgba(0,10,20,0.85);z-index:401;pointer-events:none;border-top:1px solid rgba(0,207,255,0.2);display:flex;align-items:center;justify-content:center;letter-spacing:1px';
+      c.textContent='CAL '+GPS_CAL.label;
+      var fm=document.getElementById('sc-map');if(fm)fm.appendChild(c);
+    } else chip.textContent='CAL '+GPS_CAL.label;
+  } else if(chip) chip.remove();
+}
+
+// Kept for backwards compat — single-button flow → treat as "add one point + apply"
+function applyCalibration(){calAddPoint();}
+
 function clearCalibration(){
-  GPS_CAL={active:false,dLat:0,dLng:0,dAlt:0,label:''};
+  GPS_CAL.points=[];
+  GPS_CAL.active=false;
+  GPS_CAL.dE=GPS_CAL.dN=GPS_CAL.dZ=0; GPS_CAL.scale=1; GPS_CAL.theta=0;
+  GPS_CAL.rmsE=GPS_CAL.rmsN=GPS_CAL.rms=0; GPS_CAL.label='';
   if(ST.pid){
     var p=ST.projects.find(function(x){return x.id==ST.pid;});
     if(p)delete p.calibration;
     saveData();
   }
-  var badge=document.getElementById('cal-active-badge');
-  if(badge)badge.style.display='none';
-  var chip=document.getElementById('cal-chip');
-  if(chip)chip.remove();
+  _calUpdateBadge();
+  _calRenderList();
   toast('Calibration cleared');
 }
 
-// Patch gnss lat/lng to apply calibration offset wherever readings are used
-function calLat(){return ST.gnss.lat+(GPS_CAL.active?GPS_CAL.dLat:0);}
-function calLng(){return ST.gnss.lng+(GPS_CAL.active?GPS_CAL.dLng:0);}
-function calAlt(){return ST.gnss.hort+(GPS_CAL.active?GPS_CAL.dAlt:0);}
+// Forward transform: rawLat,rawLng  →  calibrated lat,lng
+// (rawAlt → calibrated alt via dZ only)
+function _calApplyLatLng(rawLat,rawLng){
+  if(!GPS_CAL.active)return {lat:rawLat,lng:rawLng};
+  if(GPS_CAL.points.length===1 && GPS_CAL.scale===1 && GPS_CAL.theta===0){
+    // Translation-only fast path: convert offset from UTM metres back to deg
+    var cosPhi=Math.cos(rawLat*Math.PI/180)||1;
+    return {
+      lat: rawLat + GPS_CAL.dN/111320,
+      lng: rawLng + GPS_CAL.dE/(111320*cosPhi)
+    };
+  }
+  // Full Helmert: go via UTM
+  var u=toUTM(rawLat,rawLng,{zone:GPS_CAL.zone,datum:'WGS84'});
+  var cosT=Math.cos(GPS_CAL.theta), sinT=Math.sin(GPS_CAL.theta);
+  var E = GPS_CAL.dE + GPS_CAL.scale*(cosT*u.e - sinT*u.n);
+  var N = GPS_CAL.dN + GPS_CAL.scale*(sinT*u.e + cosT*u.n);
+  var ll=fromUTM(E,N,{zone:GPS_CAL.zone,hemisphere:'S',datum:'WGS84'});
+  return {lat:ll.lat,lng:ll.lng};
+}
+
+// Public helpers used across the app
+function calLat(){if(!GPS_CAL.active||ST.gnss.lat==null)return ST.gnss.lat;return _calApplyLatLng(ST.gnss.lat,ST.gnss.lng).lat;}
+function calLng(){if(!GPS_CAL.active||ST.gnss.lng==null)return ST.gnss.lng;return _calApplyLatLng(ST.gnss.lat,ST.gnss.lng).lng;}
+function calAlt(){return (ST.gnss.hort||0)+(GPS_CAL.active?GPS_CAL.dZ:0);}
 
 // Restore calibration when project is opened
 function loadProjectCalibration(pid){
   var p=ST.projects.find(function(x){return x.id==pid;});
   if(p&&p.calibration){
-    GPS_CAL=Object.assign({active:true},p.calibration);
-    toast('Calibration restored: '+GPS_CAL.label);
+    var c=p.calibration;
+    if(c.v===2 && c.points){
+      // New multi-point format: restore CP list + refit
+      GPS_CAL.points=c.points.slice();
+      GPS_CAL.zone=c.zone||37;
+      _calFitAndApply();
+      _calRenderList();
+      toast('Calibration restored: '+GPS_CAL.label);
+    } else if(c.dLat!=null){
+      // Legacy v1 (simple lat/lng shift). Convert to a single CP.
+      var rawLat=ST.gnss.lat||0, rawLng=ST.gnss.lng||0;
+      var newLat=rawLat+c.dLat, newLng=rawLng+c.dLng;
+      var zone=37;
+      var u=toUTM(newLat,newLng,{zone:zone,datum:'WGS84'});
+      GPS_CAL.points=[{
+        gpsLat:rawLat, gpsLng:rawLng, gpsAlt:ST.gnss.hort||0,
+        kN:u.n, kE:u.e, kAlt:null, zone:zone, label:'legacy'
+      }];
+      GPS_CAL.zone=zone;
+      _calFitAndApply();
+      _calRenderList();
+      toast('Legacy calibration migrated');
+    } else {
+      clearCalibration();
+    }
   } else {
     clearCalibration();
   }
@@ -7763,30 +8704,34 @@ var _soSoundOn=true;
 // Speaks distance + cardinal direction when user is within 1.5 m of target.
 // Uses Web Speech API; picks a female-sounding voice if available.
 var _soVoice=null, _soLastSpokenAt=0, _soLastSpokenMsg='';
+// User-chosen voice name (persisted). If set, overrides the auto-picker.
+var _soVoiceName = localStorage.getItem('fm_so_voice') || '';
+
+function _soAllVoices(){
+  if(!window.speechSynthesis) return [];
+  return (speechSynthesis.getVoices()||[]).slice();
+}
+
 function _soPickVoice(){
   if(!window.speechSynthesis) return null;
   if(_soVoice) return _soVoice;
-  var list=speechSynthesis.getVoices()||[];
-  // Priority order — closest-to-Siri voices per platform:
-  //   iOS / macOS  : "Samantha" is Siri's underlying engine. "Ava", "Allison",
-  //                  "Susan", "Zoe" are all Apple voices with similar timbre.
-  //   Android      : "en-us-x-sfg#female_1" or "Google US English" are the
-  //                  cleanest female Android TTS voices.
-  //   Windows/Edge : "Microsoft Aria", "Microsoft Jenny" are the modern
-  //                  neural female voices that sound closest to Siri.
+  var list=_soAllVoices();
+  // 1. Honour explicit user choice
+  if(_soVoiceName){
+    var chosen=list.find(function(v){return v.name===_soVoiceName;});
+    if(chosen){_soVoice=chosen;return chosen;}
+  }
+  // 2. Fallback: closest-to-Siri female voices per platform
   var prefs=[
-    // 1. Apple Samantha / Siri family (the real Siri engine, when exposed)
+    // Apple Siri engine
     function(v){return /^(samantha|siri|ava|allison|susan|zoe|nicky|joelle)(\s|$|\s*\()/i.test(v.name) && /en/i.test(v.lang);},
-    // 2. Windows neural Siri-alikes
+    // Windows neural
     function(v){return /aria|jenny|nancy|michelle/i.test(v.name) && /en/i.test(v.lang);},
-    // 3. Google Android Siri-alikes
+    // Google Android
     function(v){return /google.+(us|uk).+english/i.test(v.name) && !/male/i.test(v.name);},
     function(v){return /en-us-x-sfg.*female|en-gb-x-.*female/i.test(v.name);},
-    // 4. Any explicitly female English voice
     function(v){return /female|victoria|karen|tessa|fiona|moira|serena|zira|kate/i.test(v.name) && /en/i.test(v.lang);},
-    // 5. Any English voice that isn't explicitly male
     function(v){return /^en(-|_)/i.test(v.lang) && !/male/i.test(v.name);},
-    // 6. Fallback
     function(v){return /^en/i.test(v.lang);},
     function(v){return true;}
   ];
@@ -7796,9 +8741,59 @@ function _soPickVoice(){
   }
   return null;
 }
+
+// Set user preference, persist it, and reset cache so next speak uses it
+function soSetVoice(name){
+  _soVoiceName=name||'';
+  localStorage.setItem('fm_so_voice',_soVoiceName);
+  _soVoice=null;
+  // Repopulate list UI if open
+  if(document.getElementById('voice-picker-list')) soRenderVoicePicker();
+}
+
+function soRenderVoicePicker(){
+  var list=_soAllVoices();
+  var box=document.getElementById('voice-picker-list');
+  if(!box) return;
+  if(!list.length){
+    box.innerHTML='<div style="padding:12px;font-size:11px;color:#3A6080">Voices not loaded yet. Try reopening Settings after a moment.</div>';
+    return;
+  }
+  // Group: English female-likely first, rest after
+  var eng=list.filter(function(v){return /^en/i.test(v.lang);});
+  var other=list.filter(function(v){return !/^en/i.test(v.lang);});
+  eng.sort(function(a,b){return a.name.localeCompare(b.name);});
+  other.sort(function(a,b){return a.name.localeCompare(b.name);});
+  var ordered=eng.concat(other);
+  var current=_soVoiceName || (_soPickVoice()||{}).name || '';
+  box.innerHTML = ordered.map(function(v){
+    var isCur = v.name===current;
+    return '<div class="vrow" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04);'+(isCur?'background:rgba(27,114,232,0.1)':'')+'">'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:11px;color:'+(isCur?'#70AAFF':'#A0C0E8')+';font-weight:'+(isCur?'600':'400')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+v.name.replace(/</g,'&lt;')+'</div>'+
+        '<div style="font-size:9px;color:#3A6080;font-family:monospace">'+v.lang+(v.default?' · default':'')+(v.localService?' · local':' · network')+'</div>'+
+      '</div>'+
+      '<button onclick="soTestVoice(\''+v.name.replace(/'/g,"\\'")+'\')" class="btn btns" style="font-size:10px;padding:3px 8px">Test</button>'+
+      '<button onclick="soSetVoice(\''+v.name.replace(/'/g,"\\'")+'\')" class="btn '+(isCur?'btng':'btnp')+'" style="font-size:10px;padding:3px 8px">'+(isCur?'✓':'Use')+'</button>'+
+    '</div>';
+  }).join('');
+}
+
+function soTestVoice(name){
+  if(!window.speechSynthesis) return;
+  try{
+    speechSynthesis.cancel();
+    var list=_soAllVoices();
+    var v=list.find(function(x){return x.name===name;});
+    var u=new SpeechSynthesisUtterance('One point two metres, north east');
+    if(v){u.voice=v;u.lang=v.lang;}
+    u.rate=1.0;u.pitch=1.0;u.volume=1.0;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
 // Voices often load asynchronously on first use
 if(window.speechSynthesis){
-  try{speechSynthesis.onvoiceschanged=function(){_soVoice=null;_soPickVoice();};}catch(e){}
+  try{speechSynthesis.onvoiceschanged=function(){_soVoice=null;_soPickVoice();if(document.getElementById('voice-picker-list'))soRenderVoicePicker();};}catch(e){}
 }
 function _soSpeak(msg){
   if(!_soSoundOn||!window.speechSynthesis) return;
@@ -7840,44 +8835,63 @@ function _getAudioCtx(){
   return _soAudio;
 }
 
+// Soft chime — triangle wave + low-pass filter + slow attack/decay.
+// Sounds like a musical bell, not a piercing sine tone.
 function _beep(freq,dur,vol,type,delay){
   var ctx=_getAudioCtx();if(!ctx)return;
-  delay=delay||0;vol=vol||0.4;type=type||'sine';
+  delay=delay||0;vol=vol||0.3;
   var osc=ctx.createOscillator();
   var gain=ctx.createGain();
-  osc.connect(gain);gain.connect(ctx.destination);
-  osc.type=type;osc.frequency.value=freq;
-  gain.gain.setValueAtTime(0,ctx.currentTime+delay);
-  gain.gain.linearRampToValueAtTime(vol,ctx.currentTime+delay+0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
-  osc.start(ctx.currentTime+delay);
-  osc.stop(ctx.currentTime+delay+dur+0.05);
+  var filter=ctx.createBiquadFilter();
+  filter.type='lowpass';
+  filter.frequency.value=Math.min(freq*3, 2200);
+  filter.Q.value=1.2;
+  osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  // Triangle = warmer, less harsh than sine/square for the same pitch
+  osc.type='triangle';
+  osc.frequency.value=freq;
+  var t0=ctx.currentTime+delay;
+  // Slow attack (30ms) + gentle decay = chime, not a blip
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(vol, t0+0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  osc.start(t0);
+  osc.stop(t0+dur+0.1);
+  // Subtle harmonic above for a richer bell timbre
+  var osc2=ctx.createOscillator();
+  var g2=ctx.createGain();
+  osc2.connect(g2); g2.connect(filter);
+  osc2.type='triangle';
+  osc2.frequency.value=freq*2;
+  g2.gain.setValueAtTime(0.0001, t0);
+  g2.gain.exponentialRampToValueAtTime(vol*0.35, t0+0.03);
+  g2.gain.exponentialRampToValueAtTime(0.0001, t0+dur*0.7);
+  osc2.start(t0);
+  osc2.stop(t0+dur+0.1);
 }
 
 function _soPlaySound(dist){
   if(!_soSoundOn)return;
-  if(dist>5){return;} // silent beyond 5m
+  if(dist>5){return;}
   else if(dist<=0.05){
-    // IN TOLERANCE — success chord: C-E-G
-    _beep(523,0.15,0.5,'sine',0);
-    _beep(659,0.15,0.5,'sine',0.1);
-    _beep(784,0.3,0.5,'sine',0.2);
+    // ON TARGET — soft major-chord bell: A4-C#5-E5 (concert pitch, pleasant)
+    _beep(440,0.35,0.32,null,0);
+    _beep(554,0.35,0.32,null,0.08);
+    _beep(659,0.45,0.32,null,0.16);
     if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
   } else if(dist<=0.5){
-    // < 0.5m — rapid triple pulse, high pitch
-    _beep(1200,0.08,0.45,'sine',0);
-    _beep(1200,0.08,0.45,'sine',0.12);
-    _beep(1200,0.08,0.45,'sine',0.24);
-    if(navigator.vibrate)navigator.vibrate([80,40,80,40,80]);
+    // < 0.5m — two gentle high chimes (E5 twice)
+    _beep(659,0.18,0.28,null,0);
+    _beep(659,0.18,0.28,null,0.2);
+    if(navigator.vibrate)navigator.vibrate([60,40,60]);
   } else if(dist<=1){
-    // 0.5–1m — double beep, mid-high pitch
-    _beep(900,0.1,0.4,'sine',0);
-    _beep(900,0.1,0.4,'sine',0.18);
-    if(navigator.vibrate)navigator.vibrate([60,60,60]);
+    // 0.5–1m — single mid chime (C#5)
+    _beep(554,0.22,0.26,null,0);
+    if(navigator.vibrate)navigator.vibrate([60,40,60]);
   } else {
-    // 1–5m — single low beep
-    _beep(600,0.12,0.35,'sine',0);
-    if(navigator.vibrate)navigator.vibrate(50);
+    // 1–5m — soft low chime (A4)
+    _beep(440,0.22,0.24,null,0);
+    if(navigator.vibrate)navigator.vibrate(40);
   }
 }
 
@@ -8150,6 +9164,12 @@ function parseNMEA(line){
       if(haNew<clamp[0]) haNew=clamp[0];
       if(haNew>clamp[1]) haNew=clamp[1];
       ST.gnss.ha = haNew;
+      // Seed/refresh VA estimate so it doesn't stay '--' forever when rover
+      // doesn't emit GST. Overridden below by real GST/VDOP if available.
+      if(ST.gnss.va==null || ST.gnss.va===0){
+        var vU={4:0.012,5:0.060,2:1.000,1:4.500,6:15.000}[fix]||4.5;
+        ST.gnss.va = hdop>0 ? hdop*vU : vU;
+      }
     }
     // Update map marker
     var ll=L.latLng(lat,lng);
