@@ -571,11 +571,24 @@ input,button,select,textarea{font-family:inherit;outline:none}
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span id="rt-live-name" style="font-size:11px;font-weight:700;color:#E0F0FF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px"></span>
           <span id="rt-live-geom" style="font-size:9px;color:#10B981;font-weight:600;letter-spacing:.05em"></span>
+          <span id="rt-live-bg" style="display:none;font-size:8px;color:#FFB060;font-weight:700;letter-spacing:.05em;background:rgba(255,145,0,0.15);border:1px solid rgba(255,145,0,0.4);padding:1px 5px;border-radius:3px" title="Background tracking active">BG</span>
         </div>
-        <div style="display:flex;gap:10px;margin-top:2px;font-size:10px;color:#80A8C8;font-family:monospace">
-          <span>Pts: <span id="rt-live-npts" style="color:#C0D8F0">0</span></span>
-          <span>Len: <span id="rt-live-dist" style="color:#C0D8F0">0 m</span></span>
-          <span id="rt-live-dur" style="color:#C0D8F0">0:00</span>
+        <div style="display:flex;gap:8px;margin-top:3px;align-items:center">
+          <!-- Prominent Length badge -->
+          <div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);padding:2px 7px;border-radius:4px">
+            <div style="font-size:8px;color:#60D89A;font-weight:600;line-height:1">LEN</div>
+            <div id="rt-live-dist" style="font-size:14px;color:#E0FFF0;font-weight:700;font-family:monospace;line-height:1.1">0 m</div>
+          </div>
+          <!-- Points badge -->
+          <div style="background:rgba(27,114,232,0.15);border:1px solid rgba(27,114,232,0.4);padding:2px 7px;border-radius:4px">
+            <div style="font-size:8px;color:#7AB8FF;font-weight:600;line-height:1">PTS</div>
+            <div id="rt-live-npts" style="font-size:14px;color:#E0F0FF;font-weight:700;font-family:monospace;line-height:1.1">0</div>
+          </div>
+          <!-- Duration badge -->
+          <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);padding:2px 7px;border-radius:4px">
+            <div style="font-size:8px;color:#8AA0BC;font-weight:600;line-height:1">TIME</div>
+            <div id="rt-live-dur" style="font-size:14px;color:#C0D8F0;font-weight:700;font-family:monospace;line-height:1.1">0:00</div>
+          </div>
         </div>
       </div>
       <button id="rt-live-pause"  onclick="pauseRouteTrack()"  style="background:rgba(255,145,0,0.15);border:1px solid rgba(255,145,0,0.35);border-radius:6px;color:#FFB060;font-size:11px;padding:5px 9px;cursor:pointer;flex-shrink:0" title="Pause">&#10074;&#10074;</button>
@@ -1624,17 +1637,17 @@ input,button,select,textarea{font-family:inherit;outline:none}
                 <input class="inp" id="gt-split-byarea-n" type="number" min="2" max="20" value="2" style="font-size:11px;height:26px" onchange="_gtRenderAreaInputs()" oninput="_gtRenderAreaInputs()"/></div>
               <div style="flex:1"></div>
             </div>
-            <!-- Both mode: V and H -->
+            <!-- Both mode: V + H (T-shape subdivision with per-plot areas) -->
             <div id="gt-ba-both" style="display:none;gap:6px;margin-top:4px;padding-left:24px">
               <div style="display:flex;gap:6px">
-                <div style="flex:1"><div style="font-size:9px;color:#3A6080">V &mdash; columns (side-by-side)</div>
-                  <input class="inp" id="gt-ba-V" type="number" min="1" max="10" value="2" style="font-size:11px;height:26px" onchange="_gtRenderBothInputs()" oninput="_gtRenderBothInputs()"/></div>
-                <div style="font-size:16px;color:#4A7090;align-self:end;padding-bottom:3px">&times;</div>
-                <div style="flex:1"><div style="font-size:9px;color:#3A6080">H &mdash; rows per column</div>
-                  <input class="inp" id="gt-ba-H" type="number" min="1" max="10" value="2" style="font-size:11px;height:26px" onchange="_gtRenderBothInputs()" oninput="_gtRenderBothInputs()"/></div>
+                <div style="flex:1"><div style="font-size:9px;color:#3A6080">V &mdash; vertical plots (bottom, side-by-side)</div>
+                  <input class="inp" id="gt-ba-V" type="number" min="0" max="10" value="2" style="font-size:11px;height:26px" onchange="_gtRenderBothInputs()" oninput="_gtRenderBothInputs()"/></div>
+                <div style="font-size:16px;color:#4A7090;align-self:end;padding-bottom:3px">+</div>
+                <div style="flex:1"><div style="font-size:9px;color:#3A6080">H &mdash; horizontal plots (top, stacked)</div>
+                  <input class="inp" id="gt-ba-H" type="number" min="0" max="10" value="1" style="font-size:11px;height:26px" onchange="_gtRenderBothInputs()" oninput="_gtRenderBothInputs()"/></div>
               </div>
               <div style="font-size:9px;color:#3A6080;margin-top:4px;line-height:1.4">
-                Columns are cut vertically first (each column width = its plots' total area). Then each column is cut horizontally into its H plots independently. Every plot hits its exact area.
+                Total plots = V + H. A primary horizontal cut divides the polygon into lower (V plots side-by-side) and upper (H plots stacked) sections. Examples: 2+1 = T-shape (3 plots), 1+2 = inverted T (3 plots), 2+2 = 4 plots. All cuts are axis-aligned &rarr; 90&deg; intersections.
               </div>
             </div>
             <div id="gt-split-byarea-rows" style="margin-top:6px;padding-left:24px"></div>
@@ -1715,7 +1728,7 @@ input,button,select,textarea{font-family:inherit;outline:none}
 </div>
 
 <!-- Calibration: Pick point from project layer -->
-<div id="ov-calpick" class="ov">
+<div id="ov-calpick" class="ov" style="z-index:1100">
   <div class="mbox" style="width:440px;max-height:80vh;display:flex;flex-direction:column">
     <div class="mhd"><span style="font-size:13px;font-weight:600;color:#C0D8F0">Pick Control Point from Layer</span><button class="ib" style="width:24px;height:24px" onclick="closeModal('calpick')"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="mbd" style="padding:10px 16px 0">
@@ -3535,26 +3548,30 @@ function gtRunSplit(){
   }
   if(mode==='byarea'){
     var dir=document.getElementById('gt-split-byarea-dir').value;
-    // ─── Both (V × H grid) mode ───
+    // ─── Both (V + H, T-shape subdivision) mode ───
     if(dir==='both'){
       var V=parseInt((document.getElementById('gt-ba-V')||{}).value,10);
       var H=parseInt((document.getElementById('gt-ba-H')||{}).value,10);
-      if(!(V>=1&&V<=10)){alert('V (columns) must be 1-10');return;}
-      if(!(H>=1&&H<=10)){alert('H (rows) must be 1-10');return;}
-      if(V*H<2){alert('Need at least 2 plots (V\u00D7H \u2265 2)');return;}
-      // Read V*H area grid: plotAreas[col][row]
-      var plotAreas=[];
-      for(var c=0;c<V;c++){
-        plotAreas[c]=[];
-        for(var r=0;r<H;r++){
-          var elG=document.getElementById('gt-byarea-both-'+c+'-'+r);
-          if(!elG){alert('Area inputs not ready. Tap Both in the Direction dropdown.');return;}
-          var vg=parseFloat(elG.value);
-          if(!(vg>0)){alert('Area for Col '+(c+1)+' Row '+(r+1)+' must be > 0');return;}
-          plotAreas[c].push(vg);
-        }
+      if(isNaN(V)||V<0||V>10){alert('V must be 0-10');return;}
+      if(isNaN(H)||H<0||H>10){alert('H must be 0-10');return;}
+      if(V+H<2){alert('Need at least 2 plots (V+H \u2265 2)');return;}
+      // Read V areas (bottom plots) and H areas (top plots)
+      var vAreas=[], hAreas=[];
+      for(var iv=0;iv<V;iv++){
+        var elV=document.getElementById('gt-byarea-both-v-'+iv);
+        if(!elV){alert('Area inputs not ready. Select Both in Direction first.');return;}
+        var vv=parseFloat(elV.value);
+        if(!(vv>0)){alert('V plot '+(iv+1)+' area must be > 0');return;}
+        vAreas.push(vv);
       }
-      _gtSplitByAreaBoth(V,H,plotAreas);
+      for(var ih=0;ih<H;ih++){
+        var elH=document.getElementById('gt-byarea-both-h-'+ih);
+        if(!elH){alert('Area inputs not ready. Select Both in Direction first.');return;}
+        var hv=parseFloat(elH.value);
+        if(!(hv>0)){alert('H plot '+(ih+1)+' area must be > 0');return;}
+        hAreas.push(hv);
+      }
+      _gtSplitByAreaBoth(V,H,vAreas,hAreas);
       return;
     }
     // ─── Simple mode (single direction) ───
@@ -3625,30 +3642,46 @@ function _gtRenderAreaInputs(){
   _gtUpdateAreaSum();
 }
 
-// Render V x H grid of area inputs (Both mode). Columns are cut vertically
-// first, then each column is cut horizontally into its H plots.
+// Render V + H area inputs (Both / T-shape mode).
+//   Top row: H stacked plots (upper section)
+//   Bottom row: V side-by-side plots (lower section)
 function _gtRenderBothInputs(){
   var box=document.getElementById('gt-split-byarea-rows');
   if(!box)return;
   var V=parseInt((document.getElementById('gt-ba-V')||{}).value,10);
   var H=parseInt((document.getElementById('gt-ba-H')||{}).value,10);
-  if(!(V>=1&&V<=10&&H>=1&&H<=10))return;
-  if(V*H<2){box.innerHTML='<div style="font-size:10px;color:#FF8080;margin-top:4px">Need at least 2 plots (V\u00D7H \u2265 2)</div>';return;}
+  if(isNaN(V)||V<0||V>10||isNaN(H)||H<0||H>10)return;
+  if(V+H<2){box.innerHTML='<div style="font-size:10px;color:#FF8080;margin-top:4px">Need at least 2 plots (V+H \u2265 2)</div>';return;}
   var total=_gtGetSrcTotalArea();
-  var share=total?(total/(V*H)).toFixed(2):'';
-  var html='<div style="font-size:9px;color:#6A8AAA;margin-top:4px;margin-bottom:2px">Per-plot area (m\u00B2) &mdash; grid: '+V+' columns &times; '+H+' rows</div>';
-  html+='<div style="display:grid;grid-template-columns:repeat('+V+',1fr);gap:4px;margin-top:4px">';
-  // Column headers
-  for(var c=0;c<V;c++){
-    html+='<div style="font-size:9px;color:#60A8CC;text-align:center;font-weight:600">Col '+(c+1)+'</div>';
-  }
-  // Rows of inputs
-  for(var r=0;r<H;r++){
-    for(var c2=0;c2<V;c2++){
-      html+='<input class="inp" id="gt-byarea-both-'+c2+'-'+r+'" type="number" step="0.01" min="0.01" value="'+share+'" title="Col '+(c2+1)+' Row '+(r+1)+'" style="font-size:10px;height:24px;text-align:center;padding:2px" oninput="_gtUpdateAreaSum()"/>';
+  var share=total?(total/(V+H)).toFixed(2):'';
+  var html='';
+  // H plots (top section, stacked) — displayed first so users see the
+  // geometry top-to-bottom as it will appear on the map.
+  if(H>0){
+    html+='<div style="font-size:9px;color:#60A8CC;margin-top:4px;margin-bottom:2px;font-weight:600">Top section &mdash; '+H+' horizontal plot'+(H>1?'s':'')+' (stacked)</div>';
+    for(var ih=0;ih<H;ih++){
+      html+='<div style="display:flex;gap:6px;align-items:center;margin-top:3px">'+
+        '<span style="font-size:10px;color:#6A8AAA;min-width:60px">H'+(ih+1)+' (top)</span>'+
+        '<input class="inp" id="gt-byarea-both-h-'+ih+'" type="number" step="0.01" min="0.01" value="'+share+'" style="flex:1;font-size:11px;height:26px" oninput="_gtUpdateAreaSum()"/>'+
+        '<span style="font-size:10px;color:#4A7090">m\u00B2</span>'+
+      '</div>';
     }
   }
-  html+='</div>';
+  // Divider
+  if(V>0 && H>0){
+    html+='<div style="border-top:1px dashed rgba(255,255,255,0.1);margin:6px 0"></div>';
+  }
+  // V plots (bottom section, side-by-side)
+  if(V>0){
+    html+='<div style="font-size:9px;color:#60A8CC;margin-top:4px;margin-bottom:2px;font-weight:600">Bottom section &mdash; '+V+' vertical plot'+(V>1?'s':'')+' (side-by-side)</div>';
+    for(var iv=0;iv<V;iv++){
+      html+='<div style="display:flex;gap:6px;align-items:center;margin-top:3px">'+
+        '<span style="font-size:10px;color:#6A8AAA;min-width:60px">V'+(iv+1)+' (bot)</span>'+
+        '<input class="inp" id="gt-byarea-both-v-'+iv+'" type="number" step="0.01" min="0.01" value="'+share+'" style="flex:1;font-size:11px;height:26px" oninput="_gtUpdateAreaSum()"/>'+
+        '<span style="font-size:10px;color:#4A7090">m\u00B2</span>'+
+      '</div>';
+    }
+  }
   box.innerHTML=html;
   _gtUpdateAreaSum();
 }
@@ -3659,12 +3692,16 @@ function _gtUpdateAreaSum(){
   if(dir==='both'){
     var V=parseInt((document.getElementById('gt-ba-V')||{}).value,10);
     var H=parseInt((document.getElementById('gt-ba-H')||{}).value,10);
-    if(V>=1&&H>=1){
-      for(var c=0;c<V;c++){
-        for(var r=0;r<H;r++){
-          var v=parseFloat((document.getElementById('gt-byarea-both-'+c+'-'+r)||{}).value)||0;
-          sum+=v;
-        }
+    if(!isNaN(V)&&V>0){
+      for(var iv=0;iv<V;iv++){
+        var ev=parseFloat((document.getElementById('gt-byarea-both-v-'+iv)||{}).value)||0;
+        sum+=ev;
+      }
+    }
+    if(!isNaN(H)&&H>0){
+      for(var ih=0;ih<H;ih++){
+        var eh=parseFloat((document.getElementById('gt-byarea-both-h-'+ih)||{}).value)||0;
+        sum+=eh;
       }
     }
   } else {
@@ -3690,21 +3727,24 @@ function _gtAutoBalanceAreas(){
   if(dir==='both'){
     var V=parseInt((document.getElementById('gt-ba-V')||{}).value,10);
     var H=parseInt((document.getElementById('gt-ba-H')||{}).value,10);
-    if(!(V>=1&&H>=1)){alert('V and H must be \u2265 1');return;}
-    var share=(total/(V*H)).toFixed(2);
-    for(var c=0;c<V;c++){
-      for(var r=0;r<H;r++){
-        var el=document.getElementById('gt-byarea-both-'+c+'-'+r);
-        if(el)el.value=share;
-      }
+    if(isNaN(V)||isNaN(H)||V+H<2){alert('V+H must be \u2265 2');return;}
+    var share=(total/(V+H)).toFixed(2);
+    for(var iv=0;iv<V;iv++){
+      var elv=document.getElementById('gt-byarea-both-v-'+iv);
+      if(elv)elv.value=share;
     }
-  } else {
-    var n=parseInt(document.getElementById('gt-split-byarea-n').value,10);
-    var shareS=(total/n).toFixed(2);
-    for(var i=0;i<n;i++){
-      var elS=document.getElementById('gt-byarea-area-'+i);
-      if(elS)elS.value=shareS;
+    for(var ih=0;ih<H;ih++){
+      var elh=document.getElementById('gt-byarea-both-h-'+ih);
+      if(elh)elh.value=share;
     }
+    _gtUpdateAreaSum();
+    return;
+  }
+  var n=parseInt(document.getElementById('gt-split-byarea-n').value,10);
+  var shareS=(total/n).toFixed(2);
+  for(var i=0;i<n;i++){
+    var elS=document.getElementById('gt-byarea-area-'+i);
+    if(elS)elS.value=shareS;
   }
   _gtUpdateAreaSum();
 }
@@ -3890,18 +3930,17 @@ function _gtSplitPolyByAreasAlongAxis(polyXY, areas, axis){
   return pieces;
 }
 
-// ── SPLIT BY AREA — BOTH (V × H grid) ────────────────────────────────────
-// Two-stage orthogonal subdivision that maintains perpendicularity for TP:
-//   Stage 1: cut the whole polygon vertically into V columns whose widths
-//            are chosen so each column's area equals the sum of that
-//            column's plot areas.
-//   Stage 2: cut each column horizontally into H rows, each row's area
-//            equal to the user-entered plot area at that C,R position.
-// All cut lines are X-aligned or Y-aligned, so every cut intersection is
-// exactly 90°. Row heights may differ across columns (each column's rows
-// are placed independently) — that is intentional: plot areas are honoured
-// exactly, and town-plan blocks rarely require shared row baselines.
-function _gtSplitByAreaBoth(V, H, plotAreas){
+// ── SPLIT BY AREA — BOTH (V + H, T-shape subdivision) ──────────────────
+// Primary horizontal cut divides polygon into LOWER section (V vertical
+// plots side-by-side) and UPPER section (H horizontal plots stacked).
+// The primary cut position is binary-searched so the lower section area
+// equals sum(V plot areas). Each secondary cut is axis-aligned, so all
+// intersections are exactly 90° — TP-compliant.
+//
+// Degenerate cases:
+//   V=0 → all plots stacked (H horizontal), delegate to axis splitter
+//   H=0 → all plots side-by-side (V vertical), delegate to axis splitter
+function _gtSplitByAreaBoth(V, H, vAreas, hAreas){
   var pd=getPD(ST.pid);
   var src=pd.features.find(function(x){return x.id===GT.srcFid;});
   if(!src||src.type!=='polygon'||!src.ll||src.ll.length<3){alert('Source polygon invalid.');return;}
@@ -3909,46 +3948,79 @@ function _gtSplitByAreaBoth(V, H, plotAreas){
   var polyXY=src.ll.map(function(p){return _gtMetres(p,origin[0],origin[1]);});
   var totalArea=_gtComputeArea(polyXY);
 
-  // Column totals = sum of each column's H plot areas
-  var colSums=[], grandSum=0;
-  for(var c=0;c<V;c++){
-    var s=0;
-    for(var r=0;r<H;r++) s+=plotAreas[c][r];
-    colSums.push(s);
-    grandSum+=s;
+  var vSum=vAreas.reduce(function(a,b){return a+b;},0);
+  var hSum=hAreas.reduce(function(a,b){return a+b;},0);
+  var grand=vSum+hSum;
+
+  // Scale if user's entered areas don't match polygon area
+  if(Math.abs(grand-totalArea)>0.01*totalArea){
+    if(!confirm('Areas sum to '+grand.toFixed(2)+' m\u00B2 but polygon is '+totalArea.toFixed(2)+' m\u00B2.\n\nOK to scale all plot areas proportionally? (Cancel to abort.)')){return;}
+    var sc=totalArea/grand;
+    vAreas=vAreas.map(function(a){return a*sc;});
+    hAreas=hAreas.map(function(a){return a*sc;});
+    vSum*=sc; hSum*=sc;
   }
 
-  // Scale if user's total doesn't match polygon area
-  if(Math.abs(grandSum-totalArea)>0.01*totalArea){
-    if(!confirm('Grid totals to '+grandSum.toFixed(2)+' m\u00B2 but polygon is '+totalArea.toFixed(2)+' m\u00B2.\n\nOK to scale all plot areas proportionally? (Cancel to abort.)')){return;}
-    var scale=totalArea/grandSum;
-    for(var cc=0;cc<V;cc++){
-      colSums[cc]*=scale;
-      for(var rr=0;rr<H;rr++) plotAreas[cc][rr]*=scale;
-    }
+  // Degenerate: V=0 → all plots are stacked H rows
+  if(V===0){
+    var hPieces=_gtSplitPolyByAreasAlongAxis(polyXY, hAreas, 'y');
+    if(!hPieces){alert('Could not split into '+H+' horizontal plots.');gtCancel();return;}
+    _gtEmitBothPieces(src, origin, pd, {v:[],h:hPieces}, vAreas, hAreas, V, H);
+    return;
+  }
+  // Degenerate: H=0 → all plots are side-by-side V columns
+  if(H===0){
+    var vPieces=_gtSplitPolyByAreasAlongAxis(polyXY, vAreas, 'x');
+    if(!vPieces){alert('Could not split into '+V+' vertical plots.');gtCancel();return;}
+    _gtEmitBothPieces(src, origin, pd, {v:vPieces,h:[]}, vAreas, hAreas, V, H);
+    return;
   }
 
-  // Stage 1: V columns by vertical cuts
-  var columns;
-  if(V===1){
-    columns=[polyXY.slice()];
-  } else {
-    columns=_gtSplitPolyByAreasAlongAxis(polyXY, colSums, 'x');
-    if(!columns){alert('Could not split polygon into '+V+' columns. Polygon may be too irregular — try fewer columns or Draw Cut Line.');gtCancel();return;}
+  // General case: primary horizontal cut at y where lower-section area = vSum.
+  // Use the axis splitter with two "virtual" areas [vSum, hSum] to position
+  // the primary cut precisely.
+  var prim=_gtSplitPolyByAreasAlongAxis(polyXY, [vSum, hSum], 'y');
+  if(!prim || prim.length<2){
+    alert('Could not make the primary horizontal cut. Polygon may be too irregular \u2014 try Draw Cut Line.');
+    gtCancel();return;
+  }
+  // prim[0] is bottom (lower y centroid), prim[1] is top — axis splitter
+  // returns pieces in "before→after" order along the cut axis (y).
+  var bottomPoly=prim[0], topPoly=prim[1];
+
+  // Stage 2a: split bottom into V side-by-side plots via vertical cuts.
+  var vPieces;
+  if(V===1){ vPieces=[bottomPoly]; }
+  else {
+    vPieces=_gtSplitPolyByAreasAlongAxis(bottomPoly, vAreas, 'x');
+    if(!vPieces){alert('Could not split bottom section into '+V+' plots.');gtCancel();return;}
+  }
+  // Stage 2b: split top into H stacked plots via horizontal cuts.
+  var hPieces2;
+  if(H===1){ hPieces2=[topPoly]; }
+  else {
+    hPieces2=_gtSplitPolyByAreasAlongAxis(topPoly, hAreas, 'y');
+    if(!hPieces2){alert('Could not split top section into '+H+' plots.');gtCancel();return;}
   }
 
-  // Stage 2: for each column, H rows by horizontal cuts
+  _gtEmitBothPieces(src, origin, pd, {v:vPieces, h:hPieces2}, vAreas, hAreas, V, H);
+}
+
+// Helper: convert the two arrays of XY polygons to features and commit to
+// the project in a single splice. Shared by all V+H code paths so the
+// edit history stays clean.
+function _gtEmitBothPieces(src, origin, pd, pieces, vAreas, hAreas, V, H){
   var srcIdx=pd.features.indexOf(src);
   var now=new Date().toISOString();
-  function _mkPiece(xy, c, r, target){
+  function _mkPiece(xy, label, target){
     var ll=xy.map(function(p){return _gtLatLng(p,origin[0],origin[1]);});
     if(ll.length>3 && ll[0][0]===ll[ll.length-1][0] && ll[0][1]===ll[ll.length-1][1]) ll.pop();
     if(ll.length<3)return null;
     var a=Object.assign({},src.a||{});
     a['Split From']=src.name;
     a['Split Date']=now.slice(0,10);
-    a['Split Method']=V+'\u00D7'+H+' By Area (grid)';
-    a['Grid Position']='C'+(c+1)+'R'+(r+1);
+    a['Split Method']=V+'+'+H+' By Area (T-shape)';
+    a['Plot Label']=label;
     a['Target Area']=target.toFixed(2)+' m\u00B2';
     var areaM2=(typeof _polygonAreaM2==='function')?_polygonAreaM2(ll):calcAreaLatLng(ll);
     a['Area m2']=areaM2.toFixed(2);
@@ -3957,30 +4029,24 @@ function _gtSplitByAreaBoth(V, H, plotAreas){
     var peri=0;for(var i=1;i<ll.length;i++)peri+=haversine(ll[i-1][0],ll[i-1][1],ll[i][0],ll[i][1]);
     peri+=haversine(ll[ll.length-1][0],ll[ll.length-1][1],ll[0][0],ll[0][1]);
     a['Perimeter(m)']=peri.toFixed(2);
-    return {id:uid(),lid:src.lid,name:src.name+'_C'+(c+1)+'R'+(r+1),type:'polygon',ll:ll,a:a};
+    return {id:uid(),lid:src.lid,name:src.name+'_'+label,type:'polygon',ll:ll,a:a};
   }
   var newFeats=[];
-  for(var c2=0;c2<V;c2++){
-    var colPoly=columns[c2];
-    var rowAreas=plotAreas[c2];
-    var rows;
-    if(H===1){
-      rows=[colPoly];
-    } else {
-      rows=_gtSplitPolyByAreasAlongAxis(colPoly, rowAreas, 'y');
-      if(!rows){alert('Could not split column '+(c2+1)+' into '+H+' rows.');gtCancel();return;}
-    }
-    for(var r2=0;r2<H;r2++){
-      var piece=_mkPiece(rows[r2], c2, r2, rowAreas[r2]);
-      if(piece)newFeats.push(piece);
-    }
-  }
-  if(!newFeats.length){alert('Grid split produced no valid polygons.');gtCancel();return;}
+  // H plots first (top section) so they appear first in the layer list
+  pieces.h.forEach(function(xy,i){
+    var p=_mkPiece(xy, 'H'+(i+1), hAreas[i]);
+    if(p)newFeats.push(p);
+  });
+  pieces.v.forEach(function(xy,i){
+    var p=_mkPiece(xy, 'V'+(i+1), vAreas[i]);
+    if(p)newFeats.push(p);
+  });
+  if(!newFeats.length){alert('Split produced no valid polygons.');gtCancel();return;}
   pd.features.splice.apply(pd.features,[srcIdx,1].concat(newFeats));
   savePD(ST.pid,pd);
   renderAll();
   gtCancel();
-  toast('Grid: '+V+'\u00D7'+H+' \u2192 '+newFeats.length+' plots');
+  toast('T-shape split: '+V+'+'+H+' \u2192 '+newFeats.length+' plots');
 }
 
 function _gtMapClick(e){
@@ -8237,6 +8303,8 @@ function startRouteTrack(){
     pausedAtElapsedMs:0,
     paused:false,
     timer:null,
+    bgActive:false,      // true while page is hidden (screen off / app switched)
+    lastVisibleTs:Date.now()
   };
   // Live preview on map — polygon is a growing closed ring, line is dashed
   if(MAP){
@@ -8251,6 +8319,8 @@ function startRouteTrack(){
   // Start timer for time-mode and tick updater for UI
   _scheduleRouteTimer();
   _startRouteUITicker();
+  // Keep tracking alive when screen locks / app goes to background
+  _startBgKeepalive();
   toast((geom==='polygon'?'Area tracking started':'Route tracking started')+' \u2014 mode: '+mode);
   _renderRouteUI();
   // Close the Route Track modal and show the map so the user watches
@@ -8259,6 +8329,85 @@ function startRouteTrack(){
   closeModal('route');
   if(typeof showScreen==='function') showScreen('map');
   _showRouteLivePill();
+}
+
+// ── BACKGROUND KEEPALIVE FOR ROUTE TRACKING ─────────────────────────────
+// WebView throttles JS timers to ~1/minute when the page is hidden (screen
+// off or user switches apps). Three complementary mechanisms keep the
+// route alive:
+//   1. Screen Wake Lock — asks Android to keep the screen active (may fail
+//      silently on unsupported browsers or if user toggles screen off).
+//   2. Silent audio loop — Chrome/WebView does NOT throttle pages with
+//      active audio playback, so a looping silent buffer prevents timer
+//      throttling even when screen is off.
+//   3. Visibility listener — snapshots the UI when returning from bg and
+//      annotates the pill so user sees tracking continued.
+// All three are best-effort; the app never fails if any is unavailable.
+function _startBgKeepalive(){
+  var r=ST.route;if(!r)return;
+  // (1) Screen Wake Lock
+  if('wakeLock' in navigator){
+    navigator.wakeLock.request('screen').then(function(lock){
+      ST._wakeLock=lock;
+      lock.addEventListener('release',function(){ST._wakeLock=null;});
+    }).catch(function(){/* user denied or unsupported — fine, audio keeps us alive */});
+  }
+  // (2) Silent audio loop. A WebAudio oscillator at inaudible volume
+  // registers the page as "playing audio" which the browser won't throttle.
+  try{
+    if(!ST._bgAudio){
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(AC){
+        var ctx=new AC();
+        var osc=ctx.createOscillator();
+        var gain=ctx.createGain();
+        gain.gain.value=0.00001; // inaudible but non-zero so audio graph runs
+        osc.frequency.value=1;    // 1 Hz — outside human hearing range
+        osc.connect(gain).connect(ctx.destination);
+        osc.start();
+        ST._bgAudio={ctx:ctx,osc:osc,gain:gain};
+      }
+    }
+  }catch(e){}
+  // (3) Visibility listener — flag bg mode in the pill
+  if(!ST._bgVisHandler){
+    ST._bgVisHandler=function(){
+      var rr=ST.route;if(!rr)return;
+      if(document.hidden){
+        rr.bgActive=true;
+      } else {
+        rr.bgActive=false;
+        rr.lastVisibleTs=Date.now();
+        // Re-acquire wake lock if it was auto-released when hidden
+        if(!ST._wakeLock&&'wakeLock' in navigator){
+          navigator.wakeLock.request('screen').then(function(lock){
+            ST._wakeLock=lock;
+            lock.addEventListener('release',function(){ST._wakeLock=null;});
+          }).catch(function(){});
+        }
+        // Force UI refresh when coming back from bg
+        _updateRouteLivePill();
+        _renderRouteUI();
+      }
+      // Toggle BG badge
+      var bg=document.getElementById('rt-live-bg');
+      if(bg) bg.style.display=rr.bgActive?'inline-block':'none';
+    };
+    document.addEventListener('visibilitychange',ST._bgVisHandler);
+  }
+}
+function _stopBgKeepalive(){
+  if(ST._wakeLock){try{ST._wakeLock.release();}catch(e){}ST._wakeLock=null;}
+  if(ST._bgAudio){
+    try{ST._bgAudio.osc.stop();ST._bgAudio.ctx.close();}catch(e){}
+    ST._bgAudio=null;
+  }
+  if(ST._bgVisHandler){
+    document.removeEventListener('visibilitychange',ST._bgVisHandler);
+    ST._bgVisHandler=null;
+  }
+  var bg=document.getElementById('rt-live-bg');
+  if(bg) bg.style.display='none';
 }
 function _scheduleRouteTimer(){
   var r=ST.route;if(!r)return;
@@ -8275,7 +8424,9 @@ function _startRouteUITicker(){
   if(ST._routeUITimer)clearInterval(ST._routeUITimer);
   ST._routeUITimer=setInterval(function(){
     if(!ST.route){clearInterval(ST._routeUITimer);ST._routeUITimer=null;return;}
-    // Only update if the route modal is actually open \u2014 cheap DOM checks
+    // ALWAYS update the floating live pill \u2014 it is the primary tracking
+    // UI once the modal closes. Only update the modal when it is open.
+    _updateRouteLivePill();
     var ov=document.getElementById('ov-route');
     if(ov&&ov.classList.contains('on'))_renderRouteUI();
   },1000);
@@ -8494,6 +8645,7 @@ function _teardownRoute(){
   if(r.timer){clearInterval(r.timer);r.timer=null;}
   if(ST._routeUITimer){clearInterval(ST._routeUITimer);ST._routeUITimer=null;}
   if(ST._routePreview){try{MAP.removeLayer(ST._routePreview);}catch(e){}ST._routePreview=null;}
+  _stopBgKeepalive();
   ST.route=null;
   _hideRouteLivePill();
   _renderRouteUI();
@@ -9272,7 +9424,7 @@ function enterEditMode(fid){
 function exitEditMode(save){
   if(!save&&!ES.active){return;}
   var savedFid=ES.fid;
-  var wasActive=ES.active;
+  var savedType=ES.type;
   if(save&&ES.fid){
     var pd=getPD(ST.pid),f=pd.features.find(x=>x.id===ES.fid);
     if(f){
@@ -9287,38 +9439,54 @@ function exitEditMode(save){
         var area=calcAreaLatLng(f.ll);
         f.a['Area m2']=Math.round(area).toString();
       }
+      // CRITICAL: invalidate cached bounding box — geometry just changed.
+      f._bb=null;
       savePD(ST.pid,pd);
-      toast(save?'Geometry saved':'');
+      toast('Geometry saved');
     }
   }
+  // Tear down ALL edit overlays first so nothing can absorb the next click.
   clearEditHandles();
-  if(ES.ptHandle&&MAP){MAP.removeLayer(ES.ptHandle);ES.ptHandle=null;}
+  if(ES.ptHandle&&MAP){try{MAP.removeLayer(ES.ptHandle);}catch(e){}ES.ptHandle=null;}
   hideSnapInd();
-  // CRITICAL: clear ALL edit-state fields atomically
+  // Reset edit-state atomically.
   ES.active=false;ES.fid=null;ES.type=null;ES.ll=null;ES.origLl=null;ES.origPt=null;ES.selVtx=-1;
   var etb=document.getElementById('edit-tb');if(etb)etb.style.display='none';
   var dvb=document.getElementById('edit-del-vtx');if(dvb)dvb.style.display='none';
-  // Reset attribute-sheet state so the NEXT feature click opens cleanly
+  // Reset attribute sheet + selection so the NEXT feature click opens cleanly.
   ST.shOpen=false;
   ST.selFid=null;
   var ap=document.getElementById('attr-panel');
-  if(ap){ap.style.transform='translateX(100%)';}
+  if(ap)ap.style.transform='translateX(100%)';
   clearSelectionHighlight();
   if(typeof _updateUnselPill==='function')_updateUnselPill();
-  // Defer the re-render to the next event loop tick so the save-button click
-  // event fully unwinds before we rebuild feature layers. Without this
-  // deferral, the rebuilt feature's click handler attaches during the
-  // current click bubble, and Leaflet/browser click handling race, leaving
-  // the next tap on a feature silently absorbed by the map.
+  // Rebuild the edited feature's Leaflet layer.
+  // CRITICAL: we do this OUTSIDE the current click event via setTimeout(0)
+  // so the fresh click handler can't be hit by the still-bubbling Save-
+  // button click. Without the defer, the new layer's click handler binds
+  // DURING the Save click, so the first tap on the polygon gets absorbed
+  // by the still-registering Leaflet event chain → appears unclickable.
   setTimeout(function(){
+    if(save&&savedFid){
+      var pd2=getPD(ST.pid);
+      var f2=pd2.features.find(function(x){return x.id===savedFid;});
+      if(f2){
+        if(ST.lfLayers[savedFid]){try{MAP.removeLayer(ST.lfLayers[savedFid]);}catch(e){}delete ST.lfLayers[savedFid];}
+        addFeatLayer(f2);
+      }
+    } else if(savedFid&&ST.lfLayers[savedFid]){
+      // Cancel: restore faded layer's original style
+      var lf=ST.lfLayers[savedFid];
+      if(lf.setStyle){
+        if(savedType==='polygon')lf.setStyle({opacity:1,fillOpacity:0.15});
+        else lf.setStyle({opacity:1});
+      } else if(lf.setOpacity){
+        lf.setOpacity(1);
+      }
+    }
+    // Force Leaflet to re-register click handlers cleanly after rebuild.
     if(MAP)MAP.invalidateSize();
-    renderAll();
-    // Extra safety: after render, if attribute panel still shows transform
-    // in an intermediate state (some browsers cache transform mid-anim),
-    // force it fully off-screen.
-    var ap2=document.getElementById('attr-panel');
-    if(ap2)ap2.style.transform='translateX(100%)';
-  },80);
+  },40);
 }
 
 // ─── HANDLES ──────────────────────────────────────────────────────────────────
